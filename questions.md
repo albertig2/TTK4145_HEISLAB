@@ -4,7 +4,7 @@ Exercise 1 - Theory questions
 ### Concepts
 
 What is the difference between *concurrency* and *parallelism*?
-> *Your answer here*
+> Concurrency than stuff is 
 
 What is the difference between a *race condition* and a *data race*? 
 > *Your answer here* 
