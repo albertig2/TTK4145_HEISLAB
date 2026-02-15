@@ -14,7 +14,6 @@ var N_floors int = 4
 var N_btns int = 3
 
 type BUTTON_TYPE int
-type MOTOR_DIRECTION int
 
 const (
 	BTN_UP   BUTTON_TYPE = 0
@@ -22,13 +21,15 @@ const (
 	BTN_CAB              = 2
 )
 
+type MOTOR_DIRECTION int
+
 const (
 	MDIR_DOWN MOTOR_DIRECTION = -1 //can aslo use iota here and remove the ints from the other
 	MDIR_STOP                 = 0
 	MDIR_UP                   = 1
 )
 
-func elevator_hardware_init(address string) {
+func  elevator_hardware_init(address string) {
 
 	var err error = nil
 
