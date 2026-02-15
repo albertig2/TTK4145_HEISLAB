@@ -117,15 +117,15 @@ func elevator_floorSensor() int {
 	return elevator_hardware_get_floor_sensor_signal()
 }
 
-func elevator_requestButton(f int, b Button) int {
+func elevator_requestButton(f int, b Button) bool {
 	return elevator_hardware_get_button_signal((elevator_hardware_button_type_t)(b), f)
 }
 
-func elevator_stopButton() int {
+func elevator_stopButton() bool {
 	return elevator_hardware_get_stop_signal()
 }
 
-func elevator_obstruction() int {
+func elevator_obstruction() bool {
 	return elevator_hardware_get_obstruction_signal()
 }
 
