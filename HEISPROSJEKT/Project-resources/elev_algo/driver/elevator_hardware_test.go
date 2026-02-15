@@ -4,7 +4,7 @@ package driver
 
 
 func main() {
-    elevator_hardware_init()
+    elevator_hardware_init() // add local IP å+ port when testing
 
     for {
 
