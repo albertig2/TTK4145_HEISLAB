@@ -6,6 +6,9 @@ import (
 	"sync"
 )
 
+var N_FLOORS int = 4
+var N_BUTTONS int = 3
+
 var conn net.Conn
 var socketmtx sync.Mutex
 
@@ -29,7 +32,9 @@ const (
 
 func elevator_hardware_init(address string) {
 
-	conn, err := net.Dial("tcp", address)
+	var err error = nil
+
+	conn, err = net.Dial("tcp", address)
 
 	if err != nil {
 		fmt.Println(err)
@@ -42,6 +47,43 @@ func elevator_hardware_init(address string) {
 
 	conn.Write(data)
 
+}
+
+func elevator_hardware_set_motor_direction(dir elevator_hardware_motor_direction_t) {
+	socketmtx.Lock()
+	defer socketmtx.Unlock()
+	data := []byte{1, byte(dir), 0, 0}
+	conn.Write(data)
+}
+
+func elevator_hardware_set_button_lamp(btn elevator_hardware_button_type_t, floor int, value int) {
+	if (floor >= 0) && (floor < N_FLOORS) && (btn >= 0) && (int(btn) < N_BUTTONS) {
+
+		socketmtx.Lock()
+		defer socketmtx.Unlock()
+
+		data := []byte{2, byte(btn), byte(floor), byte(value)}
+		conn.Write(data)
+	}
+}
+
+func elevator_hardware_set_floor_indicator(floor int) {
+
+	if (floor >= 0) && (floor < N_FLOORS) {
+		socketmtx.Lock()
+		defer socketmtx.Unlock()
+		data := []byte{3, byte(floor), 0, 0}
+		conn.Write(data)
+	}
+
+}
+
+func elevator_hardware_set_door_open_lamp(value int) {
+
+	socketmtx.Lock()
+	defer socketmtx.Unlock()
+	data := []byte{4, byte(value), 0, 0}
+	conn.Write(data)
 }
 
 func elevator_hardware_set_stop_lamp(value int) {
