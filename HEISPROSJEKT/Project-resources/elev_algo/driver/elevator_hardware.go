@@ -10,8 +10,8 @@ import (
 )
 
 
-var sockfd int
-var socketmtx sync.Mutex
+var conn net.Conn
+var socketmtx sync.Mutex 
 
 //Hardware constants and struckts
 var number_floors = 4;
@@ -36,8 +36,9 @@ const (
 
 func elevator_hardware_init( address string){
 
-	
-	conn, err := net.Dial("tcp", address)
+	var err error = nil
+
+	conn, err = net.Dial("tcp", address)
 
 	if err != nil{
 		fmt.Println(err)
@@ -46,9 +47,15 @@ func elevator_hardware_init( address string){
 		return
 	}
 
-
 	data := []byte{0,0,0,0}
 
 	conn.Write(data)
 
+}
+
+func elevator_hardware_set_motor_direction(dir MOTOR_DIRECTION){
+	socketmtx.Lock()
+	defer socketmtx.Unlock()
+	data := []byte{1,byte(dir),0,0}
+	conn.Write(data)
 }
