@@ -33,11 +33,58 @@ class Resource(T) {
     }
     
     T allocate(int priority){
+
+        mtx.wait();
+
+        if (busy == false)
+        {
+            busy = true;
+            mtx.notify();  
+
+            return value;
+        }
+
+
+        numWaiting[priority] += 1; 
+        mtx.notify();   
+        
+        sems[priority].wait();
+
         return value;
+
+
     }
     
     void deallocate(T v){
+
+        mtx.wait();
+
+        if (numWaiting[1] > 0)
+        {
+            sems[1].notify();
+            numWaiting[1]-= 1;
+
+
+        }
+        else if (numWaiting[0] > 0)
+        {
+            sems[0].notify();
+            numWaiting[0]-= 1;
+
+        }
+        else 
+        {
+
+        busy = false;
+
+        }
+
+        mtx.notify(); 
+
         value = v;
+ 
+
+
     }
 }
 
@@ -46,6 +93,7 @@ class Resource(T) {
 
 
 void main(){
+
 
     // Resource type is `int[]`. Each user appends its own id to the back of the list.
     auto resource = new Resource!(int[])();
