@@ -5,15 +5,15 @@ var (
 	timerActive  bool
 )
 
-func timerStart(d time.Duration) {
+func timer_start(d time.Duration) {
 	timerEndTime = time.Now().Add(d)
 	timerActive = true
 }
 
-func timerStop() {
+func timer_stop() {
 	timerActive = false
 }
 
-func timerTimedOut() bool {
+func timer_timedOut() bool {
 	return timerActive && time.Now().After(timerEndTime)
 }
