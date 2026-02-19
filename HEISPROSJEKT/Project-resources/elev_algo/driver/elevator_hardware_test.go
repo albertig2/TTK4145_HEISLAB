@@ -1,19 +1,18 @@
-
 package driver
 
+func test() {
+	elevator_hardware_init("10.100.23.14:15657") // add local IP + port when testing
 
+	for {
 
-func main() {
-    elevator_hardware_init() // add local IP + port when testing
+		elevator_hardware_set_motor_direction(D_DOWN)
 
-    for {
+		for elevator_hardware_get_floor_sensor_signal() != 0 {
+		}
 
-	elevator_hardware_set_motor_direction(D_DOWN)
+		elevator_hardware_set_motor_direction(D_UP)
 
-	for(elevator_hardware_get_floor_sensor_signal() != 0) {}
-
-	elevator_hardware_set_motor_direction(D_UP)
-
-	for(elevator_hardware_get_floor_sensor_signal() != 3) {}
-    }
+		for elevator_hardware_get_floor_sensor_signal() != 3 {
+		}
+	}
 }

@@ -1,4 +1,4 @@
-package elevator
+package main
 
 type DirnBehaviourPair struct {
 	dirn      Dirn

@@ -1,54 +1,59 @@
 package main
 
-import ("fmt")
+import "Driver-go/elevio"
+import "fmt"
 
+func main(){
 
-func main () {
-    fmt.Println("Started!")
-    var elevator Elevator = elevator_uninitialized()
-    var inputPollRate_ms int = 25
+    numFloors := 4
 
-    con_load("elevator.con",
-        con_val("doorOpenDuration_s", &elevator.config.doorOpenDuration_s, "%lf")
-        con_val("inputPollRate_ms", &inputPollRate_ms, "%d")
-    )
+    elevio.Init("localhost:15657", numFloors)
     
-    if elevator_floorSensor() == -1 {
-        fsm_onInitBetweenFloors(&elevator);
-    }
+    var d elevio.MotorDirection = elevio.MD_Up
+    //elevio.SetMotorDirection(d)
     
-    var prevButtons [N_FLOORS][N_BUTTONS]bool
-    var prevFloor int = -1
-    for true {
-        { // Request button
-            for f := 0; f < N_FLOORS; f++ {
-                for b := 0; b < N_BUTTONS; b++ {
-                    var v bool = elevator_requestButton(f, b)
-                    if v  &&  v != prevButtons[f][b] {
-                        fsm_onRequestButtonPress(&elevator, f, b)
-                    }
-                    prevButtons[f][b] = v
+    drv_buttons := make(chan elevio.ButtonEvent)
+    drv_floors  := make(chan int)
+    drv_obstr   := make(chan bool)
+    drv_stop    := make(chan bool)    
+    
+    go elevio.PollButtons(drv_buttons)
+    go elevio.PollFloorSensor(drv_floors)
+    go elevio.PollObstructionSwitch(drv_obstr)
+    go elevio.PollStopButton(drv_stop)
+    
+    
+    for {
+        select {
+        case a := <- drv_buttons:
+            fmt.Printf("%+v\n", a)
+            elevio.SetButtonLamp(a.Button, a.Floor, true)
+            
+        case a := <- drv_floors:
+            fmt.Printf("%+v\n", a)
+            if a == numFloors-1 {
+                d = elevio.MD_Down
+            } else if a == 0 {
+                d = elevio.MD_Up
+            }
+            elevio.SetMotorDirection(d)
+            
+            
+        case a := <- drv_obstr:
+            fmt.Printf("%+v\n", a)
+            if a {
+                elevio.SetMotorDirection(elevio.MD_Stop)
+            } else {
+                elevio.SetMotorDirection(d)
+            }
+            
+        case a := <- drv_stop:
+            fmt.Printf("%+v\n", a)
+            for f := 0; f < numFloors; f++ {
+                for b := elevio.ButtonType(0); b < 3; b++ {
+                    elevio.SetButtonLamp(b, f, false)
                 }
             }
         }
-        
-        { // Floor sensor
-            var f int = elevator_floorSensor();
-            if f != -1  &&  f != prevFloor {
-                fsm_onFloorArrival(&elevator, f);
-            }
-            prevFloor = f
-        }
-        
-        
-        { // Timer
-            if timer_timedOut() {
-                timer_stop()
-                fsm_onDoorTimeout(&elevator)
-            }
-        }
-        
-        usleep(inputPollRate_ms*1000)
-    }
-
+    }    
 }
