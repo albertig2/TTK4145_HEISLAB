@@ -1,5 +1,8 @@
 package main
 
+import "Driver-go/elevio"
+
+
 import (
 	"fmt"
 )
@@ -108,43 +111,46 @@ func elevator_print(es Elevator) {
 }
 
 func elevator_uninitialized() Elevator {
-	elevator_hardware_init()
+	elevio.Init("localhost:15657",4)
 	es := Elevator{floor: -1, dirn: D_Stop, behaviour: EB_Idle, config: Config{doorOpenDuration_s: 3.0}}
 	return es
 }
 
 func elevator_floorSensor() int {
-	return elevator_hardware_get_floor_sensor_signal()
+	return elevio.GetFloor()
 }
 
 func elevator_requestButton(f int, b Button) bool {
-	return elevator_hardware_get_button_signal((elevator_hardware_button_type_t)(b), f)
+	return  elevio.GetButton((elevio.ButtonType)(b), f)
 }
 
 func elevator_stopButton() bool {
-	return elevator_hardware_get_stop_signal()
+	return elevio.GetStop()
 }
 
 func elevator_obstruction() bool {
-	return elevator_hardware_get_obstruction_signal()
+	return elevio.GetObstruction()
 }
 
 func elevator_floorIndicator(f int) {
-	elevator_hardware_set_floor_indicator(f)
+	elevio.SetFloorIndicator(f)
 }
 
-func elevator_requestButtonLight(f int, b Button, v int) {
-	elevator_hardware_set_button_lamp((elevator_hardware_button_type_t)(b), f, v)
+func elevator_requestButtonLight(f int, b Button, v bool) {
+	elevio.SetButtonLamp(elevio.ButtonType(b), f, v)
 }
 
-func elevator_doorLight(v int) {
-	elevator_hardware_set_door_open_lamp(v)
+func elevator_doorLight(v bool) {
+	elevio.SetDoorOpenLamp(v)
+
 }
 
-func elevator_stopButtonLight(v int) {
-	elevator_hardware_set_stop_lamp(v)
+func elevator_stopButtonLight(v bool) {
+	elevio.SetStopLamp(v)
+
 }
 
 func elevator_motorDirection(d Dirn) {
-	elevator_hardware_set_motor_direction((elevator_hardware_motor_direction_t)(d))
+	elevio.SetMotorDirection(elevio.MotorDirection(d))
+	
 }
