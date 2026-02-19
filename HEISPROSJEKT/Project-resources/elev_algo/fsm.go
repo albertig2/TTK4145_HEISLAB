@@ -1,11 +1,12 @@
 package main
 
+
 import "fmt"
 
 func setAllLights(es Elevator) {
 	for floor := 0; floor < N_FLOORS; floor++ {
 		for btn := 0; btn < N_BUTTONS; btn++ {
-			elevator_requestButtonLight(floor, btn, es.requests[floor][btn])
+			elevator_requestButtonLight(floor, Button(btn), es.requests[floor][btn])
 		}
 	}
 }

@@ -5,6 +5,7 @@ import "Driver-go/elevio"
 
 import (
 	"fmt"
+	"time"
 )
 
 const N_FLOORS int = 4
@@ -35,7 +36,7 @@ const (
 )
 
 type Config struct {
-	doorOpenDuration_s float64
+	doorOpenDuration_s time.Duration
 }
 
 type Elevator struct {
@@ -111,7 +112,7 @@ func elevator_print(es Elevator) {
 }
 
 func elevator_uninitialized() Elevator {
-	elevio.Init("localhost:15657",4)
+	elevio.Init("localhost:15657",N_FLOORS)
 	es := Elevator{floor: -1, dirn: D_Stop, behaviour: EB_Idle, config: Config{doorOpenDuration_s: 3.0}}
 	return es
 }
