@@ -2,18 +2,29 @@ package main
 
 import (
 	"Driver-go/elevio"
+	"flag"
+	"strconv"
 
 	"Network-go/network/peers"
 	"fmt"
 )
 
+func testTransmit(peerUpdateChl chan<- peers.PeerUpdate) {
+
+	peers.Receiver(65004, peerUpdateChl)
+
+}
+
 func main() {
+	id := flag.Int("id", 1, "Input id")
+	port := flag.Int("port", 15657, "Input port")
+	flag.Parse()
 
 	numFloors := 4
 
-	elevio.Init("localhost:15657", numFloors)
+	elevio.Init("localhost:"+strconv.Itoa(*port), numFloors)
 
-	var d elevio.MotorDirection = elevio.MD_Up
+	//var d elevio.MotorDirection = elevio.MD_Up
 	//elevio.SetMotorDirection(d)
 
 	drv_buttons := make(chan elevio.ButtonEvent)
@@ -29,8 +40,12 @@ func main() {
 	go elevio.PollObstructionSwitch(drv_obstr)
 	go elevio.PollStopButton(drv_stop)
 
+	go peers.Receiver(65004, peerUpdateChl)
+	go peers.Transmitter(65004, strconv.Itoa(*id), peerRecieveEnableChl)
+	//peerRecieveEnableChl <- true
+
 	for {
-		select {
+		//select {
 		// case a := <-drv_buttons:
 		// 	fmt.Printf("%+v\n", a)
 		// 	elevio.SetButtonLamp(a.Button, a.Floor, true)
@@ -66,14 +81,9 @@ func main() {
 		//			elevio.SetButtonLamp(b, f, false)
 		//		}
 		//	}
-		case a := <-peerUpdateChl:
-			peers.Receiver(20004, peerUpdateChl)
-			fmt.Printf("%+v\n", a)
-
-		case a := <-peerRecieveEnableChl:
-			peers.Transmitter(20004, "01", peerRecieveEnableChl)
-			fmt.Printf("%+v\n", a)
-		}
-
+		//case
+		a := <-peerUpdateChl
+		fmt.Printf("Peers: %q\n", a.Peers)
+		//}
 	}
 }
