@@ -9,11 +9,11 @@ import (
 	"fmt"
 )
 
-func testTransmit(peerUpdateChl chan<- peers.PeerUpdate) {
+//func testTransmit(peerUpdateChl chan<- peers.PeerUpdate) {
 
-	peers.Receiver(65004, peerUpdateChl)
+//	peers.Receiver(65004, peerUpdateChl)
 
-}
+//}
 
 func main() {
 	id := flag.Int("id", 1, "Input id")
@@ -42,7 +42,7 @@ func main() {
 
 	go peers.Receiver(65004, peerUpdateChl)
 	go peers.Transmitter(65004, strconv.Itoa(*id), peerRecieveEnableChl)
-	//peerRecieveEnableChl <- true
+	peerRecieveEnableChl <- true
 
 	for {
 		//select {
@@ -82,6 +82,7 @@ func main() {
 		//		}
 		//	}
 		//case
+
 		a := <-peerUpdateChl
 		fmt.Printf("Peers: %q\n", a.Peers)
 		//}
