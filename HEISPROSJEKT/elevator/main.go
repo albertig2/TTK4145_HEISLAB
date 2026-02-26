@@ -3,9 +3,12 @@ package main
 import (
 	"Driver-go/elevio"
 	"fmt"
+	"HEISPROSJEKT/encoder"
 )
 
 func main() {
+
+
 
 	numFloors := 4
 
