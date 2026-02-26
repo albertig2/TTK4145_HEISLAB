@@ -87,4 +87,4 @@ func main() {
 		fmt.Printf("Peers: %q\n", a.Peers)
 		//}
 	}
-}
+} //hei
