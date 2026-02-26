@@ -3,7 +3,7 @@ package main
 import (
 	"Driver-go/elevio"
 
-	"Network-go/network/bcast"
+	"Network-go/network/peers"
 	"fmt"
 )
 
@@ -20,6 +20,9 @@ func main() {
 	drv_floors := make(chan int)
 	drv_obstr := make(chan bool)
 	drv_stop := make(chan bool)
+
+	peerUpdateChl := make(chan peers.PeerUpdate)
+	peerRecieveEnableChl := make(chan bool)
 
 	go elevio.PollButtons(drv_buttons)
 	go elevio.PollFloorSensor(drv_floors)
@@ -56,6 +59,21 @@ func main() {
 		// 			elevio.SetButtonLamp(b, f, false)
 		// 		}
 		// 	}
+		//case a := <-drv_stop:
+		//	fmt.Printf("%+v\n", a)
+		//	for f := 0; f < numFloors; f++ {
+		//		for b := elevio.ButtonType(0); b < 3; b++ {
+		//			elevio.SetButtonLamp(b, f, false)
+		//		}
+		//	}
+		case a := <-peerUpdateChl:
+			peers.Receiver(20004, peerUpdateChl)
+			fmt.Printf("%+v\n", a)
+
+		case a := <-peerRecieveEnableChl:
+			peers.Transmitter(20004, "01", peerRecieveEnableChl)
+			fmt.Printf("%+v\n", a)
 		}
+
 	}
 }
