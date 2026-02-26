@@ -1,4 +1,4 @@
-package main
+package encoder
 
 /* 
 
@@ -183,23 +183,23 @@ func decodeData2(networkMessage string) ([][]int, [][][]int) {
 
 // func getCabOrdersByID
 
-func main() {
+// func main() {
 	
-	matrix1 := [][]int{
-		{1, 2, 3, 4},
-		{0, 1, 0, -1},
-		{0, 1, 0, 1},
-		{3, 1, 0, 2}}
-	matrix2 := [][][]int{
-		{{1}, {2}, {3}, {4}},
-		{{1, 0, 2}, {2, 1, 1}, {0, 0, 1}, {0, 0, 0}},
-		{{0, 0, 1}, {1, 3, 1}, {0, 3, 0}, {1, 1, 1}},
-		{{0, 0, 0}, {0, 0, 0}, {2, 0, 1}, {2, 2, 2}}}
+// 	matrix1 := [][]int{
+// 		{1, 2, 3, 4},
+// 		{0, 1, 0, -1},
+// 		{0, 1, 0, 1},
+// 		{3, 1, 0, 2}}
+// 	matrix2 := [][][]int{
+// 		{{1}, {2}, {3}, {4}},
+// 		{{1, 0, 2}, {2, 1, 1}, {0, 0, 1}, {0, 0, 0}},
+// 		{{0, 0, 1}, {1, 3, 1}, {0, 3, 0}, {1, 1, 1}},
+// 		{{0, 0, 0}, {0, 0, 0}, {2, 0, 1}, {2, 2, 2}}}
 
-	str := encodeData2("01", 4,3, matrix1, matrix2)
-	orders, states := decodeData2(str)
-	fmt.Println("Orders")
-	printMatrix(orders)
-	fmt.Println("States")
-	printVectorMatrix(states) 
-}
+// 	str := encodeData2("01", 4,3, matrix1, matrix2)
+// 	orders, states := decodeData2(str)
+// 	fmt.Println("Orders")
+// 	printMatrix(orders)
+// 	fmt.Println("States")
+// 	printVectorMatrix(states) 
+// }
