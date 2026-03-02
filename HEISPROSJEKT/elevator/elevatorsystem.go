@@ -1,8 +1,8 @@
 package main
 
-import (
-	"encoding/json"
-)
+//"flag"
+
+//flag.Int("id", 1, "Input id")
 
 type Behavior int
 
@@ -63,14 +63,6 @@ func initialize(system *ElevatorSystem, id int) {
 		Direction:   D_Stop,
 		CabRequests: [N_FLOORS]bool{},
 	}
-}
-
-func toJsonString(system ElevatorSystem) string {
-	b, err := json.Marshal(system)
-	if err != nil {
-		return ""
-	}
-	return string(b)
 }
 
 // Spesify IDs as arguments when initializing (legge til et eller annet sted? Peer place??)
