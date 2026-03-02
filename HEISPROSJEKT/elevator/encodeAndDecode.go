@@ -2,12 +2,12 @@ package main
 
 import "encoding/json"
 
-func encodeJson(system *ElevatorSystem) string {
+func encodeElevatorSystem(system *ElevatorSystem) string {
 	jsonData, _ := json.Marshal(&system)
 	return string(jsonData)
 }
 
-func decodeJson(jsonStr string) ElevatorSystem {
+func decodeElevatorSystem(jsonStr string) ElevatorSystem {
 	var system ElevatorSystem
 	json.Unmarshal([]byte(jsonStr), &system)
 	return system
