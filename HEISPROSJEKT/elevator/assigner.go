@@ -8,7 +8,47 @@ import (
 	"strconv"
 )
 
-func hallRequestAssigner(system *ElevatorSystem) {
+type BoolElevatorState struct {
+	Behavior    Behavior       `json:"behaviour"`
+	Floor       int            `json:"floor"`
+	Direction   Direction      `json:"direction"`
+	CabRequests [N_FLOORS]bool `json:"cabRequests"`
+}
+
+type BoolElevatorSystem struct {
+	HallRequests [N_FLOORS][2]bool          `json:"hallRequests"`
+	States       map[int]*BoolElevatorState `json:"states"`
+}
+
+// Converts ElevatorSystem and order status to a boolean-based system for assignment logic
+func buildBoolElevatorSystem(system ElevatorSystem, HallRequestsForAllIds map[int][N_FLOORS][2]orderStatus, alivePeers []int) BoolElevatorSystem {
+	boolSystem := BoolElevatorSystem{
+		HallRequests: [N_FLOORS][2]bool{},
+		States:       make(map[int]*BoolElevatorState),
+	}
+
+	for _, peerId := range alivePeers {
+		idState := system.States[peerId]
+		boolSystem.States[peerId] = &BoolElevatorState{
+			Behavior:    idState.Behavior,
+			Floor:       idState.Floor,
+			Direction:   idState.Direction,
+			CabRequests: [N_FLOORS]bool{},
+		}
+	}
+
+	for floor := range N_FLOORS {
+		hallDirs := [2]int{hallUp, hallDown}
+		for _, hallDir := range hallDirs {
+			if CheckOrderTransitionStatusForElevators(HallRequestsForAllIds, hallDir, floor, alivePeers) == pendingToAssigned {
+				boolSystem.HallRequests[floor][hallDir] = true
+			}
+		}
+	}
+	return boolSystem
+}
+
+func hallRequestAssigner(system *ElevatorSystem, HallRequestsForAllIds map[int][N_FLOORS][2]orderStatus, alivePeers []int) {
 	Executable := ""
 	switch runtime.GOOS {
 	case "linux":
@@ -19,7 +59,7 @@ func hallRequestAssigner(system *ElevatorSystem) {
 		panic("OS not supported")
 	}
 
-	input := system
+	input := buildBoolElevatorSystem(*system, HallRequestsForAllIds, alivePeers)
 
 	jsonBytes, err := json.Marshal(input)
 	if err != nil {
@@ -45,12 +85,15 @@ func hallRequestAssigner(system *ElevatorSystem) {
 		fmt.Printf("%6v :  %+v\n", id, hallRequests)
 	}
 
-	for id, hallRequests := range *output {
-		for floor, hallRequest := range hallRequests {
-			if hallRequest[0] || hallRequest[1] {
-				intId, _ := strconv.Atoi(id)
-				setCabRequests(system, intId, floor, true)
+	for floor := range N_FLOORS {
+		hallDirs := [2]int{hallUp, hallDown}
+		for _, halldir := range hallDirs {
+			stringOwnId := strconv.Itoa(ownId)
+			if (*output)[stringOwnId][floor][halldir] {
+				setHallRequests(system, floor, halldir, assigned)
 			}
 		}
 	}
 }
+
+// Fix here when I change id to be of type string instead of int.

@@ -15,17 +15,17 @@ func TestInitialize(t *testing.T) {
 	initialize(&system, 1)
 	initialize(&system, 2)
 	initialize(&system, 3)
-	setFloor(&system, 1, 2)
+	setFloor(&system, 2, 2)
 	setDirection(&system, 1, up)
 	setBehavior(&system, 1, moving)
 	//setCabRequests(&system, 1, 2, true)
-	setHallRequests(&system, 2, hallUp, completed)
-	//hallRequestAssigner(&system)
+	setHallRequests(&system, 2, hallUp, pending)
 
 	HallRequestsForAllIds[1] = system.HallRequests
-	HallRequestsForAllIds[2] = [N_FLOORS][2]orderStatus{{noOrder, noOrder}, {noOrder, noOrder}, {noOrder, noOrder}, {noOrder, noOrder}}
-	HallRequestsForAllIds[3] = [N_FLOORS][2]orderStatus{{noOrder, noOrder}, {noOrder, noOrder}, {noOrder, noOrder}, {noOrder, noOrder}}
+	HallRequestsForAllIds[2] = [N_FLOORS][2]orderStatus{{noOrder, noOrder}, {noOrder, noOrder}, {pending, noOrder}, {noOrder, noOrder}}
+	HallRequestsForAllIds[3] = [N_FLOORS][2]orderStatus{{noOrder, noOrder}, {noOrder, noOrder}, {pending, noOrder}, {noOrder, noOrder}}
 
+	hallRequestAssigner(&system, HallRequestsForAllIds, []int{1, 2, 3})
 	t.Logf("system json: %s", encodeElevatorSystem(&system))
 	transition := CheckOrderTransitionStatusForElevators(HallRequestsForAllIds, hallUp, 2, []int{1, 2, 3})
 	t.Logf("transition: %v", transition)
