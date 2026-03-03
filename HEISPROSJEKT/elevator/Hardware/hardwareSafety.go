@@ -6,10 +6,17 @@ import (
 )
 
 var _numFloors int = 4
+var lastKnownDirection elevio.MotorDirection = elevio.MD_Up
 
 func MotorDriection(motorDirection chan elevio.MotorDirection){
 	for {
 	d := <- motorDirection
+	if (d != elevio.MD_Stop){
+		
+		lastKnownDirection = d
+	}
+	
+
 	elevio.SetMotorDirection(d)
 	}
 }
@@ -22,14 +29,21 @@ func HardwareSafetyFeatures(pollObstructionChannel chan bool, pollStopButtonChan
 		case obstructionActivated:= <- pollObstructionChannel:
 
 			fmt. Println(obstructionActivated)
-				if obstructionActivated {
+			currentFloor := elevio.GetFloor()
 
+			if obstructionActivated {
+				if currentFloor != -1{
 					motorDirection <- elevio.MD_Stop
-					
-				} else {
-					motorDirection <- elevio.MD_Up
+
+				} else{
+					//Ignore input from obstruction if between floors
 				}
-		
+	
+				
+			} else {
+				motorDirection <- lastKnownDirection
+			}
+
 			//when true 
 			//case 1: elevator on a floor
 				//keep door open until obstruction  is celared
