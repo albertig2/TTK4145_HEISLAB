@@ -6,6 +6,8 @@ import (
 	"strconv"
 
 	"Network-go/network/peers"
+	"HEISPROSJEKT/communication/peerUpdate"
+
 	"fmt"
 )
 
@@ -19,6 +21,8 @@ func main() {
 	id := flag.Int("id", 1, "Input id")
 	port := flag.Int("port", 15657, "Input port")
 	flag.Parse()
+
+	fmt.Println(communication.Hello())
 
 	numFloors := 4
 
@@ -43,6 +47,8 @@ func main() {
 	go peers.Receiver(65004, peerUpdateChl)
 	go peers.Transmitter(65004, strconv.Itoa(*id), peerRecieveEnableChl)
 	//peerRecieveEnableChl <- true
+	
+	
 
 	for {
 		//select {
