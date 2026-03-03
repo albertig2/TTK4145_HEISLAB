@@ -72,8 +72,11 @@ func InitElevatorHardware() ElevatorHardwareChannelsStruckt {
 		ElevatorStateChannel:    make(chan elevatorState),
 	}
 
+	//small initialisation sequence to put the elevator in a known state
+	TurnOffAllOrderLights()
+	elevio.SetDoorOpenLamp(false)
+	elevio.SetStopLamp(false)
 
-	//small inittialisation sequence to put the elevator in a known state
 	var initialDirection elevio.MotorDirection = elevio.MD_Down
 
 	if elevio.GetFloor() != _numFloors-1 {
@@ -82,7 +85,7 @@ func InitElevatorHardware() ElevatorHardwareChannelsStruckt {
 		initialDirection = elevio.MD_Down
 	}
 	elevio.SetMotorDirection(initialDirection)
-	
+
 	fmt.Printf("Motordirection was set to %+v when running init \n", initialDirection)
 
 	return hardwareChannels
