@@ -11,11 +11,6 @@ import (
 	"fmt"
 )
 
-//func testTransmit(peerUpdateChl chan<- peers.PeerUpdate) {
-
-//	peers.Receiver(65004, peerUpdateChl)
-
-//}
 
 func main() {
 	id := flag.Int("id", 1, "Input id")
@@ -28,8 +23,9 @@ func main() {
 	elevio.Init("localhost:"+strconv.Itoa(*port), numFloors)
 
 
-	channels := communication.InitNetworkChannels(*id, peerPort)
+	channels := communication.InitNetworkChannels()
 
+	communication.StartPeerNetworking(peerPort, *id, channels)
 
 	
 	
