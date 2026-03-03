@@ -54,22 +54,3 @@ func hallRequestAssigner(system *ElevatorSystem) {
 		}
 	}
 }
-
-/*
-func assigner(system *ElevatorSystem) {
-	jsonData, _ := json.Marshal(&system)
-	cmd := exec.Command("../cost_fns/hall_request_assigner",
-		"--input", string(jsonData),
-		"--travelDuration", "2500",
-		"--doorOpenDuration", "3000",
-	)
-	var out bytes.Buffer
-	cmd.Stdout = &out
-
-	cmd.Run()
-	fmt.Println("Capture output:", out.String())
-
-}
-*/
-
-//{"hallRequests":[[false,false],[true,false],[false,false],[false,true]],"states":{"one":{"behaviour":"moving","floor":2,"direction":"up","cabRequests":[false,false,true,true]},"two":{"behaviour":"idle","floor":0,"direction":"stop","cabRequests":[false,false,false,false]}}}
