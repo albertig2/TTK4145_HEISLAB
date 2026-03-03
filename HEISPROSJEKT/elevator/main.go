@@ -4,13 +4,10 @@ import (
 	"Driver-go/elevio"
 	"HEISPROSJEKT/Hardware"
 	"flag"
-	"strconv"
-
-
-
-	
-	// "Net"
 	"fmt"
+	"strconv"
+	// "Net"
+	// "fmt"
 )
 
 func main() {
@@ -24,44 +21,62 @@ func main() {
 
 	// go peers.Receiver(65004, peerUpdateChl)
 	// go peers.Transmitter(65004, strconv.Itoa(*id), peerRecieveEnableChl)
+	var d elevio.MotorDirection = elevio.MD_Down
 
-	
+	if elevio.GetFloor() != numFloors-1 {
+		d = elevio.MD_Up
 
-	var d elevio.MotorDirection = elevio.MD_Up
-	
+	} else {
+		d = elevio.MD_Down
+	}
+
+	if (elevio.GetFloor() != -1){
+		d = elevio.MD_Stop
+	}
+	elevio.SetMotorDirection(d)
+	fmt.Printf("Motordirection was set to %+v from main \n", d)
+
 	//elevio.SetMotorDirection(d)
 
-	drv_buttons := make(chan elevio.ButtonEvent)
-	drv_floors := make(chan int)
-	drv_obstr := make(chan bool)
-	drv_stop := make(chan bool)
-	drv_mdir := make (chan elevio.MotorDirection)
-	
+	// drv_buttons := make(chan elevio.ButtonEvent)
+	// drv_floors := make(chan int)
+	// drv_obstr := make(chan bool)
+	// drv_stop := make(chan bool)
+	// drv_mdir := make (chan elevio.MotorDirection)
+	// drv_doorOpen := make(chan bool)
 
-	go elevio.PollButtons(drv_buttons)
-	go elevio.PollFloorSensor(drv_floors)
-	go elevio.PollObstructionSwitch(drv_obstr)
-	go elevio.PollStopButton(drv_stop)
-	go Hardware.HardwareSafetyFeatures(drv_obstr, drv_stop, drv_mdir)
-	go Hardware.MotorDriection(drv_mdir)
+	hardwareChannels := Hardware.InitElevatorHaredwareChannels()
 
-	drv_mdir <- d
+	go elevio.PollButtons(hardwareChannels.PollOrderButtonsChannel)
+	go elevio.PollFloorSensor(hardwareChannels.FloorSensorChannel)
+	go elevio.PollObstructionSwitch(hardwareChannels.PollObstructionChannel)
+	go elevio.PollStopButton(hardwareChannels.PollObstructionChannel)
+	// go Hardware.HardwareSafetyFeatures(drv_obstr, drv_stop, drv_doorOpen, drv_mdir)
+	// go Hardware.MotorDriection(drv_mdir)
+	// go Hardware.OpenDoor(drv_doorOpen, make(chan elevio.MotorDirection))
 
-	for {
-		select {
-			case a := <-drv_buttons:
-				fmt.Printf("%+v\n", a)
-				elevio.SetButtonLamp(a.Button, a.Floor, true)
+	go Hardware.RunElevatorHardware(hardwareChannels)
 
-			case a := <-drv_floors:
-				fmt.Printf("%+v\n", a)
-				if a == numFloors-1 {
-					d = elevio.MD_Down
-				} else if a == 0 {
-					d = elevio.MD_Up
-				}
-				drv_mdir <- d
-		}
-	}
-	
+	// drv_mdir <- d
+	select {}
+
+	// for {
+	// 	select {
+	// 		case a := <-hardwareChannels.PollOrderButtonsChannel:
+	// 			fmt.Printf("%+v\n", a)
+	// 			elevio.SetButtonLamp(a.Button, a.Floor, true)
+
+	// 		case a := <- hardwareChannels.FloorSensorChannel:
+	// 			fmt.Printf("%+v\n", a)
+
+	// 			if a == numFloors-1 {
+	// 				d = elevio.MD_Down
+	// 			} else if a == 0 {
+	// 				d = elevio.MD_Up
+	// 			}
+	// 			elevio.SetMotorDirection(d)
+
+	// 	}
+	// }
+
 }
