@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"Network-go/network/peers"
-	"HEISPROSJEKT/communication/peerUpdate"
+	"HEISPROSJEKT/communication"
 
 	"fmt"
 )
