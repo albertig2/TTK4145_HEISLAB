@@ -6,11 +6,12 @@ import (
 
 // go test -v -run TestInitialize
 func TestInitialize(t *testing.T) {
+	HallRequestsForAllIds := make(map[int][N_FLOORS][2]orderStatus)
+
 	system := ElevatorSystem{
-		HallRequests: [N_FLOORS][2]bool{},
+		HallRequests: [N_FLOORS][2]orderStatus{},
 		States:       make(map[int]*ElevatorState),
 	}
-
 	initialize(&system, 1)
 	initialize(&system, 2)
 	initialize(&system, 3)
@@ -18,10 +19,17 @@ func TestInitialize(t *testing.T) {
 	setDirection(&system, 1, up)
 	setBehavior(&system, 1, moving)
 	//setCabRequests(&system, 1, 2, true)
-	setHallRequests(&system, 2, true, true)
-	hallRequestAssigner(&system)
+	setHallRequests(&system, 2, hallUp, completed)
+	//hallRequestAssigner(&system)
+
+	HallRequestsForAllIds[1] = system.HallRequests
+	HallRequestsForAllIds[2] = [N_FLOORS][2]orderStatus{{noOrder, noOrder}, {noOrder, noOrder}, {noOrder, noOrder}, {noOrder, noOrder}}
+	HallRequestsForAllIds[3] = [N_FLOORS][2]orderStatus{{noOrder, noOrder}, {noOrder, noOrder}, {noOrder, noOrder}, {noOrder, noOrder}}
 
 	t.Logf("system json: %s", encodeElevatorSystem(&system))
+	transition := CheckOrderTransitionStatusForElevators(HallRequestsForAllIds, hallUp, 2, []int{1, 2, 3})
+	t.Logf("transition: %v", transition)
+
 	//message := encodeElevatorSystem(&system)
 	//fmt.Print(message)
 	//system2 := decodeElevatorSystem(message)

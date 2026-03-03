@@ -3,6 +3,15 @@ package main
 //"flag"
 
 //flag.Int("id", 1, "Input id")
+type orderStatus string
+
+// Cab order only needs to go from no order to pending to completed, while hall orders also need assigned, since they are assigned to an elevator by the assigner
+const (
+	noOrder   orderStatus = "no order"
+	pending   orderStatus = "pending"
+	assigned  orderStatus = "assigned"
+	completed orderStatus = "completed"
+)
 
 type Behavior string
 
@@ -20,16 +29,21 @@ const (
 	stop Direction = "stop"
 )
 
+const (
+	hallUp   = 0
+	hallDown = 1
+)
+
 type ElevatorState struct {
-	Behavior    Behavior       `json:"behaviour"`
-	Floor       int            `json:"floor"`
-	Direction   Direction      `json:"direction"`
-	CabRequests [N_FLOORS]bool `json:"cabRequests"`
+	Behavior    Behavior              `json:"behaviour"`
+	Floor       int                   `json:"floor"`
+	Direction   Direction             `json:"direction"`
+	CabRequests [N_FLOORS]orderStatus `json:"cabRequests"`
 }
 
 type ElevatorSystem struct {
-	HallRequests [N_FLOORS][2]bool      `json:"hallRequests"`
-	States       map[int]*ElevatorState `json:"states"`
+	HallRequests [N_FLOORS][2]orderStatus `json:"hallRequests"`
+	States       map[int]*ElevatorState   `json:"states"`
 }
 
 func setBehavior(system *ElevatorSystem, id int, b Behavior) {
@@ -48,18 +62,14 @@ func setDirection(system *ElevatorSystem, id int, dir Direction) {
 }
 
 // Usikker på om jeg skal kalle det on eller off? eller en funksjon for på og en for av
-func setCabRequests(system *ElevatorSystem, id int, f int, on bool) {
+func setCabRequests(system *ElevatorSystem, id int, f int, orderstatus orderStatus) {
 	state := system.States[id]
-	state.CabRequests[f] = on
+	state.CabRequests[f] = orderstatus
 }
 
 // Usikker på om jeg skal kalle den up or down eller dont know
-func setHallRequests(system *ElevatorSystem, f int, up bool, on bool) {
-	if up {
-		system.HallRequests[f][0] = on
-	} else {
-		system.HallRequests[f][1] = on
-	}
+func setHallRequests(system *ElevatorSystem, f int, halldir int, orderstatus orderStatus) {
+	system.HallRequests[f][halldir] = orderstatus
 }
 
 func initialize(system *ElevatorSystem, id int) {
@@ -69,7 +79,7 @@ func initialize(system *ElevatorSystem, id int) {
 		Behavior:    idle,
 		Floor:       currentFloor,
 		Direction:   stop,
-		CabRequests: [N_FLOORS]bool{},
+		CabRequests: [N_FLOORS]orderStatus{},
 	}
 }
 
@@ -81,3 +91,6 @@ func initialize(system *ElevatorSystem, id int) {
 // Denne burde si hvilke transisjoner som skal gjøres (en pure function)
 // Og så burde man ha en funskjon som utfører transjosjonen med påfølgende handlinger
 // Union funksjon for å sette alle states til det andre sender som states
+
+// Lage et map over alle ideene sine hallrequests, som brukes til å avgjøre state overganger.
+// burde endre assigner til å bare endre sin egen hall request, men da med korrekt statet
