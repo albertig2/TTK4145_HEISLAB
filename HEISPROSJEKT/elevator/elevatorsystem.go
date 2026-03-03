@@ -4,24 +4,32 @@ package main
 
 //flag.Int("id", 1, "Input id")
 
-type Behavior int
+type Behavior string
 
 const (
-	idle     Behavior = 0
-	moving   Behavior = 1
-	doorOpen Behavior = 2
+	idle     Behavior = "idle"
+	moving   Behavior = "moving"
+	doorOpen Behavior = "doorOpen"
+)
+
+type Direction string
+
+const (
+	up   Direction = "up"
+	down Direction = "down"
+	stop Direction = "stop"
 )
 
 type ElevatorState struct {
-	Behavior    Behavior
-	Floor       int
-	Direction   Dirn
-	CabRequests [N_FLOORS]bool
+	Behavior    Behavior       `json:"behaviour"`
+	Floor       int            `json:"floor"`
+	Direction   Direction      `json:"direction"`
+	CabRequests [N_FLOORS]bool `json:"cabRequests"`
 }
 
 type ElevatorSystem struct {
-	HallRequests [N_FLOORS][2]bool
-	States       map[int]*ElevatorState
+	HallRequests [N_FLOORS][2]bool      `json:"hallRequests"`
+	States       map[int]*ElevatorState `json:"states"`
 }
 
 func setBehavior(system *ElevatorSystem, id int, b Behavior) {
@@ -34,7 +42,7 @@ func setFloor(system *ElevatorSystem, id int, f int) {
 	state.Floor = f
 }
 
-func setDirection(system *ElevatorSystem, id int, dir Dirn) {
+func setDirection(system *ElevatorSystem, id int, dir Direction) {
 	state := system.States[id]
 	state.Direction = dir
 }
@@ -60,7 +68,7 @@ func initialize(system *ElevatorSystem, id int) {
 	system.States[id] = &ElevatorState{
 		Behavior:    idle,
 		Floor:       currentFloor,
-		Direction:   D_Stop,
+		Direction:   stop,
 		CabRequests: [N_FLOORS]bool{},
 	}
 }
