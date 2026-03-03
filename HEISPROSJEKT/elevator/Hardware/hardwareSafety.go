@@ -6,13 +6,15 @@ import (
 )
 
 var _numFloors int = 4
+
 var lastKnownDirection elevio.MotorDirection = elevio.MD_Up
+var stopActivated bool = false
 
 func MotorDriection(motorDirection chan elevio.MotorDirection){
 	for {
 	d := <- motorDirection
 	if (d != elevio.MD_Stop){
-		
+
 		lastKnownDirection = d
 	}
 	
@@ -72,7 +74,7 @@ func HardwareSafetyFeatures(pollObstructionChannel chan bool, pollStopButtonChan
 			} else {
 
 				elevio.SetStopLamp(false)
-				motorDirection <- elevio.MD_Up
+				motorDirection <- lastKnownDirection
 
 			}
 			
