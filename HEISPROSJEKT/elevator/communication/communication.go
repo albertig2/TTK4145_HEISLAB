@@ -1,19 +1,33 @@
 package communication
 
 import (
-	//"Network-go/network/peers"
-	//"strconv"
-	
+	"Network-go/network/peers"	
 )
+//privte alivelist
+//private deadlist
+//possebly somthing with new elevators
 
-// func initPeers(id int, port int ){
-// 	peerUpdateChl := make(chan peers.PeerUpdate)
-// 	peerRecieveEnableChl := make(chan bool)
-// 	go peers.Receiver(port, peerUpdateChl)
-// 	go peers.Transmitter(port, strconv.Itoa(*id), peerRecieveEnableChl)
-// }
+//struct for communication channels
+type networkChannels struct {
 
-// func getPeersList() []string {
+}
 
-// }
+func initNetworkChannels(id int, port int ){
+
+}
+
+// func maintinElevatorNetworkStatus(peerTxenable, peerUpdateChl)
+	//peerUpdate := <- peerUpdateChl
+	//alive list = peerupdate.pers 
+	//deadList = peerUpdate.deadlist
+
+func getAlivePeersList() []string {
+	return aliveList
+}
+
+func getDeadPeersList() []string {
+	return deadList
+}
+
+
 
