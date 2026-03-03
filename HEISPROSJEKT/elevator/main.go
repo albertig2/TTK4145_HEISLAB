@@ -35,7 +35,7 @@ func main() {
 	go elevio.PollButtons(hardwareChannels.PollOrderButtonsChannel)
 	go elevio.PollFloorSensor(hardwareChannels.FloorSensorChannel)
 	go elevio.PollObstructionSwitch(hardwareChannels.PollObstructionChannel)
-	go elevio.PollStopButton(hardwareChannels.PollObstructionChannel)
+	go elevio.PollStopButton(hardwareChannels.PollStopButtonChannel)
 	// go Hardware.HardwareSafetyFeatures(drv_obstr, drv_stop, drv_doorOpen, drv_mdir)
 	// go Hardware.MotorDriection(drv_mdir)
 	// go Hardware.OpenDoor(drv_doorOpen, make(chan elevio.MotorDirection))

@@ -100,6 +100,7 @@ func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt) {
 
 	for {
 		select {
+
 		case floor := <-hardwareChannels.FloorSensorChannel:
 			hardwareChannels.MotorDirectionChannel <- elevio.MD_Stop
 			fmt.Printf("Elevator arrived at floor %+v\n", floor)
@@ -108,27 +109,60 @@ func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt) {
 			} else if floor == 0 {
 				_nextMotorDirection = elevio.MD_Up
 			}
-			fmt.Println("Next direction is now ", _nextMotorDirection)
 
 			currentElevatorState = DOOROPEN
-			fmt.Println("Door open was triggerd")
+			fmt.Println("Door Open")
 			doorTimer.Reset(_doorOpenTime)
 			elevio.SetDoorOpenLamp(true)
 
-		// case stopActivated := <-hardwareChannels.pollStopButtonChannel:
+		case stopActivated := <-hardwareChannels.PollStopButtonChannel:
+			fmt.Println(stopActivated)
 
-		// case obstructionActivated := <-hardwareChannels.pollObstructionChannel:
+			if stopActivated {
+				TurnOffAllOrderLights()
+				fmt.Println("Stop was activated")
+				elevio.SetStopLamp(true)
+				hardwareChannels.MotorDirectionChannel <- elevio.MD_Stop
+
+				if !isBetweenFloors() {
+					currentElevatorState = DOOROPEN
+					fmt.Println("Door Open")
+					doorTimer.Reset(_doorOpenTime)
+				}
+					
+			} else {
+				fmt.Println("Stop was Reset")
+
+				elevio.SetStopLamp(false)
+				// hardwareChannels.MotorDirectionChannel <- _lastKnownDirection
+
+			}
+
+		case obstructionActivated := <-hardwareChannels.PollObstructionChannel:
+			if obstructionActivated {
+				if currentElevatorState == DOOROPEN {
+					fmt.Println("Obstruction was activated")
+					hardwareChannels.MotorDirectionChannel <- elevio.MD_Stop
+					doorTimer.Stop()
+				} else {
+					//Ignore input from obstruction if between floors/door is closed
+				}
+
+			} else {
+				fmt.Println("Obstruction was Reset")
+				doorTimer.Reset(_doorOpenTime)
+				// hardwareChannels.MotorDirectionChannel <- _lastKnownDirection
+			}
 
 		// case doorOpen := <-hardwareChannels.doorOpenChannel:
 
 		// case motorDirection := <-hardwareChannels.motorDirectionChannel:
 
 		case <-doorTimer.C:
-			fmt.Println("Timeout was triggerd")
-			_doorIsOpen = false
 			elevio.SetDoorOpenLamp(false)
-			fmt.Println("Door closed was triggerd")
+			fmt.Println("Door Closed")
 			hardwareChannels.MotorDirectionChannel <- _nextMotorDirection
+			currentElevatorState = MOVING
 			// hardwareChannels.ElevatorStateChannel <- MOVING
 		}
 	}
