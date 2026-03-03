@@ -5,7 +5,7 @@ import (
 	"flag"
 	"strconv"
 
-	"Network-go/network/peers"
+	//"Network-go/network/peers"
 	"HEISPROSJEKT/communication"
 
 	"fmt"
@@ -23,20 +23,20 @@ func main() {
 	flag.Parse()
 
 	numFloors := 4
+	peerPort := 65004
 
 	elevio.Init("localhost:"+strconv.Itoa(*port), numFloors)
 
-	peerUpdateChl := make(chan peers.PeerUpdate)
-	peerRecieveEnableChl := make(chan bool)
 
-	go peers.Receiver(65004, peerUpdateChl)
-	go peers.Transmitter(65004, strconv.Itoa(*id), peerRecieveEnableChl)
+	channels := communication.InitNetworkChannels(*id, peerPort)
+
+
 	
 	
 	for {
 		
-		a := <-peerUpdateChl
-		fmt.Printf("Peers: %q\n", a.Peers)
-		
+		communication.UpdatePeerList(channels)
+		fmt.Printf("Peers: %q\n", communication.GetAlivePeersList())
+		fmt.Printf("Dead: %q\n", communication.GetDeadPeersList())
 	}
 } 
