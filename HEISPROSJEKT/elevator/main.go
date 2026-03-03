@@ -11,11 +11,11 @@ import (
 	"fmt"
 )
 
-func testTransmit(peerUpdateChl chan<- peers.PeerUpdate) {
+//func testTransmit(peerUpdateChl chan<- peers.PeerUpdate) {
 
-	peers.Receiver(65004, peerUpdateChl)
+//	peers.Receiver(65004, peerUpdateChl)
 
-}
+//}
 
 func main() {
 	id := flag.Int("id", 1, "Input id")
@@ -88,8 +88,9 @@ func main() {
 		//		}
 		//	}
 		//case
+
 		a := <-peerUpdateChl
 		fmt.Printf("Peers: %q\n", a.Peers)
 		//}
 	}
-}
+} //hei
