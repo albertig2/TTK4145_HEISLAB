@@ -4,7 +4,6 @@ import (
 	"Driver-go/elevio"
 	"HEISPROSJEKT/Hardware"
 	"flag"
-	"fmt"
 	"strconv"
 	// "Net"
 	// "fmt"
@@ -21,20 +20,6 @@ func main() {
 
 	// go peers.Receiver(65004, peerUpdateChl)
 	// go peers.Transmitter(65004, strconv.Itoa(*id), peerRecieveEnableChl)
-	var d elevio.MotorDirection = elevio.MD_Down
-
-	if elevio.GetFloor() != numFloors-1 {
-		d = elevio.MD_Up
-
-	} else {
-		d = elevio.MD_Down
-	}
-
-	if (elevio.GetFloor() != -1){
-		d = elevio.MD_Stop
-	}
-	elevio.SetMotorDirection(d)
-	fmt.Printf("Motordirection was set to %+v from main \n", d)
 
 	//elevio.SetMotorDirection(d)
 
@@ -45,7 +30,7 @@ func main() {
 	// drv_mdir := make (chan elevio.MotorDirection)
 	// drv_doorOpen := make(chan bool)
 
-	hardwareChannels := Hardware.InitElevatorHaredwareChannels()
+	hardwareChannels := Hardware.InitElevatorHardware()
 
 	go elevio.PollButtons(hardwareChannels.PollOrderButtonsChannel)
 	go elevio.PollFloorSensor(hardwareChannels.FloorSensorChannel)

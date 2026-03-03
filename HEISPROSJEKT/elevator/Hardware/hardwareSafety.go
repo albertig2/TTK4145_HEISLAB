@@ -8,7 +8,6 @@ import (
 
 var _numFloors int = 4
 
-
 var _stopActivated bool = false
 
 const _doorOpenTime = 3 * time.Second
@@ -24,6 +23,7 @@ const (
 )
 
 var currentElevatorState elevatorState = IDLE
+
 var _nextMotorDirection elevio.MotorDirection = elevio.MD_Up
 var _lastKnownDirection elevio.MotorDirection = elevio.MD_Stop
 
@@ -40,8 +40,6 @@ func updateMotorDirection(motorDirection chan elevio.MotorDirection) {
 	}
 }
 
-
-
 func isBetweenFloors() bool {
 	currentFloor := elevio.GetFloor()
 	if currentFloor != -1 {
@@ -54,25 +52,38 @@ func isBetweenFloors() bool {
 
 type ElevatorHardwareChannelsStruckt struct {
 	PollOrderButtonsChannel chan elevio.ButtonEvent
-	PollObstructionChannel chan bool
-	PollStopButtonChannel  chan bool
-	FloorSensorChannel           chan int
-	DoorOpenChannel        chan bool
-	MotorDirectionChannel  chan elevio.MotorDirection
-	ElevatorStateChannel   chan elevatorState
+	PollObstructionChannel  chan bool
+	PollStopButtonChannel   chan bool
+	FloorSensorChannel      chan int
+	DoorOpenChannel         chan bool
+	MotorDirectionChannel   chan elevio.MotorDirection
+	ElevatorStateChannel    chan elevatorState
 }
 
-func InitElevatorHaredwareChannels() ElevatorHardwareChannelsStruckt {
+func InitElevatorHardware() ElevatorHardwareChannelsStruckt {
 
 	hardwareChannels := ElevatorHardwareChannelsStruckt{
 		PollOrderButtonsChannel: make(chan elevio.ButtonEvent),
-		PollObstructionChannel: make(chan bool),
-		PollStopButtonChannel:  make(chan bool),
-		FloorSensorChannel:           make(chan int),
-		DoorOpenChannel:        make(chan bool),
-		MotorDirectionChannel:  make(chan elevio.MotorDirection),
-		ElevatorStateChannel:   make(chan elevatorState),
+		PollObstructionChannel:  make(chan bool),
+		PollStopButtonChannel:   make(chan bool),
+		FloorSensorChannel:      make(chan int),
+		DoorOpenChannel:         make(chan bool),
+		MotorDirectionChannel:   make(chan elevio.MotorDirection),
+		ElevatorStateChannel:    make(chan elevatorState),
 	}
+
+
+	//small inittialisation sequence to put the elevator in a known state
+	var initialDirection elevio.MotorDirection = elevio.MD_Down
+
+	if elevio.GetFloor() != _numFloors-1 {
+		initialDirection = elevio.MD_Up
+	} else {
+		initialDirection = elevio.MD_Down
+	}
+	elevio.SetMotorDirection(initialDirection)
+	
+	fmt.Printf("Motordirection was set to %+v when running init \n", initialDirection)
 
 	return hardwareChannels
 }
@@ -93,10 +104,8 @@ func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt) {
 				_nextMotorDirection = elevio.MD_Down
 			} else if floor == 0 {
 				_nextMotorDirection = elevio.MD_Up
-			} 
+			}
 			fmt.Println("Next direction is now ", _nextMotorDirection)
-
-			
 
 			currentElevatorState = DOOROPEN
 			fmt.Println("Door open was triggerd")
@@ -111,7 +120,7 @@ func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt) {
 
 		// case motorDirection := <-hardwareChannels.motorDirectionChannel:
 
-		case <- doorTimer.C:
+		case <-doorTimer.C:
 			fmt.Println("Timeout was triggerd")
 			_doorIsOpen = false
 			elevio.SetDoorOpenLamp(false)
