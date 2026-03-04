@@ -32,8 +32,14 @@ func updateMotorDirection(motorDirection chan elevio.MotorDirection) {
 		d := <-motorDirection
 		println("Motordirection:", d)
 
+
+		/*
+		saves the motor direction before it stops.
+		Right now it is used to continue moving in the same direction after stop or obstruction was activated
+		this is most likely just a feature needed for testing the code for now. Should probably find a more logical way to deal with this if nescessary
+		*/
 		if d != elevio.MD_Stop {
-			_lastKnownDirection = d
+			_lastKnownDirection = d 
 		}
 
 		elevio.SetMotorDirection(d)
