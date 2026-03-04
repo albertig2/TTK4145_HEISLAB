@@ -91,6 +91,19 @@ func InitElevatorHardware() ElevatorHardwareChannelsStruckt {
 	return hardwareChannels
 }
 
+func OpenDoor(doorTimer *time.Timer, timeOpenSeconds time.Duration){
+
+	currentElevatorState = DOOROPEN
+	fmt.Println("Door Open")
+	doorTimer.Reset(timeOpenSeconds)
+	elevio.SetDoorOpenLamp(true)
+
+}
+
+// func EnforceHardwareFloorBounderies(currentDirection elevio.MotorDirection, ) elevio.MotorDirection{
+
+// }
+
 func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt) {
 
 	doorTimer := time.NewTimer(_doorOpenTime)
@@ -100,7 +113,6 @@ func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt) {
 
 	for {
 		select {
-
 		case floor := <-hardwareChannels.FloorSensorChannel:
 			hardwareChannels.MotorDirectionChannel <- elevio.MD_Stop
 			fmt.Printf("Elevator arrived at floor %+v\n", floor)
@@ -110,34 +122,28 @@ func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt) {
 				_nextMotorDirection = elevio.MD_Up
 			}
 
-			currentElevatorState = DOOROPEN
-			fmt.Println("Door Open")
-			doorTimer.Reset(_doorOpenTime)
-			elevio.SetDoorOpenLamp(true)
-
+			OpenDoor(doorTimer, 3*time.Second)
 		case stopActivated := <-hardwareChannels.PollStopButtonChannel:
-			fmt.Println(stopActivated)
-
 			if stopActivated {
-				TurnOffAllOrderLights()
 				fmt.Println("Stop was activated")
+
+				TurnOffAllOrderLights()
 				elevio.SetStopLamp(true)
 				hardwareChannels.MotorDirectionChannel <- elevio.MD_Stop
 
 				if !isBetweenFloors() {
-					currentElevatorState = DOOROPEN
-					fmt.Println("Door Open")
-					doorTimer.Reset(_doorOpenTime)
+					OpenDoor(doorTimer, 3*time.Second)
 				}
 					
 			} else {
 				fmt.Println("Stop was Reset")
 
 				elevio.SetStopLamp(false)
-				// hardwareChannels.MotorDirectionChannel <- _lastKnownDirection
+				if (isBetweenFloors()){
+					hardwareChannels.MotorDirectionChannel <- _lastKnownDirection
+				}
 
 			}
-
 		case obstructionActivated := <-hardwareChannels.PollObstructionChannel:
 			if obstructionActivated {
 				if currentElevatorState == DOOROPEN {
@@ -150,20 +156,15 @@ func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt) {
 
 			} else {
 				fmt.Println("Obstruction was Reset")
-				doorTimer.Reset(_doorOpenTime)
-				// hardwareChannels.MotorDirectionChannel <- _lastKnownDirection
+				OpenDoor(doorTimer, 3*time.Second) //keeps door open for 3 more seconds after obstruction was cleard
+				hardwareChannels.MotorDirectionChannel <- _lastKnownDirection
 			}
-
-		// case doorOpen := <-hardwareChannels.doorOpenChannel:
-
-		// case motorDirection := <-hardwareChannels.motorDirectionChannel:
 
 		case <-doorTimer.C:
 			elevio.SetDoorOpenLamp(false)
 			fmt.Println("Door Closed")
 			hardwareChannels.MotorDirectionChannel <- _nextMotorDirection
 			currentElevatorState = MOVING
-			// hardwareChannels.ElevatorStateChannel <- MOVING
 		}
 	}
 }
