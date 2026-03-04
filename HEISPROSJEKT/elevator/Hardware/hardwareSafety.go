@@ -157,7 +157,6 @@ func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt) {
 			} else {
 				fmt.Println("Obstruction was Reset")
 				OpenDoor(doorTimer, 3*time.Second) //keeps door open for 3 more seconds after obstruction was cleard
-				hardwareChannels.MotorDirectionChannel <- _lastKnownDirection
 			}
 
 		case <-doorTimer.C:
