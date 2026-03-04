@@ -115,6 +115,27 @@ func OpenDoor(doorTimer *time.Timer, timeOpenSeconds time.Duration){
 
 // }
 
+func TriggerStopButtonSideEffects(doorTimer *time.Timer, MotorDirectionChannel chan elevio.MotorDirection){
+
+	TurnOffAllOrderLights()
+	elevio.SetStopLamp(true)
+	MotorDirectionChannel <- elevio.MD_Stop
+
+	if !isBetweenFloors() { //If stop is triggerd while at a floor, the door is opend and keep open until stop is reset + 3 seconds more
+		OpenDoor(doorTimer, 3*time.Second)
+	}
+
+}
+
+func TriggerObstructionSideEffects(doorTimer *time.Timer, MotorDirectionChannel chan elevio.MotorDirection){
+
+	fmt.Println("Obstruction was activated")
+	MotorDirectionChannel <- elevio.MD_Stop
+	doorTimer.Stop()
+
+}
+
+
 func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt) {
 
 	doorTimer := time.NewTimer(_doorOpenTime)
@@ -136,15 +157,17 @@ func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt) {
 			OpenDoor(doorTimer, 3*time.Second)
 		case stopActivated := <-hardwareChannels.PollStopButtonChannel:
 			if stopActivated {
-				fmt.Println("Stop was activated")
+				
+				TriggerStopButtonSideEffects(doorTimer, hardwareChannels.MotorDirectionChannel)
+				// fmt.Println("Stop was activated")
 
-				TurnOffAllOrderLights()
-				elevio.SetStopLamp(true)
-				hardwareChannels.MotorDirectionChannel <- elevio.MD_Stop
+				// TurnOffAllOrderLights()
+				// elevio.SetStopLamp(true)
+				// hardwareChannels.MotorDirectionChannel <- elevio.MD_Stop
 
-				if !isBetweenFloors() {
-					OpenDoor(doorTimer, 3*time.Second)
-				}
+				// if !isBetweenFloors() {
+				// 	OpenDoor(doorTimer, 3*time.Second)
+				// }
 					
 			} else {
 				fmt.Println("Stop was Reset")
@@ -158,11 +181,13 @@ func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt) {
 		case obstructionActivated := <-hardwareChannels.PollObstructionChannel:
 			if obstructionActivated {
 				if currentElevatorState == DOOROPEN {
-					fmt.Println("Obstruction was activated")
-					hardwareChannels.MotorDirectionChannel <- elevio.MD_Stop
-					doorTimer.Stop()
+					// fmt.Println("Obstruction was activated")
+					// hardwareChannels.MotorDirectionChannel <- elevio.MD_Stop
+					// doorTimer.Stop()
+					TriggerObstructionSideEffects(doorTimer, hardwareChannels.MotorDirectionChannel)
+
 				} else {
-					//Ignore input from obstruction if between floors/door is closed
+					//Ignore input from obstruction if between door is closed
 				}
 
 			} else {
