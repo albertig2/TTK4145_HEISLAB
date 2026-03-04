@@ -93,11 +93,16 @@ func InitElevatorHardware() ElevatorHardwareChannelsStruckt {
 
 func OpenDoor(doorTimer *time.Timer, timeOpenSeconds time.Duration){
 
-	currentElevatorState = DOOROPEN
-	fmt.Println("Door Open")
-	doorTimer.Reset(timeOpenSeconds)
-	elevio.SetDoorOpenLamp(true)
+	if(! isBetweenFloors()){
 
+		currentElevatorState = DOOROPEN
+		fmt.Println("Door Open")
+		doorTimer.Reset(timeOpenSeconds)
+		elevio.SetDoorOpenLamp(true)
+	} else {
+		fmt.Println("Door was attempted opend in between floors")
+		//Should probably trigger some sort of error handelig or somthing here
+	}
 }
 
 // func EnforceHardwareFloorBounderies(currentDirection elevio.MotorDirection, ) elevio.MotorDirection{
