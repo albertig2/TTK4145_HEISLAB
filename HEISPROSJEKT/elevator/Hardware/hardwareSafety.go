@@ -82,7 +82,7 @@ func InitElevatorHardware() ElevatorHardwareChannelsStruckt {
 	elevio.SetDoorOpenLamp(false)
 	elevio.SetStopLamp(false)
 
-	var initialDirection elevio.MotorDirection = elevio.MD_Down
+	var initialDirection elevio.MotorDirection
 
 	if elevio.GetFloor() != _numFloors-1 {
 		initialDirection = elevio.MD_Up
