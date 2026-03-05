@@ -21,7 +21,7 @@ type BoolElevatorSystem struct {
 }
 
 // Converts ElevatorSystem and order status to a boolean-based system for assignment logic
-func buildBoolElevatorSystem(system ElevatorSystem, HallRequestsForAllIds map[int][N_FLOORS][2]orderStatus, alivePeers []int) BoolElevatorSystem {
+func buildBoolElevatorSystem(system ElevatorSystem, HallRequestsForAllElevators map[int][N_FLOORS][2]orderStatus, alivePeers []int) BoolElevatorSystem {
 	boolSystem := BoolElevatorSystem{
 		HallRequests: [N_FLOORS][2]bool{},
 		States:       make(map[int]*BoolElevatorState),
@@ -39,7 +39,7 @@ func buildBoolElevatorSystem(system ElevatorSystem, HallRequestsForAllIds map[in
 
 	for floor := range N_FLOORS {
 		for _, hallDir := range HallDirs {
-			if CheckOrderTransitionStatusForElevators(HallRequestsForAllIds, hallDir, floor, alivePeers) == pendingToAssigned {
+			if CheckOrderTransitionStatusForHallRequests(&system, HallRequestsForAllElevators, hallDir, floor, alivePeers) == pendingToAssigned {
 				boolSystem.HallRequests[floor][hallDir] = true
 			}
 		}
@@ -47,7 +47,7 @@ func buildBoolElevatorSystem(system ElevatorSystem, HallRequestsForAllIds map[in
 	return boolSystem
 }
 
-func hallRequestAssigner(system *ElevatorSystem, HallRequestsForAllIds map[int][N_FLOORS][2]orderStatus, alivePeers []int) {
+func hallRequestAssigner(system *ElevatorSystem, HallRequestsForAllElevators map[int][N_FLOORS][2]orderStatus, alivePeers []int) {
 	Executable := ""
 	switch runtime.GOOS {
 	case "linux":
@@ -58,7 +58,7 @@ func hallRequestAssigner(system *ElevatorSystem, HallRequestsForAllIds map[int][
 		panic("OS not supported")
 	}
 
-	input := buildBoolElevatorSystem(*system, HallRequestsForAllIds, alivePeers)
+	input := buildBoolElevatorSystem(*system, HallRequestsForAllElevators, alivePeers)
 
 	jsonBytes, err := json.Marshal(input)
 	if err != nil {
@@ -86,7 +86,7 @@ func hallRequestAssigner(system *ElevatorSystem, HallRequestsForAllIds map[int][
 
 	for floor := range N_FLOORS {
 		for _, hallDir := range HallDirs {
-			stringOwnId := strconv.Itoa(ownId)
+			stringOwnId := strconv.Itoa(system.OwnId)
 			if (*output)[stringOwnId][floor][hallDir] {
 				setHallRequests(system, floor, hallDir, assigned)
 			}

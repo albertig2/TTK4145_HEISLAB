@@ -116,3 +116,4 @@ func addPeer(system *ElevatorSystem, id int) {
 // Kan hende man burde sende egen ID også under ElevatorState struct, lettere da å legge inn hallrequests riktig i henhold til den store matrisa alle holder på?
 // Endre ider til å være strings i stedet for ints (matcher bedre med det Odin har gjort.
 // Endre slik at man kun kan sette egne floors osv, og ikke andres, for å unngå feil
+// Should be possible for some sort of unioning, or getting the other elevators states

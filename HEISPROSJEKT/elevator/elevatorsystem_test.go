@@ -6,28 +6,26 @@ import (
 
 // go test -v -run TestInitialize
 func TestInitialize(t *testing.T) {
-	HallRequestsForAllIds := make(map[int][N_FLOORS][2]orderStatus)
+	HallRequestsForAllElevators := make(map[int][N_FLOORS][2]orderStatus)
+	//CabRequestsForAllElevators := make(map[int][N_FLOORS]orderStatus)
 
-	system := ElevatorSystem{
-		HallRequests: [N_FLOORS][2]orderStatus{},
-		States:       make(map[int]*ElevatorState),
-	}
+	system := ElevatorSystem{}
 	initialize(&system, 1)
-	initialize(&system, 2)
-	initialize(&system, 3)
-	setFloor(&system, 2, 2)
-	setDirection(&system, 1, up)
-	setBehavior(&system, 1, moving)
+	addPeer(&system, 2)
+	addPeer(&system, 3)
+	setFloor(&system, 2)
+	setDirection(&system, up)
+	setBehavior(&system, moving)
 	//setCabRequests(&system, 1, 2, true)
 	setHallRequests(&system, 2, hallUp, pending)
 
-	HallRequestsForAllIds[1] = system.HallRequests
-	HallRequestsForAllIds[2] = [N_FLOORS][2]orderStatus{{noOrder, noOrder}, {noOrder, noOrder}, {pending, noOrder}, {noOrder, noOrder}}
-	HallRequestsForAllIds[3] = [N_FLOORS][2]orderStatus{{noOrder, noOrder}, {noOrder, noOrder}, {pending, noOrder}, {noOrder, noOrder}}
+	HallRequestsForAllElevators[1] = system.HallRequests
+	HallRequestsForAllElevators[2] = [N_FLOORS][2]orderStatus{{noOrder, noOrder}, {noOrder, noOrder}, {pending, noOrder}, {noOrder, noOrder}}
+	HallRequestsForAllElevators[3] = [N_FLOORS][2]orderStatus{{noOrder, noOrder}, {noOrder, noOrder}, {pending, noOrder}, {noOrder, noOrder}}
 
-	hallRequestAssigner(&system, HallRequestsForAllIds, []int{1, 2, 3})
+	hallRequestAssigner(&system, HallRequestsForAllElevators, []int{1, 2, 3})
 	t.Logf("system json: %s", encodeElevatorSystem(&system))
-	transition := CheckOrderTransitionStatusForElevators(HallRequestsForAllIds, hallUp, 2, []int{1, 2, 3})
+	transition := CheckOrderTransitionStatusForHallRequests(&system, HallRequestsForAllElevators, hallUp, 2, []int{1, 2, 3})
 	t.Logf("transition: %v", transition)
 
 	//message := encodeElevatorSystem(&system)
