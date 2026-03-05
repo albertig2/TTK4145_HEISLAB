@@ -44,29 +44,29 @@ type ElevatorState struct {
 }
 
 type ElevatorSystem struct {
-	OwnId        int                      `json:"id"`
+	OwnId        int                      `json:"ownId"`
 	HallRequests [N_FLOORS][2]orderStatus `json:"hallRequests"`
 	States       map[int]*ElevatorState   `json:"states"`
 }
 
-func setBehavior(system *ElevatorSystem, id int, b Behavior) {
-	state := system.States[id]
+func setBehavior(system *ElevatorSystem, b Behavior) {
+	state := system.States[system.OwnId]
 	state.Behavior = b
 }
 
-func setFloor(system *ElevatorSystem, id int, f int) {
-	state := system.States[id]
+func setFloor(system *ElevatorSystem, f int) {
+	state := system.States[system.OwnId]
 	state.Floor = f
 }
 
-func setDirection(system *ElevatorSystem, id int, dir Direction) {
-	state := system.States[id]
+func setDirection(system *ElevatorSystem, dir Direction) {
+	state := system.States[system.OwnId]
 	state.Direction = dir
 }
 
 // Usikker på om jeg skal kalle det on eller off? eller en funksjon for på og en for av
-func setCabRequests(system *ElevatorSystem, id int, f int, orderstatus orderStatus) {
-	state := system.States[id]
+func setCabRequests(system *ElevatorSystem, f int, orderstatus orderStatus) {
+	state := system.States[system.OwnId]
 	state.CabRequests[f] = orderstatus
 }
 
@@ -100,13 +100,6 @@ func addPeer(system *ElevatorSystem, id int) {
 	}
 }
 
-/*
-func addPeer(system *ElevatorSystem, id int) {
-	if _, exists := system.States[id]; !exists {
-		initialize(system, id)
-	}
-}
-*/
 // Spesify IDs as arguments when initializing (legge til et eller annet sted? Peer place??)
 
 // Initialize, json, cost_function
