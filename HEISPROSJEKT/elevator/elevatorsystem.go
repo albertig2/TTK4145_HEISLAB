@@ -109,7 +109,7 @@ func updateElevatorSystemFromPeer(system *ElevatorSystem, peerSystem *ElevatorSy
 	system.States[peerSystem.OwnId] = peerSystem.States[peerSystem.OwnId]
 
 	HallRequestsForAllElevators[peerSystem.OwnId] = peerSystem.HallRequests
-	CabRequestsForAllElevators[peerSystem.OwnId] = peerSystem.States[peerSystem.OwnId].CabRequests
+	CabRequestsForAllElevators[peerSystem.OwnId] = peerSystem.States[system.OwnId].CabRequests
 }
 
 // I utgangspunktet har jeg en annen funksjon som fikser andre transisjoner ...., kanskje nok å sette HallRequest listen to the appropriate, og så finne derfifra hva man skal sette
