@@ -34,6 +34,8 @@ const (
 	hallDown = 1
 )
 
+var HallDirs = [2]int{hallUp, hallDown}
+
 type ElevatorState struct {
 	Behavior    Behavior              `json:"behaviour"`
 	Floor       int                   `json:"floor"`
@@ -94,3 +96,7 @@ func initialize(system *ElevatorSystem, id int) {
 
 // Lage et map over alle ideene sine hallrequests, som brukes til å avgjøre state overganger.
 // burde endre assigner til å bare endre sin egen hall request, men da med korrekt statet
+// Man burde sikkert bare kunne sette floor osv på egen id og ikke på andres
+
+// Kan hende man burde sende egen ID også under ElevatorState struct, lettere da å legge inn hallrequests riktig i henhold til den store matrisa alle holder på?
+// Endre ider til å være strings i stedet for ints (matcher bedre med det Odin har gjort.

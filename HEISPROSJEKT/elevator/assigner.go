@@ -38,8 +38,7 @@ func buildBoolElevatorSystem(system ElevatorSystem, HallRequestsForAllIds map[in
 	}
 
 	for floor := range N_FLOORS {
-		hallDirs := [2]int{hallUp, hallDown}
-		for _, hallDir := range hallDirs {
+		for _, hallDir := range HallDirs {
 			if CheckOrderTransitionStatusForElevators(HallRequestsForAllIds, hallDir, floor, alivePeers) == pendingToAssigned {
 				boolSystem.HallRequests[floor][hallDir] = true
 			}
@@ -86,11 +85,10 @@ func hallRequestAssigner(system *ElevatorSystem, HallRequestsForAllIds map[int][
 	}
 
 	for floor := range N_FLOORS {
-		hallDirs := [2]int{hallUp, hallDown}
-		for _, halldir := range hallDirs {
+		for _, hallDir := range HallDirs {
 			stringOwnId := strconv.Itoa(ownId)
-			if (*output)[stringOwnId][floor][halldir] {
-				setHallRequests(system, floor, halldir, assigned)
+			if (*output)[stringOwnId][floor][hallDir] {
+				setHallRequests(system, floor, hallDir, assigned)
 			}
 		}
 	}
