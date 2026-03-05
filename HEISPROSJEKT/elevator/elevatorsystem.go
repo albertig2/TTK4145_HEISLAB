@@ -44,6 +44,7 @@ type ElevatorState struct {
 }
 
 type ElevatorSystem struct {
+	OwnId        int                      `json:"id"`
 	HallRequests [N_FLOORS][2]orderStatus `json:"hallRequests"`
 	States       map[int]*ElevatorState   `json:"states"`
 }
@@ -76,7 +77,10 @@ func setHallRequests(system *ElevatorSystem, f int, halldir int, orderstatus ord
 
 func initialize(system *ElevatorSystem, id int) {
 	// To decide floor can just do the get_floor_sensor_signal() and initialize to that floor, but for now hardcoded
-	currentFloor := 1
+	system.OwnId = id
+	system.HallRequests = [N_FLOORS][2]orderStatus{}
+	system.States = make(map[int]*ElevatorState)
+	currentFloor := 1 // Get floor sensor. (men helst ikke -1? så siste faktisk floor)
 	system.States[id] = &ElevatorState{
 		Behavior:    idle,
 		Floor:       currentFloor,
@@ -85,6 +89,24 @@ func initialize(system *ElevatorSystem, id int) {
 	}
 }
 
+func addPeer(system *ElevatorSystem, id int) {
+	if _, exists := system.States[id]; !exists {
+		system.States[id] = &ElevatorState{
+			Behavior:    idle,
+			Floor:       1, // Usikker på hva dette skal være (-1? for undefined until man får høre det fra heisen selv?)
+			Direction:   stop,
+			CabRequests: [N_FLOORS]orderStatus{},
+		}
+	}
+}
+
+/*
+func addPeer(system *ElevatorSystem, id int) {
+	if _, exists := system.States[id]; !exists {
+		initialize(system, id)
+	}
+}
+*/
 // Spesify IDs as arguments when initializing (legge til et eller annet sted? Peer place??)
 
 // Initialize, json, cost_function
@@ -100,3 +122,4 @@ func initialize(system *ElevatorSystem, id int) {
 
 // Kan hende man burde sende egen ID også under ElevatorState struct, lettere da å legge inn hallrequests riktig i henhold til den store matrisa alle holder på?
 // Endre ider til å være strings i stedet for ints (matcher bedre med det Odin har gjort.
+// Endre slik at man kun kan sette egne floors osv, og ikke andres, for å unngå feil
