@@ -1,7 +1,5 @@
 package main
 
-var ownId int = 1
-
 type OrderTransition int
 
 const (
@@ -13,6 +11,7 @@ const (
 )
 
 func CheckOrderTransitionStatusForHallRequests(
+	system *ElevatorSystem,
 	HallRequestsForAllElevators map[int][N_FLOORS][2]orderStatus,
 	halldir int,
 	floor int,
@@ -27,19 +26,19 @@ func CheckOrderTransitionStatusForHallRequests(
 		if HallRequestsForAllElevators[peerId][floor][halldir] != pending {
 			pendingtoassigned = false
 		}
-		if HallRequestsForAllElevators[peerId][floor][halldir] == completed && peerId != ownId {
+		if HallRequestsForAllElevators[peerId][floor][halldir] == completed && peerId != system.OwnId {
 			pendingtonoorder = true
 		}
-		if HallRequestsForAllElevators[peerId][floor][halldir] != noOrder && peerId != ownId {
+		if HallRequestsForAllElevators[peerId][floor][halldir] != noOrder && peerId != system.OwnId {
 			completetonoorder = false
 		}
 	}
 
-	if HallRequestsForAllElevators[ownId][floor][halldir] != completed && completetonoorder {
+	if HallRequestsForAllElevators[system.OwnId][floor][halldir] != completed && completetonoorder {
 		completetonoorder = false
 	}
 
-	if HallRequestsForAllElevators[ownId][floor][halldir] == assigned && elevator_floorSensor() == floor {
+	if HallRequestsForAllElevators[system.OwnId][floor][halldir] == assigned && elevator_floorSensor() == floor {
 		assignedtocomplete = true
 	}
 
@@ -56,6 +55,7 @@ func CheckOrderTransitionStatusForHallRequests(
 }
 
 func CheckOrderTransitionStatusForCabRequests(
+	system *ElevatorSystem,
 	CabRequestsForAllElevators map[int][N_FLOORS]orderStatus,
 	floor int,
 	alivePeers []int) OrderTransition {
@@ -69,19 +69,19 @@ func CheckOrderTransitionStatusForCabRequests(
 		if CabRequestsForAllElevators[peerId][floor] != pending {
 			pendingtoassigned = false
 		}
-		if CabRequestsForAllElevators[peerId][floor] == completed && peerId != ownId {
+		if CabRequestsForAllElevators[peerId][floor] == completed && peerId != system.OwnId {
 			pendingtonoorder = true
 		}
-		if CabRequestsForAllElevators[peerId][floor] != noOrder && peerId != ownId {
+		if CabRequestsForAllElevators[peerId][floor] != noOrder && peerId != system.OwnId {
 			completetonoorder = false
 		}
 	}
 
-	if CabRequestsForAllElevators[ownId][floor] != completed && completetonoorder {
+	if CabRequestsForAllElevators[system.OwnId][floor] != completed && completetonoorder {
 		completetonoorder = false
 	}
 
-	if CabRequestsForAllElevators[ownId][floor] == assigned && elevator_floorSensor() == floor {
+	if CabRequestsForAllElevators[system.OwnId][floor] == assigned && elevator_floorSensor() == floor {
 		assignedtocomplete = true
 	}
 
@@ -115,7 +115,7 @@ func OrderIsPendingForAllElevators(HallRequestsForAllIds map[int][N_FLOORS][2]or
 
 func OrderIsCompletedForAnotherElevators(HallRequestsForAllIds map[int][N_FLOORS][2]orderStatus, halldir int, floor int, alivePeers []int) bool {
 	for _, peerId := range alivePeers {
-		if peerId != ownId {
+		if peerId != system.OwnId {
 			if HallRequestsForAllIds[peerId][floor][halldir] == completed {
 				return true
 			}
@@ -126,7 +126,7 @@ func OrderIsCompletedForAnotherElevators(HallRequestsForAllIds map[int][N_FLOORS
 
 func OrderIsNoOrderForAllOtherElevators(HallRequestsForAllIds map[int][N_FLOORS][2]orderStatus, halldir int, floor int, alivePeers []int) bool {
 	for _, peerId := range alivePeers {
-		if peerId != ownId {
+		if peerId != system.OwnId {
 			if HallRequestsForAllIds[peerId][floor][halldir] != noOrder {
 				return false
 			}
