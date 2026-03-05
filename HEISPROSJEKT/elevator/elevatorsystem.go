@@ -89,6 +89,8 @@ func initialize(system *ElevatorSystem, id string) {
 	}
 }
 
+// Mulig initialiser med noOrder
+
 func addPeer(system *ElevatorSystem, id string) {
 	if _, exists := system.States[id]; !exists {
 		system.States[id] = &ElevatorState{
@@ -100,6 +102,18 @@ func addPeer(system *ElevatorSystem, id string) {
 	}
 }
 
+func updateElevatorSystemFromPeer(system *ElevatorSystem, peerSystem *ElevatorSystem, HallRequestsForAllElevators map[string][N_FLOORS][2]orderStatus, CabRequestsForAllElevators map[string][N_FLOORS]orderStatus) {
+	if _, exists := system.States[peerSystem.OwnId]; !exists {
+		addPeer(system, peerSystem.OwnId)
+	}
+	system.States[peerSystem.OwnId] = peerSystem.States[peerSystem.OwnId]
+
+	HallRequestsForAllElevators[peerSystem.OwnId] = peerSystem.HallRequests
+	CabRequestsForAllElevators[peerSystem.OwnId] = peerSystem.States[peerSystem.OwnId].CabRequests
+}
+
+// I utgangspunktet har jeg en annen funksjon som fikser andre transisjoner ...., kanskje nok å sette HallRequest listen to the appropriate, og så finne derfifra hva man skal sette
+// Hvor ofte skal man sjekke transisjoner? med en gang etter man har updated
 // Spesify IDs as arguments when initializing (legge til et eller annet sted? Peer place??)
 
 // Initialize, json, cost_function
@@ -117,3 +131,8 @@ func addPeer(system *ElevatorSystem, id string) {
 // Endre ider til å være strings i stedet for ints (matcher bedre med det Odin har gjort.
 // Endre slik at man kun kan sette egne floors osv, og ikke andres, for å unngå feil
 // Should be possible for some sort of unioning, or getting the other elevators states
+
+// Sette noOrder der det ikke er noe enda
+// Må deale med transisjoner, når man skal sette pending? når man skal gå til de andre? Skal man gjøre det når man får inn fra andre (hvertfall pending?)
+// Når transisjon så man kansje gjøre ting også så jeg har jo en pure en
+// Må på et tidspunkt oppdatere HallRequest med egen id sin hallrequests også og cabRequests.
