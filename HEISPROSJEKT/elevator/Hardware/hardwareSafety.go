@@ -32,14 +32,13 @@ func updateMotorDirection(motorDirection chan elevio.MotorDirection) {
 		d := <-motorDirection
 		println("Motordirection:", d)
 
-
 		/*
-		saves the motor direction before it stops.
-		Right now it is used to continue moving in the same direction after stop or obstruction was activated
-		this is most likely just a feature needed for testing the code for now. Should probably find a more logical way to deal with this if nescessary
+			saves the motor direction before it stops.
+			Right now it is used to continue moving in the same direction after stop or obstruction was activated
+			this is most likely just a feature needed for testing the code for now. Should probably find a more logical way to deal with this if nescessary
 		*/
 		if d != elevio.MD_Stop {
-			_lastKnownDirection = d 
+			_lastKnownDirection = d
 		}
 
 		elevio.SetMotorDirection(d)
@@ -97,9 +96,9 @@ func InitElevatorHardware() ElevatorHardwareChannelsStruckt {
 	return hardwareChannels
 }
 
-func OpenDoor(doorTimer *time.Timer, timeOpenSeconds time.Duration){
+func OpenDoor(doorTimer *time.Timer, timeOpenSeconds time.Duration) {
 
-	if(! isBetweenFloors()){
+	if !isBetweenFloors() {
 
 		currentElevatorState = DOOROPEN
 		fmt.Println("Door Open")
@@ -115,26 +114,26 @@ func OpenDoor(doorTimer *time.Timer, timeOpenSeconds time.Duration){
 
 // }
 
-func TriggerStopButtonSideEffects(doorTimer *time.Timer, MotorDirectionChannel chan elevio.MotorDirection){
-
+func TriggerStopButtonSideEffects(doorTimer *time.Timer, MotorDirectionChannel chan elevio.MotorDirection) {
+	fmt.Println("Stop was activated")
 	TurnOffAllOrderLights()
 	elevio.SetStopLamp(true)
 	MotorDirectionChannel <- elevio.MD_Stop
 
 	if !isBetweenFloors() { //If stop is triggerd while at a floor, the door is opend and keep open until stop is reset + 3 seconds more
 		OpenDoor(doorTimer, 3*time.Second)
+		doorTimer.Stop()
 	}
 
 }
 
-func TriggerObstructionSideEffects(doorTimer *time.Timer, MotorDirectionChannel chan elevio.MotorDirection){
+func TriggerObstructionSideEffects(doorTimer *time.Timer, MotorDirectionChannel chan elevio.MotorDirection) {
 
 	fmt.Println("Obstruction was activated")
 	MotorDirectionChannel <- elevio.MD_Stop
 	doorTimer.Stop()
 
 }
-
 
 func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt) {
 
@@ -157,24 +156,29 @@ func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt) {
 			OpenDoor(doorTimer, 3*time.Second)
 		case stopActivated := <-hardwareChannels.PollStopButtonChannel:
 			if stopActivated {
-				
+
 				TriggerStopButtonSideEffects(doorTimer, hardwareChannels.MotorDirectionChannel)
-				// fmt.Println("Stop was activated")
 
-				// TurnOffAllOrderLights()
-				// elevio.SetStopLamp(true)
-				// hardwareChannels.MotorDirectionChannel <- elevio.MD_Stop
+				/*
+					TurnOffAllOrderLights()
+					elevio.SetStopLamp(true)
+					hardwareChannels.MotorDirectionChannel <- elevio.MD_Stop
 
-				// if !isBetweenFloors() {
-				// 	OpenDoor(doorTimer, 3*time.Second)
-				// }
-					
+					if !isBetweenFloors() {
+						OpenDoor(doorTimer, 3*time.Second)
+					}
+
+				*/
+
 			} else {
 				fmt.Println("Stop was Reset")
 
 				elevio.SetStopLamp(false)
-				if (isBetweenFloors()){
+				if isBetweenFloors() {
 					hardwareChannels.MotorDirectionChannel <- _lastKnownDirection
+				} else {
+					OpenDoor(doorTimer, 3*time.Second) //keeps door open for 3 more seconds after obstruction was cleard
+
 				}
 
 			}
