@@ -8,8 +8,8 @@ import (
 )
 
 type messageStrc struct {
-	id      string
-	message string
+	Id      string
+	Message string
 }
 type networkChannels struct {
 	PeerUpdateChl                chan peers.PeerUpdate
@@ -82,10 +82,10 @@ func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan mes
 		state := <-harwdwareInputChannel
 
 		outgoingMessage := messageStrc{
-			id:      id,
-			message: strconv.Itoa(int(state)),
+			Id:      id,
+			Message: strconv.Itoa(int(state)),
 		}
-		fmt.Printf("SenderID: %s tried to send: %s \n", outgoingMessage.id, outgoingMessage.message)
+		fmt.Printf("SenderID: %s tried to send: %s \n", outgoingMessage.Id, outgoingMessage.Message)
 
 		//<- messageTimer.C
 		BcastOutgoingMessagesChannel <- outgoingMessage
@@ -98,8 +98,8 @@ func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan mes
 func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan messageStrc) {
 	for {
 		IncomingMessage := <-BcastIncomingMessagesChannel
-		senderID := IncomingMessage.id
-		message := IncomingMessage.message
+		senderID := IncomingMessage.Id
+		message := IncomingMessage.Message
 		fmt.Printf("SenderID: %s said: %s \n", senderID, message)
 
 	}
