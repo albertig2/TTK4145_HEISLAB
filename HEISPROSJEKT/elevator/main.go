@@ -9,6 +9,8 @@ import (
 	"HEISPROSJEKT/communication"
 
 	"fmt"
+	"HEISPROSJEKT/Hardware"
+
 )
 
 
@@ -22,6 +24,7 @@ func main() {
 
 	elevio.Init("localhost:"+strconv.Itoa(*port), numFloors)
 
+	hardwareChannels := Hardware.InitElevatorHardware()
 
 	channels := communication.InitNetworkChannels()
 
@@ -35,4 +38,20 @@ func main() {
 		fmt.Printf("Peers: %q\n", communication.GetAlivePeersList())
 		fmt.Printf("Dead: %q\n", communication.GetDeadPeersList())
 	}
+	
+
+	go elevio.PollButtons(hardwareChannels.PollOrderButtonsChannel)
+	go elevio.PollFloorSensor(hardwareChannels.FloorSensorChannel)
+	go elevio.PollObstructionSwitch(hardwareChannels.PollObstructionChannel)
+	go elevio.PollStopButton(hardwareChannels.PollStopButtonChannel)
+
+
+	go Hardware.RunElevatorHardware(hardwareChannels)
+
+
+	select {}
 } 
+
+	
+
+
