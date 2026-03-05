@@ -14,20 +14,20 @@ const _doorOpenTime = 3 * time.Second
 
 var _doorIsOpen bool = false
 
-type elevatorState int
+type ElevatorState int
 
 const (
-	IDLE     elevatorState = 0
-	MOVING   elevatorState = 1
-	DOOROPEN elevatorState = 2
+	IDLE     ElevatorState = 0
+	MOVING   ElevatorState = 1
+	DOOROPEN ElevatorState = 2
 )
 
-var currentElevatorState elevatorState = IDLE
+var currentElevatorState ElevatorState = IDLE
 
 var _nextMotorDirection elevio.MotorDirection = elevio.MD_Up
 var _lastKnownDirection elevio.MotorDirection = elevio.MD_Stop
 
-func updateMotorDirection(motorDirection chan elevio.MotorDirection) {
+func updateMotorDirection(motorDirection chan elevio.MotorDirection, direction *int) {
 	for {
 		d := <-motorDirection
 		println("Motordirection:", d)
@@ -40,6 +40,8 @@ func updateMotorDirection(motorDirection chan elevio.MotorDirection) {
 		if d != elevio.MD_Stop {
 			_lastKnownDirection = d
 		}
+
+		*direction = int(d)
 
 		elevio.SetMotorDirection(d)
 	}
@@ -62,7 +64,8 @@ type ElevatorHardwareChannelsStruckt struct {
 	FloorSensorChannel      chan int
 	DoorOpenChannel         chan bool
 	MotorDirectionChannel   chan elevio.MotorDirection
-	ElevatorStateChannel    chan elevatorState
+	ElevatorStateChannel    chan ElevatorState
+	
 }
 
 func InitElevatorHardware() ElevatorHardwareChannelsStruckt {
@@ -74,7 +77,7 @@ func InitElevatorHardware() ElevatorHardwareChannelsStruckt {
 		FloorSensorChannel:      make(chan int),
 		DoorOpenChannel:         make(chan bool),
 		MotorDirectionChannel:   make(chan elevio.MotorDirection),
-		ElevatorStateChannel:    make(chan elevatorState),
+		ElevatorStateChannel:    make(chan ElevatorState),
 	}
 
 	//small initialisation sequence to put the elevator in a known state
@@ -135,12 +138,12 @@ func TriggerObstructionSideEffects(doorTimer *time.Timer, MotorDirectionChannel 
 
 }
 
-func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt) {
+func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt, direction *int) {
 
 	doorTimer := time.NewTimer(_doorOpenTime)
 	doorTimer.Stop()
 
-	go updateMotorDirection(hardwareChannels.MotorDirectionChannel)
+	go updateMotorDirection(hardwareChannels.MotorDirectionChannel, direction)
 
 	for {
 		select {
@@ -204,6 +207,7 @@ func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt) {
 			fmt.Println("Door Closed")
 			hardwareChannels.MotorDirectionChannel <- _nextMotorDirection
 			currentElevatorState = MOVING
+			hardwareChannels.ElevatorStateChannel <- currentElevatorState
 		}
 	}
 }

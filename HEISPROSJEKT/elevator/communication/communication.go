@@ -1,14 +1,21 @@
 package communication
 
 import (
+	"HEISPROSJEKT/Hardware"
 	"Network-go/network/peers"
 	"fmt"
 	"strconv"
 )
 
+type messageStrc struct {
+	id      string
+	message string
+}
 type networkChannels struct {
-	PeerUpdateChl  chan peers.PeerUpdate
-	PeerTxEnableCh chan bool
+	PeerUpdateChl                chan peers.PeerUpdate
+	PeerTxEnableCh               chan bool
+	BcastIncomingMessagesChannel chan messageStrc
+	BcastOutgoingMessagesChannel chan messageStrc
 }
 
 var (
@@ -18,8 +25,10 @@ var (
 
 func InitNetworkChannels() networkChannels {
 	channels := networkChannels{
-		PeerUpdateChl:  make(chan peers.PeerUpdate),
-		PeerTxEnableCh: make(chan bool),
+		PeerUpdateChl:                make(chan peers.PeerUpdate),
+		PeerTxEnableCh:               make(chan bool),
+		BcastIncomingMessagesChannel: make(chan messageStrc),
+		BcastOutgoingMessagesChannel: make(chan messageStrc),
 	}
 
 	return channels
@@ -65,4 +74,34 @@ func GetAlivePeersList() []string {
 
 func GetDeadPeersList() []string {
 	return deadPeersList
+}
+
+func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan messageStrc, harwdwareInputChannel chan Hardware.ElevatorState) {
+	//messageTimer := time.NewTimer(1*time.Second)
+	for {
+		state := <-harwdwareInputChannel
+
+		outgoingMessage := messageStrc{
+			id:      id,
+			message: strconv.Itoa(int(state)),
+		}
+		fmt.Printf("SenderID: %s tried to send: %s \n", outgoingMessage.id, outgoingMessage.message)
+
+		//<- messageTimer.C
+		BcastOutgoingMessagesChannel <- outgoingMessage
+		//messageTimer.Reset(1*time.Second)
+
+	}
+
+}
+
+func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan messageStrc) {
+	for {
+		IncomingMessage := <-BcastIncomingMessagesChannel
+		senderID := IncomingMessage.id
+		message := IncomingMessage.message
+		fmt.Printf("SenderID: %s said: %s \n", senderID, message)
+
+	}
+
 }
