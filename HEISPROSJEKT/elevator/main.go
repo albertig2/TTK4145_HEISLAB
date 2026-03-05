@@ -5,10 +5,10 @@ import (
 	"flag"
 	"strconv"
 
-	//"Network-go/network/peers"
+	"Network-go/network/peers"
 	"HEISPROSJEKT/communication"
 
-	"fmt"
+	//"fmt"
 	"HEISPROSJEKT/Hardware"
 
 )
@@ -20,25 +20,27 @@ func main() {
 	flag.Parse()
 
 	numFloors := 4
-	peerPort := 65004
+	peerPort := 30004
 
 	elevio.Init("localhost:"+strconv.Itoa(*port), numFloors)
 
 	hardwareChannels := Hardware.InitElevatorHardware()
-
 	channels := communication.InitNetworkChannels()
 
-	communication.StartPeerNetworking(peerPort, *id, channels)
+	//communication.StartPeerNetworking(peerPort, *id, channels)
 
 	
-	
+/*
 	for {
 		
 		communication.UpdatePeerList(channels)
 		fmt.Printf("Peers: %q\n", communication.GetAlivePeersList())
 		fmt.Printf("Dead: %q\n", communication.GetDeadPeersList())
 	}
-	
+*/	
+	go peers.Receiver(peerPort, channels.PeerUpdateChl)
+	go peers.Transmitter(peerPort, strconv.Itoa(*id), channels.PeerTxEnableCh)
+	go communication.UpdatePeerList(channels)
 
 	go elevio.PollButtons(hardwareChannels.PollOrderButtonsChannel)
 	go elevio.PollFloorSensor(hardwareChannels.FloorSensorChannel)
