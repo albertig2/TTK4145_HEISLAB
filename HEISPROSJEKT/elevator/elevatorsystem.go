@@ -44,9 +44,9 @@ type ElevatorState struct {
 }
 
 type ElevatorSystem struct {
-	OwnId        int                      `json:"ownId"`
-	HallRequests [N_FLOORS][2]orderStatus `json:"hallRequests"`
-	States       map[int]*ElevatorState   `json:"states"`
+	OwnId        string                    `json:"ownId"`
+	HallRequests [N_FLOORS][2]orderStatus  `json:"hallRequests"`
+	States       map[string]*ElevatorState `json:"states"`
 }
 
 func setBehavior(system *ElevatorSystem, b Behavior) {
@@ -75,11 +75,11 @@ func setHallRequests(system *ElevatorSystem, f int, halldir int, orderstatus ord
 	system.HallRequests[f][halldir] = orderstatus
 }
 
-func initialize(system *ElevatorSystem, id int) {
+func initialize(system *ElevatorSystem, id string) {
 	// To decide floor can just do the get_floor_sensor_signal() and initialize to that floor, but for now hardcoded
 	system.OwnId = id
 	system.HallRequests = [N_FLOORS][2]orderStatus{}
-	system.States = make(map[int]*ElevatorState)
+	system.States = make(map[string]*ElevatorState)
 	currentFloor := 1 // Get floor sensor. (men helst ikke -1? så siste faktisk floor)
 	system.States[id] = &ElevatorState{
 		Behavior:    idle,
@@ -89,7 +89,7 @@ func initialize(system *ElevatorSystem, id int) {
 	}
 }
 
-func addPeer(system *ElevatorSystem, id int) {
+func addPeer(system *ElevatorSystem, id string) {
 	if _, exists := system.States[id]; !exists {
 		system.States[id] = &ElevatorState{
 			Behavior:    idle,

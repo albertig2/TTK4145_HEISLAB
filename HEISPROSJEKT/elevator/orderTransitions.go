@@ -12,10 +12,10 @@ const (
 
 func CheckOrderTransitionStatusForHallRequests(
 	system *ElevatorSystem,
-	HallRequestsForAllElevators map[int][N_FLOORS][2]orderStatus,
+	HallRequestsForAllElevators map[string][N_FLOORS][2]orderStatus,
 	halldir int,
 	floor int,
-	alivePeers []int) OrderTransition {
+	alivePeers []string) OrderTransition {
 
 	pendingtoassigned := true
 	pendingtonoorder := false
@@ -56,9 +56,9 @@ func CheckOrderTransitionStatusForHallRequests(
 
 func CheckOrderTransitionStatusForCabRequests(
 	system *ElevatorSystem,
-	CabRequestsForAllElevators map[int][N_FLOORS]orderStatus,
+	CabRequestsForAllElevators map[string][N_FLOORS]orderStatus,
 	floor int,
-	alivePeers []int) OrderTransition {
+	alivePeers []string) OrderTransition {
 
 	pendingtoassigned := true
 	pendingtonoorder := false
@@ -104,7 +104,7 @@ func set_OrderStatus(system *ElevatorSystem, floor int, halldir int, status orde
 }
 
 /*
-func OrderIsPendingForAllElevators(HallRequestsForAllIds map[int][N_FLOORS][2]orderStatus, halldir int, floor int, alivePeers []int) bool {
+func OrderIsPendingForAllElevators(HallRequestsForAllIds map[string][N_FLOORS][2]orderStatus, halldir int, floor int, alivePeers []string) bool {
 	for _, peerId := range alivePeers {
 		if HallRequestsForAllIds[peerId][floor][halldir] != pending {
 			return false
@@ -113,7 +113,7 @@ func OrderIsPendingForAllElevators(HallRequestsForAllIds map[int][N_FLOORS][2]or
 	return true
 }
 
-func OrderIsCompletedForAnotherElevators(HallRequestsForAllIds map[int][N_FLOORS][2]orderStatus, halldir int, floor int, alivePeers []int) bool {
+func OrderIsCompletedForAnotherElevators(HallRequestsForAllIds map[string][N_FLOORS][2]orderStatus, halldir int, floor int, alivePeers []string) bool {
 	for _, peerId := range alivePeers {
 		if peerId != system.OwnId {
 			if HallRequestsForAllIds[peerId][floor][halldir] == completed {
@@ -124,7 +124,7 @@ func OrderIsCompletedForAnotherElevators(HallRequestsForAllIds map[int][N_FLOORS
 	return false
 }
 
-func OrderIsNoOrderForAllOtherElevators(HallRequestsForAllIds map[int][N_FLOORS][2]orderStatus, halldir int, floor int, alivePeers []int) bool {
+func OrderIsNoOrderForAllOtherElevators(HallRequestsForAllIds map[string][N_FLOORS][2]orderStatus, halldir int, floor int, alivePeers []string) bool {
 	for _, peerId := range alivePeers {
 		if peerId != system.OwnId {
 			if HallRequestsForAllIds[peerId][floor][halldir] != noOrder {

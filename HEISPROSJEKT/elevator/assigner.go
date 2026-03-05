@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os/exec"
 	"runtime"
-	"strconv"
 )
 
 type BoolElevatorState struct {
@@ -16,15 +15,15 @@ type BoolElevatorState struct {
 }
 
 type BoolElevatorSystem struct {
-	HallRequests [N_FLOORS][2]bool          `json:"hallRequests"`
-	States       map[int]*BoolElevatorState `json:"states"`
+	HallRequests [N_FLOORS][2]bool             `json:"hallRequests"`
+	States       map[string]*BoolElevatorState `json:"states"`
 }
 
 // Converts ElevatorSystem and order status to a boolean-based system for assignment logic
-func buildBoolElevatorSystem(system ElevatorSystem, HallRequestsForAllElevators map[int][N_FLOORS][2]orderStatus, alivePeers []int) BoolElevatorSystem {
+func buildBoolElevatorSystem(system ElevatorSystem, HallRequestsForAllElevators map[string][N_FLOORS][2]orderStatus, alivePeers []string) BoolElevatorSystem {
 	boolSystem := BoolElevatorSystem{
 		HallRequests: [N_FLOORS][2]bool{},
-		States:       make(map[int]*BoolElevatorState),
+		States:       make(map[string]*BoolElevatorState),
 	}
 
 	for _, peerId := range alivePeers {
@@ -47,7 +46,7 @@ func buildBoolElevatorSystem(system ElevatorSystem, HallRequestsForAllElevators 
 	return boolSystem
 }
 
-func hallRequestAssigner(system *ElevatorSystem, HallRequestsForAllElevators map[int][N_FLOORS][2]orderStatus, alivePeers []int) {
+func hallRequestAssigner(system *ElevatorSystem, HallRequestsForAllElevators map[string][N_FLOORS][2]orderStatus, alivePeers []string) {
 	Executable := ""
 	switch runtime.GOOS {
 	case "linux":
@@ -86,12 +85,9 @@ func hallRequestAssigner(system *ElevatorSystem, HallRequestsForAllElevators map
 
 	for floor := range N_FLOORS {
 		for _, hallDir := range HallDirs {
-			stringOwnId := strconv.Itoa(system.OwnId)
-			if (*output)[stringOwnId][floor][hallDir] {
+			if (*output)[system.OwnId][floor][hallDir] {
 				setHallRequests(system, floor, hallDir, assigned)
 			}
 		}
 	}
 }
-
-// Fix here when I change id to be of type string instead of int.
