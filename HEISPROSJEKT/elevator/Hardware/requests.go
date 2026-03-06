@@ -1,4 +1,4 @@
-package main
+package Hardware
 
 type DirnBehaviourPair struct {
 	dirn      Dirn
