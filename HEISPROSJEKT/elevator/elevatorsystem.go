@@ -87,24 +87,38 @@ func initialize(system *ElevatorSystem, id string) {
 		Direction:   stop,
 		CabRequests: [N_FLOORS]orderStatus{},
 	}
+
+	//Setting orders to be noOrder:
+	for floor := 0; floor < N_FLOORS; floor++ {
+		for _, halldir := range HallDirs {
+			system.HallRequests[floor][halldir] = noOrder
+		}
+	}
+	// Wait a bit for other elevators to broadcast their states
+	// Må håndtere det med at man ønsker å få inn andre sine views av egne cab orders
+	// If hearing anything, set own orders to be what you heard from the other elavators (preferably the combination of all of them)
+	// If not hearing anything set own cab orders to noOrder
+	for floor := 0; floor < N_FLOORS; floor++ {
+		system.States[id].CabRequests[floor] = noOrder
+	}
 }
 
-// Mulig initialiser med noOrder
-
-func addPeer(system *ElevatorSystem, id string) {
-	if _, exists := system.States[id]; !exists {
-		system.States[id] = &ElevatorState{
-			Behavior:    idle,
-			Floor:       1, // Usikker på hva dette skal være (-1? for undefined until man får høre det fra heisen selv?)
-			Direction:   stop,
-			CabRequests: [N_FLOORS]orderStatus{},
+// If only called from updatedElavatorSystemFromPeer, then I dont need the check for existence
+func addPeer(system *ElevatorSystem, peerSystem *ElevatorSystem) {
+	peerState := peerSystem.States[peerSystem.OwnId]
+	if _, exists := system.States[peerSystem.OwnId]; !exists {
+		system.States[peerSystem.OwnId] = &ElevatorState{
+			Behavior:    peerState.Behavior,
+			Floor:       peerState.Floor,
+			Direction:   peerState.Direction,
+			CabRequests: peerState.CabRequests,
 		}
 	}
 }
 
 func updateElevatorSystemFromPeer(system *ElevatorSystem, peerSystem *ElevatorSystem, HallRequestsForAllElevators map[string][N_FLOORS][2]orderStatus, CabRequestsForAllElevators map[string][N_FLOORS]orderStatus) {
 	if _, exists := system.States[peerSystem.OwnId]; !exists {
-		addPeer(system, peerSystem.OwnId)
+		addPeer(system, peerSystem)
 	}
 	system.States[peerSystem.OwnId] = peerSystem.States[peerSystem.OwnId]
 

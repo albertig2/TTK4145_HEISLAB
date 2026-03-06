@@ -6,6 +6,7 @@ import (
 
 // go test -v -run TestInitialize
 func TestInitialize(t *testing.T) {
+	// Sholuld always update these maps with own state before checking for transitions or doing anything based on the status of the floors
 	HallRequestsForAllElevators := make(map[string][N_FLOORS][2]orderStatus)
 	CabRequestsForAllElevators := make(map[string][N_FLOORS]orderStatus)
 
@@ -37,8 +38,10 @@ func TestInitialize(t *testing.T) {
 
 	HallRequestsForAllElevators["1"] = system1.HallRequests
 	CabRequestsForAllElevators["1"] = system1.States["1"].CabRequests
-	//HallRequestsForAllElevators["2"] = [N_FLOORS][2]orderStatus{{noOrder, noOrder}, {noOrder, noOrder}, {pending, noOrder}, {noOrder, noOrder}}
-	//HallRequestsForAllElevators["3"] = [N_FLOORS][2]orderStatus{{noOrder, noOrder}, {noOrder, noOrder}, {pending, noOrder}, {noOrder, noOrder}}
+
+	t.Logf("HallRequest for elevator 1: %v", HallRequestsForAllElevators["1"])
+	orderTransition := CheckOrderTransitionStatusForHallRequests(&system1, HallRequestsForAllElevators, hallUp, 3, []string{"1", "2", "3"})
+	t.Logf("orderTransition: %v", orderTransition)
 
 	hallRequestAssigner(&system1, HallRequestsForAllElevators, []string{"1", "2", "3"})
 	t.Logf("system json: %s", encodeElevatorSystem(&system1))
