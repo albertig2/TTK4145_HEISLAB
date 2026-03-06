@@ -88,18 +88,25 @@ func initialize(system *ElevatorSystem, id string) {
 		CabRequests: [N_FLOORS]orderStatus{},
 	}
 
-	//Setting orders to be noOrder:
+	initializeHallRequests(system)
+	initializeCabRequests(system)
+}
+
+func initializeHallRequests(system *ElevatorSystem) {
 	for floor := 0; floor < N_FLOORS; floor++ {
 		for _, halldir := range HallDirs {
 			system.HallRequests[floor][halldir] = noOrder
 		}
 	}
-	// Wait a bit for other elevators to broadcast their states
-	// Må håndtere det med at man ønsker å få inn andre sine views av egne cab orders
-	// If hearing anything, set own orders to be what you heard from the other elavators (preferably the combination of all of them)
-	// If not hearing anything set own cab orders to noOrder
+}
+
+func initializeCabRequests(system *ElevatorSystem) {
+	// Listen for other elevators to broadcast their view of your cab orders, and if you hear any, set your cab orders to be the combination of all of them (pending if any of them is pending or no order)
+	// For each elevator you hear from, check all floors, if any of the floors have pending, set that floor to pending.
 	for floor := 0; floor < N_FLOORS; floor++ {
-		system.States[id].CabRequests[floor] = noOrder
+		if system.States[system.OwnId].CabRequests[floor] != pending {
+			system.States[system.OwnId].CabRequests[floor] = noOrder
+		}
 	}
 }
 
@@ -130,25 +137,11 @@ func updateElevatorSystemFromPeer(system *ElevatorSystem, peerSystem *ElevatorSy
 
 // I utgangspunktet har jeg en annen funksjon som fikser andre transisjoner ...., kanskje nok å sette HallRequest listen to the appropriate, og så finne derfifra hva man skal sette
 // Hvor ofte skal man sjekke transisjoner? med en gang etter man har updated
-// Spesify IDs as arguments when initializing (legge til et eller annet sted? Peer place??)
-
-// Initialize, json, cost_function
 
 // Funksjon for transisjoner mellom states (når man skal gå fra en state til en annen)
 // Denne burde si hvilke transisjoner som skal gjøres (en pure function)
 // Og så burde man ha en funskjon som utfører transjosjonen med påfølgende handlinger
-// Union funksjon for å sette alle states til det andre sender som states
 
-// Lage et map over alle ideene sine hallrequests, som brukes til å avgjøre state overganger.
-// burde endre assigner til å bare endre sin egen hall request, men da med korrekt statet
-// Man burde sikkert bare kunne sette floor osv på egen id og ikke på andres
-
-// Kan hende man burde sende egen ID også under ElevatorState struct, lettere da å legge inn hallrequests riktig i henhold til den store matrisa alle holder på?
-// Endre ider til å være strings i stedet for ints (matcher bedre med det Odin har gjort.
-// Endre slik at man kun kan sette egne floors osv, og ikke andres, for å unngå feil
-// Should be possible for some sort of unioning, or getting the other elevators states
-
-// Sette noOrder der det ikke er noe enda
 // Må deale med transisjoner, når man skal sette pending? når man skal gå til de andre? Skal man gjøre det når man får inn fra andre (hvertfall pending?)
 // Når transisjon så man kansje gjøre ting også så jeg har jo en pure en
 // Må på et tidspunkt oppdatere HallRequest med egen id sin hallrequests også og cabRequests.
