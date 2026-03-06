@@ -35,7 +35,8 @@ func TestInitialize(t *testing.T) {
 	updateElevatorSystemFromPeer(&system1, &system2, HallRequestsForAllElevators, CabRequestsForAllElevators)
 	updateElevatorSystemFromPeer(&system1, &system3, HallRequestsForAllElevators, CabRequestsForAllElevators)
 
-	//HallRequestsForAllElevators["1"] = system1.HallRequests
+	HallRequestsForAllElevators["1"] = system1.HallRequests
+	CabRequestsForAllElevators["1"] = system1.States["1"].CabRequests
 	//HallRequestsForAllElevators["2"] = [N_FLOORS][2]orderStatus{{noOrder, noOrder}, {noOrder, noOrder}, {pending, noOrder}, {noOrder, noOrder}}
 	//HallRequestsForAllElevators["3"] = [N_FLOORS][2]orderStatus{{noOrder, noOrder}, {noOrder, noOrder}, {pending, noOrder}, {noOrder, noOrder}}
 
