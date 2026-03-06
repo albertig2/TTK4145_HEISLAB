@@ -27,7 +27,7 @@ var currentElevatorState ElevatorState = IDLE
 var _nextMotorDirection elevio.MotorDirection = elevio.MD_Up
 var _lastKnownDirection elevio.MotorDirection = elevio.MD_Stop
 
-func updateMotorDirection(motorDirection chan elevio.MotorDirection, direction *int) {
+func updateMotorDirection(motorDirection chan elevio.MotorDirection) {
 	for {
 		d := <-motorDirection
 		println("Motordirection:", d)
@@ -40,8 +40,6 @@ func updateMotorDirection(motorDirection chan elevio.MotorDirection, direction *
 		if d != elevio.MD_Stop {
 			_lastKnownDirection = d
 		}
-
-		*direction = int(d)
 
 		elevio.SetMotorDirection(d)
 	}
@@ -138,12 +136,12 @@ func TriggerObstructionSideEffects(doorTimer *time.Timer, MotorDirectionChannel 
 
 }
 
-func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt, direction *int) {
+func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt, ) {
 
 	doorTimer := time.NewTimer(_doorOpenTime)
 	doorTimer.Stop()
 
-	go updateMotorDirection(hardwareChannels.MotorDirectionChannel, direction)
+	go updateMotorDirection(hardwareChannels.MotorDirectionChannel)
 
 	for {
 		select {

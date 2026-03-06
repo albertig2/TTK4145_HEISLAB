@@ -22,7 +22,6 @@ func main() {
 	peerPort := 30004
 	bcastPort := 30400
 
-	dir := 0
 
 	//init functions
 	elevio.Init("localhost:"+strconv.Itoa(*port), numFloors)
@@ -45,7 +44,7 @@ func main() {
 	go elevio.PollObstructionSwitch(hardwareChannels.PollObstructionChannel)
 	go elevio.PollStopButton(hardwareChannels.PollStopButtonChannel)
 
-	go Hardware.RunElevatorHardware(hardwareChannels, &dir)
+	go Hardware.RunElevatorHardware(hardwareChannels)
 
 
 	select {}
