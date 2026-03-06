@@ -20,7 +20,7 @@ type BoolElevatorSystem struct {
 }
 
 // Converts ElevatorSystem and order status to a boolean-based system for assignment logic
-func buildBoolElevatorSystem(system ElevatorSystem, HallRequestsForAllElevators map[string][N_FLOORS][2]orderStatus, alivePeers []string) BoolElevatorSystem {
+func buildBoolElevatorSystem(system ElevatorSystem, hallRequestTransitions [N_FLOORS][2]OrderTransition, alivePeers []string) BoolElevatorSystem {
 	boolSystem := BoolElevatorSystem{
 		HallRequests: [N_FLOORS][2]bool{},
 		States:       make(map[string]*BoolElevatorState),
@@ -38,7 +38,7 @@ func buildBoolElevatorSystem(system ElevatorSystem, HallRequestsForAllElevators 
 
 	for floor := range N_FLOORS {
 		for _, hallDir := range HallDirs {
-			if CheckOrderTransitionStatusForHallRequests(&system, HallRequestsForAllElevators, hallDir, floor, alivePeers) == pendingToAssigned {
+			if hallRequestTransitions[floor][hallDir] == pendingToAssigned {
 				boolSystem.HallRequests[floor][hallDir] = true
 			}
 		}
@@ -46,7 +46,7 @@ func buildBoolElevatorSystem(system ElevatorSystem, HallRequestsForAllElevators 
 	return boolSystem
 }
 
-func hallRequestAssigner(system *ElevatorSystem, HallRequestsForAllElevators map[string][N_FLOORS][2]orderStatus, alivePeers []string) {
+func hallRequestAssigner(system *ElevatorSystem, hallRequestTransitions [N_FLOORS][2]OrderTransition, alivePeers []string) map[string][][2]bool {
 	Executable := ""
 	switch runtime.GOOS {
 	case "linux":
@@ -57,25 +57,25 @@ func hallRequestAssigner(system *ElevatorSystem, HallRequestsForAllElevators map
 		panic("OS not supported")
 	}
 
-	input := buildBoolElevatorSystem(*system, HallRequestsForAllElevators, alivePeers)
+	input := buildBoolElevatorSystem(*system, hallRequestTransitions, alivePeers)
 
 	jsonBytes, err := json.Marshal(input)
 	if err != nil {
 		fmt.Println("json.Marshal error: ", err)
-		return
+		return nil
 	}
 	ret, err := exec.Command("../cost_fns/hall_request_assigner/"+Executable, "-i", string(jsonBytes)).CombinedOutput()
 	if err != nil {
 		fmt.Println("exec.Command error: ", err)
 		fmt.Println(string(ret))
-		return
+		return nil
 	}
 
 	output := new(map[string][][2]bool)
 	err = json.Unmarshal(ret, &output)
 	if err != nil {
 		fmt.Println("json.Unmarshal error: ", err)
-		return
+		return nil
 	}
 
 	fmt.Printf("output: \n")
@@ -83,11 +83,5 @@ func hallRequestAssigner(system *ElevatorSystem, HallRequestsForAllElevators map
 		fmt.Printf("%6v :  %+v\n", id, hallRequests)
 	}
 
-	for floor := range N_FLOORS {
-		for _, hallDir := range HallDirs {
-			if (*output)[system.OwnId][floor][hallDir] {
-				setHallRequests(system, floor, hallDir, assigned)
-			}
-		}
-	}
+	return *output
 }

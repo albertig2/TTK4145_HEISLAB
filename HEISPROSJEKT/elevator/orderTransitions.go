@@ -74,6 +74,17 @@ func CheckOrderTransitionStatusForHallRequests(
 	return noTransition
 }
 
+func GetAllHallRequestTransitions(system *ElevatorSystem, HallRequestsForAllElevators map[string][N_FLOORS][2]orderStatus, alivePeers []string) [N_FLOORS][2]OrderTransition {
+	var transitions [N_FLOORS][2]OrderTransition
+	for floor := range N_FLOORS {
+		for _, halldir := range HallDirs {
+			transition := CheckOrderTransitionStatusForHallRequests(system, HallRequestsForAllElevators, halldir, floor, alivePeers)
+			transitions[floor][halldir] = transition
+		}
+	}
+	return transitions
+}
+
 // Dont know if this should be different or what
 // Cab order goes from no order to pending when you press the button
 // Cab order goes from pending to assigned when all elevators have pending
@@ -117,9 +128,80 @@ func CheckOrderTransitionStatusForCabRequests(
 	return noTransition
 }
 
-func transitionHallRequests(system *ElevatorSystem, HallRequestForAllElevators *map[string][N_FLOORS][2]orderStatus, floor int, halldir int, transition OrderTransition) {
+func GetAllCabRequestTransitions(system *ElevatorSystem, CabRequestsForAllElevators map[string][N_FLOORS]orderStatus, alivePeers []string) [N_FLOORS]OrderTransition {
+	var transitions [N_FLOORS]OrderTransition
+	for floor := range N_FLOORS {
+		transition := CheckOrderTransitionStatusForCabRequests(system, CabRequestsForAllElevators, floor, alivePeers)
+		transitions[floor] = transition
+	}
+	return transitions
+}
+
+// Should update HallRequestsForAllElevators after this
+func TransitionForHallRequestsByType(system *ElevatorSystem, hallRequestTransitions [N_FLOORS][2]OrderTransition, transitionType OrderTransition, alivePeers []string) {
+	if transitionType == pendingToAssigned {
+		transitionFromPendingToAssignedForHallRequests(system, hallRequestTransitions, alivePeers)
+	} else {
+		for floor := range N_FLOORS {
+			for _, hallDir := range HallDirs {
+				if hallRequestTransitions[floor][hallDir] == transitionType {
+					var status orderStatus
+					switch transitionType {
+					case noOrderToPending:
+						status = pending
+					case pendingToNoOrder:
+						status = noOrder
+					case assignedToComplete:
+						status = completed
+						// Turn off lights and stuff here
+					case completeToNoOrder:
+						status = noOrder
+					}
+					setHallRequests(system, floor, hallDir, status)
+				}
+			}
+		}
+	}
+}
+
+// Called from within the TransitionForHallRequestsByType. Setting to private to avoid it being called directly
+func transitionFromPendingToAssignedForHallRequests(system *ElevatorSystem, hallRequestTransitions [N_FLOORS][2]OrderTransition, alivePeers []string) {
+	output := hallRequestAssigner(system, hallRequestTransitions, alivePeers)
+	for floor := range N_FLOORS {
+		for _, hallDir := range HallDirs {
+			if (output)[system.OwnId][floor][hallDir] {
+				setHallRequests(system, floor, hallDir, assigned)
+				// Set lights and stuff here
+			}
+		}
+	}
+}
+
+func TransitionForCabRequestsByType(system *ElevatorSystem, cabRequestTransitions [N_FLOORS]OrderTransition, transitionType OrderTransition, alivePeers []string) {
+	for floor := range N_FLOORS {
+		if cabRequestTransitions[floor] == transitionType {
+			var status orderStatus
+			switch transitionType {
+			case noOrderToPending:
+				status = pending
+			case pendingToAssigned:
+				status = assigned
+				// Turn on lights and stuff here
+			case assignedToNoOrder:
+				status = noOrder
+				// Turn off lights and stuff here
+			}
+			setCabRequests(system, floor, status)
+		}
+	}
+}
+
+/*
+func transitionHallRequests(system ElevatorSystem, HallRequestForAllElevators *map[string][N_FLOORS][2]orderStatus, floor int, halldir int, transition OrderTransition) {
 	var status orderStatus
 	switch transition {
+	case noTransition:
+		status = system.HallRequests[floor][halldir]
 	case noOrderToPending:
 		status = pending
 		//Do work
@@ -141,9 +223,9 @@ func transitionHallRequests(system *ElevatorSystem, HallRequestForAllElevators *
 	arr := (*HallRequestForAllElevators)[system.OwnId]
 	arr[floor][halldir] = status
 	(*HallRequestForAllElevators)[system.OwnId] = arr
-	setHallRequests(system, floor, halldir, pending)
+	setHallRequests(&system, floor, halldir, status)
 }
-
+*/
 //Need to make one for cab also....
 
 // has to be made ... similar to the one above just checking cab requests instead of hall requests, and only for own elevator, since cab requests are not shared between elevators.
