@@ -2,20 +2,13 @@ package elevatorHardware
 
 import (
 	"Driver-go/elevio"
+	"HEISPROSJEKT/elevatorConfig"
 	"fmt"
 	"time"
 )
 
 const N_FLOORS int = 4
 const N_BUTTONS int = 3
-
-type Dirn int
-
-const (
-	D_Down Dirn = -1
-	D_Stop Dirn = 0
-	D_Up   Dirn = 1
-)
 
 type Button int
 
@@ -39,7 +32,7 @@ type Config struct {
 
 type Elevator struct {
 	floor     int
-	dirn      Dirn
+	direction elevatorConfig.Direction
 	requests  [N_FLOORS][N_BUTTONS]bool
 	behaviour ElevatorBehaviour
 	config    Config
@@ -55,19 +48,6 @@ func Elevator_behaviorToString(eb ElevatorBehaviour) string {
 		return "EB_Moving"
 	default:
 		return "EB_UNDEFINED"
-	}
-}
-
-func Elevator_dirnToString(d Dirn) string {
-	switch d {
-	case D_Up:
-		return "D_Up"
-	case D_Down:
-		return "D_Down"
-	case D_Stop:
-		return "D_Stop"
-	default:
-		return "D_UNDEFINED"
 	}
 }
 
@@ -87,7 +67,7 @@ func Elevator_buttonToString(b Button) string {
 func Elevator_print(es Elevator) {
 	fmt.Println("  +--------------------+")
 	fmt.Printf("  |%-6s = %-2d          |\n", "floor", es.floor)
-	fmt.Printf("  |%-6s = %-12.12s|\n", "dirn", Elevator_dirnToString(es.dirn))
+	fmt.Printf("  |%-6s = %-12.12s|\n", "direction", ElevatorDirectionToString(es.direction))
 	fmt.Printf("  |%-6s = %-12.12s|\n", "behav", Elevator_behaviorToString(es.behaviour))
 	fmt.Println("  +--------------------+")
 	fmt.Println("  |  | up  | dn  | cab |")
@@ -111,7 +91,7 @@ func Elevator_print(es Elevator) {
 
 func Elevator_uninitialized() Elevator {
 	elevio.Init("localhost:15657", N_FLOORS)
-	es := Elevator{floor: -1, dirn: D_Stop, behaviour: EB_Idle, config: Config{doorOpenDuration_s: 3.0}}
+	es := Elevator{floor: -1, direction: elevatorConfig.Stop, behaviour: EB_Idle, config: Config{doorOpenDuration_s: 3.0}}
 	return es
 }
 
@@ -149,7 +129,7 @@ func Elevator_stopButtonLight(v bool) {
 
 }
 
-func Elevator_motorDirection(d Dirn) {
+func Elevator_motorDirection(d elevatorConfig.Direction) {
 	elevio.SetMotorDirection(elevio.MotorDirection(d))
 
 }

@@ -1,6 +1,7 @@
 package orderProtocol
 
 import (
+	"HEISPROSJEKT/elevatorConfig"
 	"HEISPROSJEKT/elevatorHardware"
 	"encoding/json"
 	"fmt"
@@ -29,20 +30,11 @@ func BuildBoolElevatorSystem(system elevatorHardware.ElevatorSystem, hallRequest
 
 	for _, peerId := range alivePeers {
 		idState := system.States[peerId]
-		var direction string
-		switch idState.Direction {
-		case elevatorHardware.Up:
-			direction = "up"
-		case elevatorHardware.Down:
-			direction = "down"
-		case elevatorHardware.Stop:
-			direction = "stop"
-		}
 
 		boolSystem.States[peerId] = &BoolElevatorState{
 			Behavior:    idState.Behavior,
 			Floor:       idState.Floor,
-			Direction:   direction,
+			Direction:   elevatorConfig.DirectionToString(idState.Direction),
 			CabRequests: [elevatorHardware.N_FLOORS]bool{},
 		}
 	}

@@ -2,6 +2,7 @@ package elevatorHardware_test
 
 import (
 	"HEISPROSJEKT/communication"
+	"HEISPROSJEKT/elevatorConfig"
 	"HEISPROSJEKT/elevatorHardware"
 	"HEISPROSJEKT/orderProtocol"
 	"testing"
@@ -19,21 +20,21 @@ func TestInitialize(t *testing.T) {
 	system1 := elevatorHardware.ElevatorSystem{}
 	elevatorHardware.Initialize(&system1, "1")
 	elevatorHardware.SetFloor(&system1, 3)
-	elevatorHardware.SetDirection(&system1, elevatorHardware.Stop)
+	elevatorHardware.SetDirection(&system1, elevatorConfig.Stop)
 	elevatorHardware.SetBehavior(&system1, elevatorHardware.DoorOpen)
 	elevatorHardware.SetHallRequests(&system1, 2, elevatorHardware.HallDown, elevatorHardware.Pending)
 
 	system2 := elevatorHardware.ElevatorSystem{}
 	elevatorHardware.Initialize(&system2, "2")
 	elevatorHardware.SetFloor(&system2, 0)
-	elevatorHardware.SetDirection(&system2, elevatorHardware.Stop)
+	elevatorHardware.SetDirection(&system2, elevatorConfig.Stop)
 	elevatorHardware.SetBehavior(&system2, elevatorHardware.Idle)
 	elevatorHardware.SetHallRequests(&system2, 3, elevatorHardware.HallUp, elevatorHardware.Pending)
 
 	system3 := elevatorHardware.ElevatorSystem{}
 	elevatorHardware.Initialize(&system3, "3")
 	elevatorHardware.SetFloor(&system3, 1)
-	elevatorHardware.SetDirection(&system3, elevatorHardware.Up)
+	elevatorHardware.SetDirection(&system3, elevatorConfig.Up)
 	elevatorHardware.SetBehavior(&system3, elevatorHardware.Moving)
 	elevatorHardware.SetCabRequests(&system3, 1, elevatorHardware.Pending)
 	elevatorHardware.SetHallRequests(&system3, 3, elevatorHardware.HallUp, elevatorHardware.Pending)

@@ -1,8 +1,12 @@
 package elevatorHardware
 
+import (
+	"HEISPROSJEKT/elevatorConfig"
+)
+
 //"flag"
 
-//flag.Int("id", 1, "Input id")
+// flag.Int("id", 1, "Input id")
 type OrderStatus string
 
 // Cab order only needs to go from no order to Pending to Completed, while hall orders also need Assigned, since they are Assigned to an elevator by the assigner
@@ -21,14 +25,6 @@ const (
 	DoorOpen Behavior = "doorOpen"
 )
 
-type Direction int
-
-const (
-	Down Direction = -1
-	Stop Direction = 0
-	Up   Direction = 1
-)
-
 const (
 	HallUp   = 0
 	HallDown = 1
@@ -37,10 +33,10 @@ const (
 var HallDirs = [2]int{HallUp, HallDown}
 
 type ElevatorState struct {
-	Behavior    Behavior              `json:"behaviour"`
-	Floor       int                   `json:"floor"`
-	Direction   Direction             `json:"direction"`
-	CabRequests [N_FLOORS]OrderStatus `json:"cabRequests"`
+	Behavior    Behavior                 `json:"behaviour"`
+	Floor       int                      `json:"floor"`
+	Direction   elevatorConfig.Direction `json:"direction"`
+	CabRequests [N_FLOORS]OrderStatus    `json:"cabRequests"`
 }
 
 type ElevatorSystem struct {
@@ -59,7 +55,7 @@ func SetFloor(system *ElevatorSystem, f int) {
 	state.Floor = f
 }
 
-func SetDirection(system *ElevatorSystem, dir Direction) {
+func SetDirection(system *ElevatorSystem, dir elevatorConfig.Direction) {
 	state := system.States[system.OwnId]
 	state.Direction = dir
 }
@@ -84,7 +80,7 @@ func Initialize(system *ElevatorSystem, id string) {
 	system.States[id] = &ElevatorState{
 		Behavior:    Idle,
 		Floor:       currentFloor,
-		Direction:   Stop,
+		Direction:   elevatorConfig.Stop,
 		CabRequests: [N_FLOORS]OrderStatus{},
 	}
 

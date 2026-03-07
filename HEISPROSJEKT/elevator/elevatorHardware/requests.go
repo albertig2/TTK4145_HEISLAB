@@ -1,7 +1,11 @@
 package elevatorHardware
 
-type DirnBehaviourPair struct {
-	dirn      Dirn
+import (
+	"HEISPROSJEKT/elevatorConfig"
+)
+
+type DirectionBehaviourPair struct {
+	direction elevatorConfig.Direction
 	behaviour ElevatorBehaviour
 }
 
@@ -38,62 +42,62 @@ func Requests_here(e Elevator) bool {
 }
 
 // “API” lik headeren: behold navnet
-func requests_chooseDirection(e Elevator) DirnBehaviourPair {
-	switch e.dirn {
-	case D_Up:
+func requests_chooseDirection(e Elevator) DirectionBehaviourPair {
+	switch e.direction {
+	case elevatorConfig.Up:
 		if Requests_above(e) {
-			return DirnBehaviourPair{D_Up, EB_Moving}
+			return DirectionBehaviourPair{elevatorConfig.Up, EB_Moving}
 		}
 		if Requests_here(e) {
-			return DirnBehaviourPair{D_Down, EB_DoorOpen}
+			return DirectionBehaviourPair{elevatorConfig.Down, EB_DoorOpen}
 		}
 		if Requests_below(e) {
-			return DirnBehaviourPair{D_Down, EB_Moving}
+			return DirectionBehaviourPair{elevatorConfig.Down, EB_Moving}
 		}
-		return DirnBehaviourPair{D_Stop, EB_Idle}
+		return DirectionBehaviourPair{elevatorConfig.Stop, EB_Idle}
 
-	case D_Down:
+	case elevatorConfig.Down:
 		if Requests_below(e) {
-			return DirnBehaviourPair{D_Down, EB_Moving}
+			return DirectionBehaviourPair{elevatorConfig.Down, EB_Moving}
 		}
 		if Requests_here(e) {
-			return DirnBehaviourPair{D_Up, EB_DoorOpen}
+			return DirectionBehaviourPair{elevatorConfig.Up, EB_DoorOpen}
 		}
 		if Requests_above(e) {
-			return DirnBehaviourPair{D_Up, EB_Moving}
+			return DirectionBehaviourPair{elevatorConfig.Up, EB_Moving}
 		}
-		return DirnBehaviourPair{D_Stop, EB_Idle}
+		return DirectionBehaviourPair{elevatorConfig.Stop, EB_Idle}
 
-	case D_Stop: // samme kommentar som i C
+	case elevatorConfig.Stop: // samme kommentar som i C
 		if Requests_here(e) {
-			return DirnBehaviourPair{D_Stop, EB_DoorOpen}
+			return DirectionBehaviourPair{elevatorConfig.Stop, EB_DoorOpen}
 		}
 		if Requests_above(e) {
-			return DirnBehaviourPair{D_Up, EB_Moving}
+			return DirectionBehaviourPair{elevatorConfig.Up, EB_Moving}
 		}
 		if Requests_below(e) {
-			return DirnBehaviourPair{D_Down, EB_Moving}
+			return DirectionBehaviourPair{elevatorConfig.Down, EB_Moving}
 		}
-		return DirnBehaviourPair{D_Stop, EB_Idle}
+		return DirectionBehaviourPair{elevatorConfig.Stop, EB_Idle}
 
 	default:
-		return DirnBehaviourPair{D_Stop, EB_Idle}
+		return DirectionBehaviourPair{elevatorConfig.Stop, EB_Idle}
 	}
 }
 
 func Requests_shouldStop(e Elevator) bool {
-	switch e.dirn {
-	case D_Down:
+	switch e.direction {
+	case elevatorConfig.Down:
 		return e.requests[e.floor][B_HallDown] ||
 			e.requests[e.floor][B_Cab] ||
 			!Requests_below(e)
 
-	case D_Up:
+	case elevatorConfig.Up:
 		return e.requests[e.floor][B_HallUp] ||
 			e.requests[e.floor][B_Cab] ||
 			!Requests_above(e)
 
-	case D_Stop:
+	case elevatorConfig.Stop:
 		fallthrough
 	default:
 		return true
@@ -102,29 +106,29 @@ func Requests_shouldStop(e Elevator) bool {
 
 func Requests_shouldClearImmediately(e Elevator, btn_floor int, btn_type Button) bool {
 	return e.floor == btn_floor &&
-		((e.dirn == D_Up && btn_type == B_HallUp) ||
-			(e.dirn == D_Down && btn_type == B_HallDown) ||
-			e.dirn == D_Stop ||
+		((e.direction == elevatorConfig.Up && btn_type == B_HallUp) ||
+			(e.direction == elevatorConfig.Down && btn_type == B_HallDown) ||
+			e.direction == elevatorConfig.Stop ||
 			btn_type == B_Cab)
 }
 
 func Requests_clearAtCurrentFloor(e Elevator) Elevator {
 	e.requests[e.floor][B_Cab] = false
 
-	switch e.dirn {
-	case D_Up:
+	switch e.direction {
+	case elevatorConfig.Up:
 		if !Requests_above(e) && !e.requests[e.floor][B_HallUp] {
 			e.requests[e.floor][B_HallDown] = false
 		}
 		e.requests[e.floor][B_HallUp] = false
 
-	case D_Down:
+	case elevatorConfig.Down:
 		if !Requests_below(e) && !e.requests[e.floor][B_HallDown] {
 			e.requests[e.floor][B_HallUp] = false
 		}
 		e.requests[e.floor][B_HallDown] = false
 
-	case D_Stop:
+	case elevatorConfig.Stop:
 		fallthrough
 	default:
 		e.requests[e.floor][B_HallUp] = false

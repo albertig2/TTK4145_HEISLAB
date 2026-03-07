@@ -1,6 +1,7 @@
 package elevatorHardware
 
 import (
+	"HEISPROSJEKT/elevatorConfig"
 	"HEISPROSJEKT/timer"
 	"fmt"
 )
@@ -14,8 +15,8 @@ func SetAllLights(es Elevator) {
 }
 
 func Fsm_onInitBetweenFloors(e *Elevator) {
-	Elevator_motorDirection(D_Down)
-	e.dirn = D_Down
+	Elevator_motorDirection(elevatorConfig.Down)
+	e.direction = elevatorConfig.Down
 	e.behaviour = EB_Moving
 }
 
@@ -37,7 +38,7 @@ func Fsm_onRequestButtonPress(e *Elevator, btn_floor int, btn_type Button) {
 	case EB_Idle:
 		e.requests[btn_floor][btn_type] = true
 		pair := requests_chooseDirection(*e)
-		e.dirn = pair.dirn
+		e.direction = pair.direction
 		e.behaviour = pair.behaviour
 
 		switch pair.behaviour {
@@ -47,7 +48,7 @@ func Fsm_onRequestButtonPress(e *Elevator, btn_floor int, btn_type Button) {
 			*e = Requests_clearAtCurrentFloor(*e)
 
 		case EB_Moving:
-			Elevator_motorDirection(e.dirn)
+			Elevator_motorDirection(e.direction)
 
 		case EB_Idle:
 			// nothing
@@ -70,7 +71,7 @@ func Fsm_onFloorArrival(e *Elevator, newFloor int) {
 	switch e.behaviour {
 	case EB_Moving:
 		if Requests_shouldStop(*e) {
-			Elevator_motorDirection(D_Stop)
+			Elevator_motorDirection(elevatorConfig.Stop)
 			Elevator_doorLight(true)
 			*e = Requests_clearAtCurrentFloor(*e)
 			timer.Timer_start(e.config.doorOpenDuration_s)
@@ -92,7 +93,7 @@ func fsm_onDoorTimeout(e *Elevator) {
 	switch e.behaviour {
 	case EB_DoorOpen:
 		pair := requests_chooseDirection(*e)
-		e.dirn = pair.dirn
+		e.direction = pair.direction
 		e.behaviour = pair.behaviour
 
 		switch e.behaviour {
@@ -103,7 +104,7 @@ func fsm_onDoorTimeout(e *Elevator) {
 
 		case EB_Moving, EB_Idle:
 			Elevator_doorLight(false)
-			Elevator_motorDirection(e.dirn)
+			Elevator_motorDirection(e.direction)
 		}
 	default:
 		// nothing
