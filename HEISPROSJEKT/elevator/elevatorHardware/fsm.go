@@ -7,8 +7,8 @@ import (
 )
 
 func SetAllLights(es Elevator) {
-	for floor := 0; floor < N_FLOORS; floor++ {
-		for btn := 0; btn < N_BUTTONS; btn++ {
+	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
+		for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
 			Elevator_requestButtonLight(floor, Button(btn), es.requests[floor][btn])
 		}
 	}

@@ -10,21 +10,21 @@ import (
 )
 
 type BoolElevatorState struct {
-	Behavior    elevatorHardware.Behavior       `json:"behaviour"`
-	Floor       int                             `json:"floor"`
-	Direction   string                          `json:"direction"`
-	CabRequests [elevatorHardware.N_FLOORS]bool `json:"cabRequests"`
+	Behavior    elevatorHardware.Behavior     `json:"behaviour"`
+	Floor       int                           `json:"floor"`
+	Direction   string                        `json:"direction"`
+	CabRequests [elevatorConfig.N_FLOORS]bool `json:"cabRequests"`
 }
 
 type BoolElevatorSystem struct {
-	HallRequests [elevatorHardware.N_FLOORS][2]bool `json:"hallRequests"`
-	States       map[string]*BoolElevatorState      `json:"states"`
+	HallRequests [elevatorConfig.N_FLOORS][2]bool `json:"hallRequests"`
+	States       map[string]*BoolElevatorState    `json:"states"`
 }
 
 // Converts ElevatorSystem and order status to a boolean-based system for assignment logic
-func BuildBoolElevatorSystem(system elevatorHardware.ElevatorSystem, hallRequestTransitions [N_FLOORS][2]OrderTransition, alivePeers []string) BoolElevatorSystem {
+func BuildBoolElevatorSystem(system elevatorHardware.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, alivePeers []string) BoolElevatorSystem {
 	boolSystem := BoolElevatorSystem{
-		HallRequests: [elevatorHardware.N_FLOORS][2]bool{},
+		HallRequests: [elevatorConfig.N_FLOORS][2]bool{},
 		States:       make(map[string]*BoolElevatorState),
 	}
 
@@ -35,11 +35,11 @@ func BuildBoolElevatorSystem(system elevatorHardware.ElevatorSystem, hallRequest
 			Behavior:    idState.Behavior,
 			Floor:       idState.Floor,
 			Direction:   elevatorConfig.DirectionToString(idState.Direction),
-			CabRequests: [elevatorHardware.N_FLOORS]bool{},
+			CabRequests: [elevatorConfig.N_FLOORS]bool{},
 		}
 	}
 
-	for floor := range N_FLOORS {
+	for floor := range elevatorConfig.N_FLOORS {
 		for _, hallDir := range elevatorHardware.HallDirs {
 			if hallRequestTransitions[floor][hallDir] == PendingToAssigned {
 				boolSystem.HallRequests[floor][hallDir] = true
@@ -49,7 +49,7 @@ func BuildBoolElevatorSystem(system elevatorHardware.ElevatorSystem, hallRequest
 	return boolSystem
 }
 
-func HallRequestAssigner(system *elevatorHardware.ElevatorSystem, hallRequestTransitions [N_FLOORS][2]OrderTransition, alivePeers []string) map[string][][2]bool {
+func HallRequestAssigner(system *elevatorHardware.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, alivePeers []string) map[string][][2]bool {
 	Executable := ""
 	switch runtime.GOOS {
 	case "linux":

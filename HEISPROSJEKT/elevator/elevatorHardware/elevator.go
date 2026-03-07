@@ -7,9 +7,6 @@ import (
 	"time"
 )
 
-const N_FLOORS int = 4
-const N_BUTTONS int = 3
-
 type Button int
 
 const (
@@ -33,7 +30,7 @@ type Config struct {
 type Elevator struct {
 	floor     int
 	direction elevatorConfig.Direction
-	requests  [N_FLOORS][N_BUTTONS]bool
+	requests  [elevatorConfig.N_FLOORS][elevatorConfig.N_BUTTONS]bool
 	behaviour ElevatorBehaviour
 	config    Config
 }
@@ -67,14 +64,14 @@ func Elevator_buttonToString(b Button) string {
 func Elevator_print(es Elevator) {
 	fmt.Println("  +--------------------+")
 	fmt.Printf("  |%-6s = %-2d          |\n", "floor", es.floor)
-	fmt.Printf("  |%-6s = %-12.12s|\n", "direction", ElevatorDirectionToString(es.direction))
+	fmt.Printf("  |%-6s = %-12.12s|\n", "direction", elevatorConfig.DirectionToString(es.direction))
 	fmt.Printf("  |%-6s = %-12.12s|\n", "behav", Elevator_behaviorToString(es.behaviour))
 	fmt.Println("  +--------------------+")
 	fmt.Println("  |  | up  | dn  | cab |")
-	for f := N_FLOORS - 1; f >= 0; f-- {
+	for f := elevatorConfig.N_FLOORS - 1; f >= 0; f-- {
 		fmt.Printf("  | %d", f)
-		for btn := 0; btn < N_BUTTONS; btn++ {
-			if (f == N_FLOORS-1 && Button(btn) == B_HallUp) || (f == 0 && Button(btn) == B_HallDown) {
+		for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
+			if (f == elevatorConfig.N_FLOORS-1 && Button(btn) == B_HallUp) || (f == 0 && Button(btn) == B_HallDown) {
 				fmt.Printf("|     ")
 			} else {
 				if es.requests[f][btn] {
@@ -90,7 +87,7 @@ func Elevator_print(es Elevator) {
 }
 
 func Elevator_uninitialized() Elevator {
-	elevio.Init("localhost:15657", N_FLOORS)
+	elevio.Init("localhost:15657", elevatorConfig.N_FLOORS)
 	es := Elevator{floor: -1, direction: elevatorConfig.Stop, behaviour: EB_Idle, config: Config{doorOpenDuration_s: 3.0}}
 	return es
 }

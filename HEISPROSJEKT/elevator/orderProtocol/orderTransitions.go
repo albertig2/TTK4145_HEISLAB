@@ -1,11 +1,9 @@
 package orderProtocol
 
 import (
+	"HEISPROSJEKT/elevatorConfig"
 	"HEISPROSJEKT/elevatorHardware"
 )
-
-const N_FLOORS int = 4
-const N_BUTTONS int = 3
 
 type OrderTransition int
 
@@ -21,7 +19,7 @@ const (
 
 func CheckOrderTransitionStatusForHallRequests(
 	system *elevatorHardware.ElevatorSystem,
-	HallRequestsForAllElevators map[string][elevatorHardware.N_FLOORS][2]elevatorHardware.OrderStatus,
+	HallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorHardware.OrderStatus,
 	halldir int,
 	floor int,
 	alivePeers []string) OrderTransition {
@@ -81,9 +79,9 @@ func CheckOrderTransitionStatusForHallRequests(
 	return NoTransition
 }
 
-func GetAllHallRequestTransitions(system *elevatorHardware.ElevatorSystem, HallRequestsForAllElevators map[string][N_FLOORS][2]elevatorHardware.OrderStatus, alivePeers []string) [N_FLOORS][2]OrderTransition {
-	var transitions [N_FLOORS][2]OrderTransition
-	for floor := range N_FLOORS {
+func GetAllHallRequestTransitions(system *elevatorHardware.ElevatorSystem, HallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorHardware.OrderStatus, alivePeers []string) [elevatorConfig.N_FLOORS][2]OrderTransition {
+	var transitions [elevatorConfig.N_FLOORS][2]OrderTransition
+	for floor := range elevatorConfig.N_FLOORS {
 		for _, halldir := range elevatorHardware.HallDirs {
 			transition := CheckOrderTransitionStatusForHallRequests(system, HallRequestsForAllElevators, halldir, floor, alivePeers)
 			transitions[floor][halldir] = transition
@@ -99,7 +97,7 @@ func GetAllHallRequestTransitions(system *elevatorHardware.ElevatorSystem, HallR
 // Cab orders goes from assigned to no order when the elevator reaches the floor
 func CheckOrderTransitionStatusForCabRequests(
 	system *elevatorHardware.ElevatorSystem,
-	CabRequestsForAllElevators map[string][elevatorHardware.N_FLOORS]elevatorHardware.OrderStatus,
+	CabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorHardware.OrderStatus,
 	floor int,
 	alivePeers []string) OrderTransition {
 
@@ -135,9 +133,9 @@ func CheckOrderTransitionStatusForCabRequests(
 	return NoTransition
 }
 
-func GetAllCabRequestTransitions(system *elevatorHardware.ElevatorSystem, CabRequestsForAllElevators map[string][N_FLOORS]elevatorHardware.OrderStatus, alivePeers []string) [N_FLOORS]OrderTransition {
-	var transitions [N_FLOORS]OrderTransition
-	for floor := range N_FLOORS {
+func GetAllCabRequestTransitions(system *elevatorHardware.ElevatorSystem, CabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorHardware.OrderStatus, alivePeers []string) [elevatorConfig.N_FLOORS]OrderTransition {
+	var transitions [elevatorConfig.N_FLOORS]OrderTransition
+	for floor := range elevatorConfig.N_FLOORS {
 		transition := CheckOrderTransitionStatusForCabRequests(system, CabRequestsForAllElevators, floor, alivePeers)
 		transitions[floor] = transition
 	}
@@ -145,11 +143,11 @@ func GetAllCabRequestTransitions(system *elevatorHardware.ElevatorSystem, CabReq
 }
 
 // Should update HallRequestsForAllElevators after this
-func TransitionForHallRequestsByType(system *elevatorHardware.ElevatorSystem, hallRequestTransitions [N_FLOORS][2]OrderTransition, transitionType OrderTransition, alivePeers []string) {
+func TransitionForHallRequestsByType(system *elevatorHardware.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, transitionType OrderTransition, alivePeers []string) {
 	if transitionType == PendingToAssigned {
 		transitionFromPendingToAssignedForHallRequests(system, hallRequestTransitions, alivePeers)
 	} else {
-		for floor := range N_FLOORS {
+		for floor := range elevatorConfig.N_FLOORS {
 			for _, hallDir := range elevatorHardware.HallDirs {
 				if hallRequestTransitions[floor][hallDir] == transitionType {
 					var status elevatorHardware.OrderStatus
@@ -174,9 +172,9 @@ func TransitionForHallRequestsByType(system *elevatorHardware.ElevatorSystem, ha
 }
 
 // Called from within the TransitionForHallRequestsByType. Setting to private to avoid it being called directly
-func transitionFromPendingToAssignedForHallRequests(system *elevatorHardware.ElevatorSystem, hallRequestTransitions [N_FLOORS][2]OrderTransition, alivePeers []string) {
+func transitionFromPendingToAssignedForHallRequests(system *elevatorHardware.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, alivePeers []string) {
 	output := HallRequestAssigner(system, hallRequestTransitions, alivePeers)
-	for floor := range N_FLOORS {
+	for floor := range elevatorConfig.N_FLOORS {
 		for _, hallDir := range elevatorHardware.HallDirs {
 			if (output)[system.OwnId][floor][hallDir] {
 				elevatorHardware.SetHallRequests(system, floor, hallDir, elevatorHardware.Assigned)
@@ -186,8 +184,8 @@ func transitionFromPendingToAssignedForHallRequests(system *elevatorHardware.Ele
 	}
 }
 
-func TransitionForCabRequestsByType(system *elevatorHardware.ElevatorSystem, cabRequestTransitions [N_FLOORS]OrderTransition, transitionType OrderTransition, alivePeers []string) {
-	for floor := range N_FLOORS {
+func TransitionForCabRequestsByType(system *elevatorHardware.ElevatorSystem, cabRequestTransitions [elevatorConfig.N_FLOORS]OrderTransition, transitionType OrderTransition, alivePeers []string) {
+	for floor := range elevatorConfig.N_FLOORS {
 		if cabRequestTransitions[floor] == transitionType {
 			var status elevatorHardware.OrderStatus
 			switch transitionType {
@@ -208,7 +206,7 @@ func TransitionForCabRequestsByType(system *elevatorHardware.ElevatorSystem, cab
 }
 
 /*
-func transitionHallRequests(system ElevatorSystem, HallRequestForAllElevators *map[string][N_FLOORS][2]orderStatus, floor int, halldir int, transition OrderTransition) {
+func transitionHallRequests(system ElevatorSystem, HallRequestForAllElevators *map[string][elevatorConfig.N_FLOORS][2]orderStatus, floor int, halldir int, transition OrderTransition) {
 	var status orderStatus
 	switch transition {
 	case noTransition:
@@ -249,7 +247,7 @@ func set_OrderStatus(system *elevatorHardware.ElevatorSystem, floor int, halldir
 }
 
 /*
-func OrderIsPendingForAllElevators(HallRequestsForAllIds map[string][N_FLOORS][2]orderStatus, halldir int, floor int, alivePeers []string) bool {
+func OrderIsPendingForAllElevators(HallRequestsForAllIds map[string][elevatorConfig.N_FLOORS][2]orderStatus, halldir int, floor int, alivePeers []string) bool {
 	for _, peerId := range alivePeers {
 		if HallRequestsForAllIds[peerId][floor][halldir] != pending {
 			return false
@@ -258,7 +256,7 @@ func OrderIsPendingForAllElevators(HallRequestsForAllIds map[string][N_FLOORS][2
 	return true
 }
 
-func OrderIsCompletedForAnotherElevators(HallRequestsForAllIds map[string][N_FLOORS][2]orderStatus, halldir int, floor int, alivePeers []string) bool {
+func OrderIsCompletedForAnotherElevators(HallRequestsForAllIds map[string][elevatorConfig.N_FLOORS][2]orderStatus, halldir int, floor int, alivePeers []string) bool {
 	for _, peerId := range alivePeers {
 		if peerId != system.OwnId {
 			if HallRequestsForAllIds[peerId][floor][halldir] == completed {
@@ -269,7 +267,7 @@ func OrderIsCompletedForAnotherElevators(HallRequestsForAllIds map[string][N_FLO
 	return false
 }
 
-func OrderIsNoOrderForAllOtherElevators(HallRequestsForAllIds map[string][N_FLOORS][2]orderStatus, halldir int, floor int, alivePeers []string) bool {
+func OrderIsNoOrderForAllOtherElevators(HallRequestsForAllIds map[string][elevatorConfig.N_FLOORS][2]orderStatus, halldir int, floor int, alivePeers []string) bool {
 	for _, peerId := range alivePeers {
 		if peerId != system.OwnId {
 			if HallRequestsForAllIds[peerId][floor][halldir] != noOrder {

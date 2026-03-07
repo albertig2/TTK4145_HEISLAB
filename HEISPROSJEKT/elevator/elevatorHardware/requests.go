@@ -11,8 +11,8 @@ type DirectionBehaviourPair struct {
 
 // static i C -> privat i Go (liten forbokstav)
 func Requests_above(e Elevator) bool {
-	for f := e.floor + 1; f < N_FLOORS; f++ {
-		for btn := 0; btn < N_BUTTONS; btn++ {
+	for f := e.floor + 1; f < elevatorConfig.N_FLOORS; f++ {
+		for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
 			if e.requests[f][btn] {
 				return true
 			}
@@ -23,7 +23,7 @@ func Requests_above(e Elevator) bool {
 
 func Requests_below(e Elevator) bool {
 	for f := 0; f < e.floor; f++ {
-		for btn := 0; btn < N_BUTTONS; btn++ {
+		for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
 			if e.requests[f][btn] {
 				return true
 			}
@@ -33,7 +33,7 @@ func Requests_below(e Elevator) bool {
 }
 
 func Requests_here(e Elevator) bool {
-	for btn := 0; btn < N_BUTTONS; btn++ {
+	for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
 		if e.requests[e.floor][btn] {
 			return true
 		}

@@ -33,16 +33,16 @@ const (
 var HallDirs = [2]int{HallUp, HallDown}
 
 type ElevatorState struct {
-	Behavior    Behavior                 `json:"behaviour"`
-	Floor       int                      `json:"floor"`
-	Direction   elevatorConfig.Direction `json:"direction"`
-	CabRequests [N_FLOORS]OrderStatus    `json:"cabRequests"`
+	Behavior    Behavior                             `json:"behaviour"`
+	Floor       int                                  `json:"floor"`
+	Direction   elevatorConfig.Direction             `json:"direction"`
+	CabRequests [elevatorConfig.N_FLOORS]OrderStatus `json:"cabRequests"`
 }
 
 type ElevatorSystem struct {
-	OwnId        string                    `json:"ownId"`
-	HallRequests [N_FLOORS][2]OrderStatus  `json:"hallRequests"`
-	States       map[string]*ElevatorState `json:"states"`
+	OwnId        string                                  `json:"ownId"`
+	HallRequests [elevatorConfig.N_FLOORS][2]OrderStatus `json:"hallRequests"`
+	States       map[string]*ElevatorState               `json:"states"`
 }
 
 func SetBehavior(system *ElevatorSystem, b Behavior) {
@@ -74,14 +74,14 @@ func SetHallRequests(system *ElevatorSystem, f int, halldir int, orderstatus Ord
 func Initialize(system *ElevatorSystem, id string) {
 	// To decide floor can just do the get_floor_sensor_signal() and initialize to that floor, but for now hardcoded
 	system.OwnId = id
-	system.HallRequests = [N_FLOORS][2]OrderStatus{}
+	system.HallRequests = [elevatorConfig.N_FLOORS][2]OrderStatus{}
 	system.States = make(map[string]*ElevatorState)
 	currentFloor := 1 // Get floor sensor. (men helst ikke -1? så siste faktisk floor)
 	system.States[id] = &ElevatorState{
 		Behavior:    Idle,
 		Floor:       currentFloor,
 		Direction:   elevatorConfig.Stop,
-		CabRequests: [N_FLOORS]OrderStatus{},
+		CabRequests: [elevatorConfig.N_FLOORS]OrderStatus{},
 	}
 
 	initializeHallRequests(system)
@@ -89,7 +89,7 @@ func Initialize(system *ElevatorSystem, id string) {
 }
 
 func initializeHallRequests(system *ElevatorSystem) {
-	for floor := 0; floor < N_FLOORS; floor++ {
+	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
 		for _, halldir := range HallDirs {
 			system.HallRequests[floor][halldir] = NoOrder
 		}
@@ -99,7 +99,7 @@ func initializeHallRequests(system *ElevatorSystem) {
 func initializeCabRequests(system *ElevatorSystem) {
 	// Listen for other elevators to broadcast their view of your cab orders, and if you hear any, set your cab orders to be the combination of all of them (pending if any of them is pending or no order)
 	// For each elevator you hear from, check all floors, if any of the floors have pending, set that floor to pending.
-	for floor := 0; floor < N_FLOORS; floor++ {
+	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
 		if system.States[system.OwnId].CabRequests[floor] != Pending {
 			system.States[system.OwnId].CabRequests[floor] = NoOrder
 		}
@@ -119,7 +119,7 @@ func AddPeer(system *ElevatorSystem, peerSystem *ElevatorSystem) {
 	}
 }
 
-func UpdateElevatorSystemFromPeer(system *ElevatorSystem, peerSystem *ElevatorSystem, HallRequestsForAllElevators map[string][N_FLOORS][2]OrderStatus, CabRequestsForAllElevators map[string][N_FLOORS]OrderStatus) {
+func UpdateElevatorSystemFromPeer(system *ElevatorSystem, peerSystem *ElevatorSystem, HallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]OrderStatus, CabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]OrderStatus) {
 	if _, exists := system.States[peerSystem.OwnId]; !exists {
 		AddPeer(system, peerSystem)
 	}
