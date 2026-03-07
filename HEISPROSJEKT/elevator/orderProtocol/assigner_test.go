@@ -1,4 +1,4 @@
-package main
+package orderProtocol
 
 import (
 	"encoding/json"

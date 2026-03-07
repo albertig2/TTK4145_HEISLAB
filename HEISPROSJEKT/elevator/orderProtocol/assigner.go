@@ -1,6 +1,7 @@
-package main
+package orderProtocol
 
 import (
+	"HEISPROSJEKT/elevatorHardware"
 	"encoding/json"
 	"fmt"
 	"os/exec"
@@ -8,21 +9,21 @@ import (
 )
 
 type BoolElevatorState struct {
-	Behavior    Behavior       `json:"behaviour"`
-	Floor       int            `json:"floor"`
-	Direction   Direction      `json:"direction"`
-	CabRequests [N_FLOORS]bool `json:"cabRequests"`
+	Behavior    elevatorHardware.Behavior       `json:"behaviour"`
+	Floor       int                             `json:"floor"`
+	Direction   elevatorHardware.Direction      `json:"direction"`
+	CabRequests [elevatorHardware.N_FLOORS]bool `json:"cabRequests"`
 }
 
 type BoolElevatorSystem struct {
-	HallRequests [N_FLOORS][2]bool             `json:"hallRequests"`
-	States       map[string]*BoolElevatorState `json:"states"`
+	HallRequests [elevatorHardware.N_FLOORS][2]bool `json:"hallRequests"`
+	States       map[string]*BoolElevatorState      `json:"states"`
 }
 
 // Converts ElevatorSystem and order status to a boolean-based system for assignment logic
-func buildBoolElevatorSystem(system ElevatorSystem, hallRequestTransitions [N_FLOORS][2]OrderTransition, alivePeers []string) BoolElevatorSystem {
+func BuildBoolElevatorSystem(system ElevatorSystem, hallRequestTransitions [N_FLOORS][2]OrderTransition, alivePeers []string) BoolElevatorSystem {
 	boolSystem := BoolElevatorSystem{
-		HallRequests: [N_FLOORS][2]bool{},
+		HallRequests: [elevatorHardware.N_FLOORS][2]bool{},
 		States:       make(map[string]*BoolElevatorState),
 	}
 
@@ -32,7 +33,7 @@ func buildBoolElevatorSystem(system ElevatorSystem, hallRequestTransitions [N_FL
 			Behavior:    idState.Behavior,
 			Floor:       idState.Floor,
 			Direction:   idState.Direction,
-			CabRequests: [N_FLOORS]bool{},
+			CabRequests: [elevatorHardware.N_FLOORS]bool{},
 		}
 	}
 
@@ -46,7 +47,7 @@ func buildBoolElevatorSystem(system ElevatorSystem, hallRequestTransitions [N_FL
 	return boolSystem
 }
 
-func hallRequestAssigner(system *ElevatorSystem, hallRequestTransitions [N_FLOORS][2]OrderTransition, alivePeers []string) map[string][][2]bool {
+func HallRequestAssigner(system *ElevatorSystem, hallRequestTransitions [N_FLOORS][2]OrderTransition, alivePeers []string) map[string][][2]bool {
 	Executable := ""
 	switch runtime.GOOS {
 	case "linux":
@@ -57,7 +58,7 @@ func hallRequestAssigner(system *ElevatorSystem, hallRequestTransitions [N_FLOOR
 		panic("OS not supported")
 	}
 
-	input := buildBoolElevatorSystem(*system, hallRequestTransitions, alivePeers)
+	input := BuildBoolElevatorSystem(*system, hallRequestTransitions, alivePeers)
 
 	jsonBytes, err := json.Marshal(input)
 	if err != nil {

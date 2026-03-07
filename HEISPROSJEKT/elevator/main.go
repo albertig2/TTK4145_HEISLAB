@@ -2,58 +2,48 @@ package main
 
 import (
 	"Driver-go/elevio"
+	"flag"
 	"fmt"
+	"strconv"
+
+	"HEISPROSJEKT/communication"
+	"HEISPROSJEKT/hardware"
+	"Network-go/network/bcast"
+	"Network-go/network/peers"
 )
 
 func main() {
+	fmt.Println("Jeg nekter å kommentere ut fmt hver gang jeg skal debugge")
+	id := flag.Int("id", 1, "Input id")
+	port := flag.Int("port", 15657, "Input port")
+	flag.Parse()
 
 	numFloors := 4
+	peerPort := 30004
+	bcastPort := 30400
 
-	elevio.Init("localhost:15657", numFloors)
+	//init functions
+	elevio.Init("localhost:"+strconv.Itoa(*port), numFloors)
+	hardwareChannels := hardware.InitElevatorHardware()
+	channels := communication.InitNetworkChannels()
 
-	var d elevio.MotorDirection = elevio.MD_Up
-	//elevio.SetMotorDirection(d)
+	go peers.Receiver(peerPort, channels.PeerUpdateChl)
+	go peers.Transmitter(peerPort, strconv.Itoa(*id), channels.PeerTxEnableCh)
 
-	drv_buttons := make(chan elevio.ButtonEvent)
-	drv_floors := make(chan int)
-	drv_obstr := make(chan bool)
-	drv_stop := make(chan bool)
+	go bcast.Transmitter(bcastPort, channels.BcastOutgoingMessagesChannel)
+	go bcast.Receiver(bcastPort, channels.BcastIncomingMessagesChannel)
 
-	go elevio.PollButtons(drv_buttons)
-	go elevio.PollFloorSensor(drv_floors)
-	go elevio.PollObstructionSwitch(drv_obstr)
-	go elevio.PollStopButton(drv_stop)
+	go communication.BroadcastElevatorWorldView(strconv.Itoa(*id), channels.BcastOutgoingMessagesChannel, hardwareChannels.ElevatorStateChannel)
+	go communication.RecieveBroadcastfWorldViewfFromPeer(channels.BcastIncomingMessagesChannel)
 
-	for {
-		select {
-		case a := <-drv_buttons:
-			fmt.Printf("%+v\n", a)
-			elevio.SetButtonLamp(a.Button, a.Floor, true)
+	go communication.UpdatePeerList(channels)
 
-		case a := <-drv_floors:
-			fmt.Printf("%+v\n", a)
-			if a == numFloors-1 {
-				d = elevio.MD_Down
-			} else if a == 0 {
-				d = elevio.MD_Up
-			}
-			elevio.SetMotorDirection(d)
+	go elevio.PollButtons(hardwareChannels.PollOrderButtonsChannel)
+	go elevio.PollFloorSensor(hardwareChannels.FloorSensorChannel)
+	go elevio.PollObstructionSwitch(hardwareChannels.PollObstructionChannel)
+	go elevio.PollStopButton(hardwareChannels.PollStopButtonChannel)
 
-		case a := <-drv_obstr:
-			fmt.Printf("%+v\n", a)
-			if a {
-				elevio.SetMotorDirection(elevio.MD_Stop)
-			} else {
-				elevio.SetMotorDirection(d)
-			}
+	go hardware.RunElevatorHardware(hardwareChannels)
 
-		case a := <-drv_stop:
-			fmt.Printf("%+v\n", a)
-			for f := 0; f < numFloors; f++ {
-				for b := elevio.ButtonType(0); b < 3; b++ {
-					elevio.SetButtonLamp(b, f, false)
-				}
-			}
-		}
-	}
+	select {}
 }
