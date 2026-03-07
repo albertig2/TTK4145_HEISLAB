@@ -14,7 +14,7 @@ import (
 type HRAElevState struct {
 	Behavior    string `json:"behaviour"`
 	Floor       int    `json:"floor"`
-	Direction   int    `json:"direction"`
+	Direction   string `json:"direction"`
 	CabRequests []bool `json:"cabRequests"`
 }
 
@@ -41,13 +41,13 @@ func TestAssigner(t *testing.T) {
 			1: HRAElevState{
 				Behavior:    "moving",
 				Floor:       2,
-				Direction:   1,
+				Direction:   "up",
 				CabRequests: []bool{false, false, false, true},
 			},
 			2: HRAElevState{
 				Behavior:    "idle",
 				Floor:       0,
-				Direction:   0,
+				Direction:   "stop",
 				CabRequests: []bool{false, false, false, false},
 			},
 		},
