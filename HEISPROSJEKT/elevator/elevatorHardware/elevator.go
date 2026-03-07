@@ -7,14 +7,6 @@ import (
 	"time"
 )
 
-type ElevatorBehaviour int
-
-const (
-	EB_Idle     ElevatorBehaviour = 0
-	EB_DoorOpen ElevatorBehaviour = 1
-	EB_Moving   ElevatorBehaviour = 2
-)
-
 type Config struct {
 	doorOpenDuration_s time.Duration
 }
@@ -23,28 +15,15 @@ type Elevator struct {
 	floor     int
 	direction elevatorConfig.Direction
 	requests  [elevatorConfig.N_FLOORS][elevatorConfig.N_BUTTONS]bool
-	behaviour ElevatorBehaviour
+	behavior  elevatorConfig.Behavior
 	config    Config
-}
-
-func Elevator_behaviorToString(eb ElevatorBehaviour) string {
-	switch eb {
-	case EB_Idle:
-		return "EB_Idle"
-	case EB_DoorOpen:
-		return "EB_DoorOpen"
-	case EB_Moving:
-		return "EB_Moving"
-	default:
-		return "EB_UNDEFINED"
-	}
 }
 
 func Elevator_print(es Elevator) {
 	fmt.Println("  +--------------------+")
 	fmt.Printf("  |%-6s = %-2d          |\n", "floor", es.floor)
 	fmt.Printf("  |%-6s = %-12.12s|\n", "dirn", elevatorConfig.DirectionToString(es.direction))
-	fmt.Printf("  |%-6s = %-12.12s|\n", "behav", Elevator_behaviorToString(es.behaviour))
+	fmt.Printf("  |%-6s = %-12.12s|\n", "behav", elevatorConfig.BehaviorToString(es.behavior))
 	fmt.Println("  +--------------------+")
 	fmt.Println("  |  | up  | dn  | cab |")
 	for f := elevatorConfig.N_FLOORS - 1; f >= 0; f-- {
@@ -67,7 +46,7 @@ func Elevator_print(es Elevator) {
 
 func Elevator_uninitialized() Elevator {
 	elevio.Init("localhost:15657", elevatorConfig.N_FLOORS)
-	es := Elevator{floor: -1, direction: elevatorConfig.Stop, behaviour: EB_Idle, config: Config{doorOpenDuration_s: 3.0}}
+	es := Elevator{floor: -1, direction: elevatorConfig.Stop, behavior: elevatorConfig.Idle, config: Config{doorOpenDuration_s: 3.0}}
 	return es
 }
 

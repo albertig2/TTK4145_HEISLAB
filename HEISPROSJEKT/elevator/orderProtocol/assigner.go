@@ -10,7 +10,7 @@ import (
 )
 
 type BoolElevatorState struct {
-	Behavior    elevatorHardware.Behavior     `json:"behaviour"`
+	Behavior    string                        `json:"behavior"`
 	Floor       int                           `json:"floor"`
 	Direction   string                        `json:"direction"`
 	CabRequests [elevatorConfig.N_FLOORS]bool `json:"cabRequests"`
@@ -32,7 +32,7 @@ func BuildBoolElevatorSystem(system elevatorHardware.ElevatorSystem, hallRequest
 		idState := system.States[peerId]
 
 		boolSystem.States[peerId] = &BoolElevatorState{
-			Behavior:    idState.Behavior,
+			Behavior:    elevatorConfig.BehaviorToString(idState.Behavior),
 			Floor:       idState.Floor,
 			Direction:   elevatorConfig.DirectionToString(idState.Direction),
 			CabRequests: [elevatorConfig.N_FLOORS]bool{},

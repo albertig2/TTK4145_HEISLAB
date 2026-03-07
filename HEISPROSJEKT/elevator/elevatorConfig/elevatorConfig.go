@@ -19,6 +19,14 @@ const (
 	Cab      Button = 2
 )
 
+type Behavior int
+
+const (
+	Idle     Behavior = 0
+	DoorOpen Behavior = 1
+	Moving   Behavior = 2
+)
+
 func DirectionToString(direction Direction) string {
 	switch direction {
 	case Up:
@@ -35,26 +43,30 @@ func DirectionToString(direction Direction) string {
 func ButtonToString(b Button) string {
 	switch b {
 	case HallUp:
-		return "HallUp"
+		return "hallUp"
 	case HallDown:
-		return "HallDown"
+		return "hallDown"
 	case Cab:
-		return "Cab"
+		return "cab"
 	default:
-		return "Undefined"
+		return "undefined"
+	}
+}
+
+func BehaviorToString(eb Behavior) string {
+	switch eb {
+	case Idle:
+		return "idle"
+	case DoorOpen:
+		return "doorOpen"
+	case Moving:
+		return "moving"
+	default:
+		return "undefined"
 	}
 }
 
 /*
-
-
-type ElevatorBehaviour int
-
-const (
-	EB_Idle     ElevatorBehaviour = 0
-	EB_DoorOpen ElevatorBehaviour = 1
-	EB_Moving   ElevatorBehaviour = 2
-)
 
 type Config struct {
 	doorOpenDuration_s time.Duration
@@ -63,25 +75,14 @@ type Config struct {
 type Elevator struct {
 	floor     int
 	direction	requests  [N_FLOORS][N_BUTTONS]bool
-	behaviour ElevatorBehaviour
+	behavior  ElevatorBehavior
 	config    Config
 }
 */
 /*
-func Elevator_behaviorToString(eb ElevatorBehaviour) string {
-	switch eb {
-	case EB_Idle:
-		return "EB_Idle"
-	case EB_DoorOpen:
-		return "EB_DoorOpen"
-	case EB_Moving:
-		return "EB_Moving"
-	default:
-		return "EB_UNDEFINED"
-	}
-}
 
 
 
 
-*/
+
+ */

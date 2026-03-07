@@ -4,9 +4,9 @@ import (
 	"HEISPROSJEKT/elevatorConfig"
 )
 
-type DirectionBehaviourPair struct {
+type DirectionBehaviorPair struct {
 	direction elevatorConfig.Direction
-	behaviour ElevatorBehaviour
+	behavior  elevatorConfig.Behavior
 }
 
 // static i C -> privat i Go (liten forbokstav)
@@ -42,46 +42,46 @@ func Requests_here(e Elevator) bool {
 }
 
 // “API” lik headeren: behold navnet
-func requests_chooseDirection(e Elevator) DirectionBehaviourPair {
+func requests_chooseDirection(e Elevator) DirectionBehaviorPair {
 	switch e.direction {
 	case elevatorConfig.Up:
 		if Requests_above(e) {
-			return DirectionBehaviourPair{elevatorConfig.Up, EB_Moving}
+			return DirectionBehaviorPair{elevatorConfig.Up, elevatorConfig.Moving}
 		}
 		if Requests_here(e) {
-			return DirectionBehaviourPair{elevatorConfig.Down, EB_DoorOpen}
+			return DirectionBehaviorPair{elevatorConfig.Down, elevatorConfig.DoorOpen}
 		}
 		if Requests_below(e) {
-			return DirectionBehaviourPair{elevatorConfig.Down, EB_Moving}
+			return DirectionBehaviorPair{elevatorConfig.Down, elevatorConfig.Moving}
 		}
-		return DirectionBehaviourPair{elevatorConfig.Stop, EB_Idle}
+		return DirectionBehaviorPair{elevatorConfig.Stop, elevatorConfig.Idle}
 
 	case elevatorConfig.Down:
 		if Requests_below(e) {
-			return DirectionBehaviourPair{elevatorConfig.Down, EB_Moving}
+			return DirectionBehaviorPair{elevatorConfig.Down, elevatorConfig.Moving}
 		}
 		if Requests_here(e) {
-			return DirectionBehaviourPair{elevatorConfig.Up, EB_DoorOpen}
+			return DirectionBehaviorPair{elevatorConfig.Up, elevatorConfig.DoorOpen}
 		}
 		if Requests_above(e) {
-			return DirectionBehaviourPair{elevatorConfig.Up, EB_Moving}
+			return DirectionBehaviorPair{elevatorConfig.Up, elevatorConfig.Moving}
 		}
-		return DirectionBehaviourPair{elevatorConfig.Stop, EB_Idle}
+		return DirectionBehaviorPair{elevatorConfig.Stop, elevatorConfig.Idle}
 
 	case elevatorConfig.Stop: // samme kommentar som i C
 		if Requests_here(e) {
-			return DirectionBehaviourPair{elevatorConfig.Stop, EB_DoorOpen}
+			return DirectionBehaviorPair{elevatorConfig.Stop, elevatorConfig.DoorOpen}
 		}
 		if Requests_above(e) {
-			return DirectionBehaviourPair{elevatorConfig.Up, EB_Moving}
+			return DirectionBehaviorPair{elevatorConfig.Up, elevatorConfig.Moving}
 		}
 		if Requests_below(e) {
-			return DirectionBehaviourPair{elevatorConfig.Down, EB_Moving}
+			return DirectionBehaviorPair{elevatorConfig.Down, elevatorConfig.Moving}
 		}
-		return DirectionBehaviourPair{elevatorConfig.Stop, EB_Idle}
+		return DirectionBehaviorPair{elevatorConfig.Stop, elevatorConfig.Idle}
 
 	default:
-		return DirectionBehaviourPair{elevatorConfig.Stop, EB_Idle}
+		return DirectionBehaviorPair{elevatorConfig.Stop, elevatorConfig.Idle}
 	}
 }
 

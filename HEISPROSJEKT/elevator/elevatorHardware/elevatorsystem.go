@@ -17,18 +17,10 @@ const (
 	Completed OrderStatus = "completed"
 )
 
-type Behavior string
-
-const (
-	Idle     Behavior = "idle"
-	Moving   Behavior = "moving"
-	DoorOpen Behavior = "doorOpen"
-)
-
 var HallDirections = [2]int{int(elevatorConfig.HallUp), int(elevatorConfig.HallDown)}
 
 type ElevatorState struct {
-	Behavior    Behavior                             `json:"behaviour"`
+	Behavior    elevatorConfig.Behavior              `json:"behavior"`
 	Floor       int                                  `json:"floor"`
 	Direction   elevatorConfig.Direction             `json:"direction"`
 	CabRequests [elevatorConfig.N_FLOORS]OrderStatus `json:"cabRequests"`
@@ -40,7 +32,7 @@ type ElevatorSystem struct {
 	States       map[string]*ElevatorState               `json:"states"`
 }
 
-func SetBehavior(system *ElevatorSystem, b Behavior) {
+func SetBehavior(system *ElevatorSystem, b elevatorConfig.Behavior) {
 	state := system.States[system.OwnId]
 	state.Behavior = b
 }
@@ -73,7 +65,7 @@ func Initialize(system *ElevatorSystem, id string) {
 	system.States = make(map[string]*ElevatorState)
 	currentFloor := 1 // Get floor sensor. (men helst ikke -1? så siste faktisk floor)
 	system.States[id] = &ElevatorState{
-		Behavior:    Idle,
+		Behavior:    elevatorConfig.Idle,
 		Floor:       currentFloor,
 		Direction:   elevatorConfig.Stop,
 		CabRequests: [elevatorConfig.N_FLOORS]OrderStatus{},
