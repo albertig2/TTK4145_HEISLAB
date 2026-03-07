@@ -156,6 +156,8 @@ func TransitionForHallRequestsByType(system *ElevatorSystem, hallRequestTransiti
 						// Turn off lights and stuff here
 					case completeToNoOrder:
 						status = noOrder
+					default:
+						status = system.HallRequests[floor][hallDir]
 					}
 					setHallRequests(system, floor, hallDir, status)
 				}
@@ -190,6 +192,8 @@ func TransitionForCabRequestsByType(system *ElevatorSystem, cabRequestTransition
 			case assignedToNoOrder:
 				status = noOrder
 				// Turn off lights and stuff here
+			default:
+				status = system.States[system.OwnId].CabRequests[floor]
 			}
 			setCabRequests(system, floor, status)
 		}
