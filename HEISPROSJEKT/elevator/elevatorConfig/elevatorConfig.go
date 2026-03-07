@@ -11,6 +11,14 @@ const (
 	Up   Direction = 1
 )
 
+type Button int
+
+const (
+	HallUp   Button = 0
+	HallDown Button = 1
+	Cab      Button = 2
+)
+
 func DirectionToString(direction Direction) string {
 	switch direction {
 	case Up:
@@ -24,14 +32,21 @@ func DirectionToString(direction Direction) string {
 	}
 }
 
-/*
-type Button int
+func ButtonToString(b Button) string {
+	switch b {
+	case HallUp:
+		return "HallUp"
+	case HallDown:
+		return "HallDown"
+	case Cab:
+		return "Cab"
+	default:
+		return "Undefined"
+	}
+}
 
-const (
-	B_HallUp   Button = 0
-	B_HallDown Button = 1
-	B_Cab      Button = 2
-)
+/*
+
 
 type ElevatorBehaviour int
 
@@ -68,16 +83,5 @@ func Elevator_behaviorToString(eb ElevatorBehaviour) string {
 
 
 
-func Elevator_buttonToString(b Button) string {
-	switch b {
-	case B_HallUp:
-		return "B_HallUp"
-	case B_HallDown:
-		return "B_HallDown"
-	case B_Cab:
-		return "B_Cab"
-	default:
-		return "B_UNDEFINED"
-	}
-}
+
 */

@@ -40,7 +40,7 @@ func BuildBoolElevatorSystem(system elevatorHardware.ElevatorSystem, hallRequest
 	}
 
 	for floor := range elevatorConfig.N_FLOORS {
-		for _, hallDir := range elevatorHardware.HallDirs {
+		for _, hallDir := range elevatorHardware.HallDirections {
 			if hallRequestTransitions[floor][hallDir] == PendingToAssigned {
 				boolSystem.HallRequests[floor][hallDir] = true
 			}

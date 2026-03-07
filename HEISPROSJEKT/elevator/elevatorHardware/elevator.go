@@ -7,14 +7,6 @@ import (
 	"time"
 )
 
-type Button int
-
-const (
-	B_HallUp   Button = 0
-	B_HallDown Button = 1
-	B_Cab      Button = 2
-)
-
 type ElevatorBehaviour int
 
 const (
@@ -48,19 +40,6 @@ func Elevator_behaviorToString(eb ElevatorBehaviour) string {
 	}
 }
 
-func Elevator_buttonToString(b Button) string {
-	switch b {
-	case B_HallUp:
-		return "B_HallUp"
-	case B_HallDown:
-		return "B_HallDown"
-	case B_Cab:
-		return "B_Cab"
-	default:
-		return "B_UNDEFINED"
-	}
-}
-
 func Elevator_print(es Elevator) {
 	fmt.Println("  +--------------------+")
 	fmt.Printf("  |%-6s = %-2d          |\n", "floor", es.floor)
@@ -71,7 +50,7 @@ func Elevator_print(es Elevator) {
 	for f := elevatorConfig.N_FLOORS - 1; f >= 0; f-- {
 		fmt.Printf("  | %d", f)
 		for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
-			if (f == elevatorConfig.N_FLOORS-1 && Button(btn) == B_HallUp) || (f == 0 && Button(btn) == B_HallDown) {
+			if (f == elevatorConfig.N_FLOORS-1 && elevatorConfig.Button(btn) == elevatorConfig.HallUp) || (f == 0 && elevatorConfig.Button(btn) == elevatorConfig.HallDown) {
 				fmt.Printf("|     ")
 			} else {
 				if es.requests[f][btn] {
@@ -96,7 +75,7 @@ func Elevator_floorSensor() int {
 	return elevio.GetFloor()
 }
 
-func Elevator_requestButton(f int, b Button) bool {
+func Elevator_requestButton(f int, b elevatorConfig.Button) bool {
 	return elevio.GetButton((elevio.ButtonType)(b), f)
 }
 
@@ -112,7 +91,7 @@ func Elevator_floorIndicator(f int) {
 	elevio.SetFloorIndicator(f)
 }
 
-func Elevator_requestButtonLight(f int, b Button, v bool) {
+func Elevator_requestButtonLight(f int, b elevatorConfig.Button, v bool) {
 	elevio.SetButtonLamp(elevio.ButtonType(b), f, v)
 }
 

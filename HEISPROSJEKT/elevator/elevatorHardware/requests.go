@@ -88,13 +88,13 @@ func requests_chooseDirection(e Elevator) DirectionBehaviourPair {
 func Requests_shouldStop(e Elevator) bool {
 	switch e.direction {
 	case elevatorConfig.Down:
-		return e.requests[e.floor][B_HallDown] ||
-			e.requests[e.floor][B_Cab] ||
+		return e.requests[e.floor][elevatorConfig.HallDown] ||
+			e.requests[e.floor][elevatorConfig.Cab] ||
 			!Requests_below(e)
 
 	case elevatorConfig.Up:
-		return e.requests[e.floor][B_HallUp] ||
-			e.requests[e.floor][B_Cab] ||
+		return e.requests[e.floor][elevatorConfig.HallUp] ||
+			e.requests[e.floor][elevatorConfig.Cab] ||
 			!Requests_above(e)
 
 	case elevatorConfig.Stop:
@@ -104,35 +104,35 @@ func Requests_shouldStop(e Elevator) bool {
 	}
 }
 
-func Requests_shouldClearImmediately(e Elevator, btn_floor int, btn_type Button) bool {
+func Requests_shouldClearImmediately(e Elevator, btn_floor int, btn_type elevatorConfig.Button) bool {
 	return e.floor == btn_floor &&
-		((e.direction == elevatorConfig.Up && btn_type == B_HallUp) ||
-			(e.direction == elevatorConfig.Down && btn_type == B_HallDown) ||
+		((e.direction == elevatorConfig.Up && btn_type == elevatorConfig.HallUp) ||
+			(e.direction == elevatorConfig.Down && btn_type == elevatorConfig.HallDown) ||
 			e.direction == elevatorConfig.Stop ||
-			btn_type == B_Cab)
+			btn_type == elevatorConfig.Cab)
 }
 
 func Requests_clearAtCurrentFloor(e Elevator) Elevator {
-	e.requests[e.floor][B_Cab] = false
+	e.requests[e.floor][elevatorConfig.Cab] = false
 
 	switch e.direction {
 	case elevatorConfig.Up:
-		if !Requests_above(e) && !e.requests[e.floor][B_HallUp] {
-			e.requests[e.floor][B_HallDown] = false
+		if !Requests_above(e) && !e.requests[e.floor][elevatorConfig.HallUp] {
+			e.requests[e.floor][elevatorConfig.HallDown] = false
 		}
-		e.requests[e.floor][B_HallUp] = false
+		e.requests[e.floor][elevatorConfig.HallUp] = false
 
 	case elevatorConfig.Down:
-		if !Requests_below(e) && !e.requests[e.floor][B_HallDown] {
-			e.requests[e.floor][B_HallUp] = false
+		if !Requests_below(e) && !e.requests[e.floor][elevatorConfig.HallDown] {
+			e.requests[e.floor][elevatorConfig.HallUp] = false
 		}
-		e.requests[e.floor][B_HallDown] = false
+		e.requests[e.floor][elevatorConfig.HallDown] = false
 
 	case elevatorConfig.Stop:
 		fallthrough
 	default:
-		e.requests[e.floor][B_HallUp] = false
-		e.requests[e.floor][B_HallDown] = false
+		e.requests[e.floor][elevatorConfig.HallUp] = false
+		e.requests[e.floor][elevatorConfig.HallDown] = false
 	}
 
 	return e

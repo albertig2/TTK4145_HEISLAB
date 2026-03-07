@@ -25,12 +25,7 @@ const (
 	DoorOpen Behavior = "doorOpen"
 )
 
-const (
-	HallUp   = 0
-	HallDown = 1
-)
-
-var HallDirs = [2]int{HallUp, HallDown}
+var HallDirections = [2]int{int(elevatorConfig.HallUp), int(elevatorConfig.HallDown)}
 
 type ElevatorState struct {
 	Behavior    Behavior                             `json:"behaviour"`
@@ -90,7 +85,7 @@ func Initialize(system *ElevatorSystem, id string) {
 
 func initializeHallRequests(system *ElevatorSystem) {
 	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
-		for _, halldir := range HallDirs {
+		for _, halldir := range HallDirections {
 			system.HallRequests[floor][halldir] = NoOrder
 		}
 	}

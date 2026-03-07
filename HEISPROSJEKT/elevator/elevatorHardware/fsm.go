@@ -9,7 +9,7 @@ import (
 func SetAllLights(es Elevator) {
 	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
 		for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
-			Elevator_requestButtonLight(floor, Button(btn), es.requests[floor][btn])
+			Elevator_requestButtonLight(floor, elevatorConfig.Button(btn), es.requests[floor][btn])
 		}
 	}
 }
@@ -20,8 +20,8 @@ func Fsm_onInitBetweenFloors(e *Elevator) {
 	e.behaviour = EB_Moving
 }
 
-func Fsm_onRequestButtonPress(e *Elevator, btn_floor int, btn_type Button) {
-	fmt.Printf("\n\n%s(%d, %s)\n", "fsm_onRequestButtonPress", btn_floor, Elevator_buttonToString(btn_type))
+func Fsm_onRequestButtonPress(e *Elevator, btn_floor int, btn_type elevatorConfig.Button) {
+	fmt.Printf("\n\n%s(%d, %s)\n", "fsm_onRequestButtonPress", btn_floor, elevatorConfig.ButtonToString(btn_type))
 	Elevator_print(*e)
 
 	switch e.behaviour {

@@ -82,7 +82,7 @@ func CheckOrderTransitionStatusForHallRequests(
 func GetAllHallRequestTransitions(system *elevatorHardware.ElevatorSystem, HallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorHardware.OrderStatus, alivePeers []string) [elevatorConfig.N_FLOORS][2]OrderTransition {
 	var transitions [elevatorConfig.N_FLOORS][2]OrderTransition
 	for floor := range elevatorConfig.N_FLOORS {
-		for _, halldir := range elevatorHardware.HallDirs {
+		for _, halldir := range elevatorHardware.HallDirections {
 			transition := CheckOrderTransitionStatusForHallRequests(system, HallRequestsForAllElevators, halldir, floor, alivePeers)
 			transitions[floor][halldir] = transition
 		}
@@ -148,7 +148,7 @@ func TransitionForHallRequestsByType(system *elevatorHardware.ElevatorSystem, ha
 		transitionFromPendingToAssignedForHallRequests(system, hallRequestTransitions, alivePeers)
 	} else {
 		for floor := range elevatorConfig.N_FLOORS {
-			for _, hallDir := range elevatorHardware.HallDirs {
+			for _, hallDir := range elevatorHardware.HallDirections {
 				if hallRequestTransitions[floor][hallDir] == transitionType {
 					var status elevatorHardware.OrderStatus
 					switch transitionType {
@@ -175,7 +175,7 @@ func TransitionForHallRequestsByType(system *elevatorHardware.ElevatorSystem, ha
 func transitionFromPendingToAssignedForHallRequests(system *elevatorHardware.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, alivePeers []string) {
 	output := HallRequestAssigner(system, hallRequestTransitions, alivePeers)
 	for floor := range elevatorConfig.N_FLOORS {
-		for _, hallDir := range elevatorHardware.HallDirs {
+		for _, hallDir := range elevatorHardware.HallDirections {
 			if (output)[system.OwnId][floor][hallDir] {
 				elevatorHardware.SetHallRequests(system, floor, hallDir, elevatorHardware.Assigned)
 				// Set lights and stuff here
