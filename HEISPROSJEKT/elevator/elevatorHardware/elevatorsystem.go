@@ -87,24 +87,45 @@ func Initialize(system *ElevatorSystem, id string) {
 		Direction:   Stop,
 		CabRequests: [N_FLOORS]OrderStatus{},
 	}
+
+	initializeHallRequests(system)
+	initializeCabRequests(system)
 }
 
-// Mulig initialiser med noOrder
+func initializeHallRequests(system *ElevatorSystem) {
+	for floor := 0; floor < N_FLOORS; floor++ {
+		for _, halldir := range HallDirs {
+			system.HallRequests[floor][halldir] = NoOrder
+		}
+	}
+}
 
-func AddPeer(system *ElevatorSystem, id string) {
-	if _, exists := system.States[id]; !exists {
-		system.States[id] = &ElevatorState{
-			Behavior:    Idle,
-			Floor:       1, // Usikker på hva dette skal være (-1? for undefined until man får høre det fra heisen selv?)
-			Direction:   Stop,
-			CabRequests: [N_FLOORS]OrderStatus{},
+func initializeCabRequests(system *ElevatorSystem) {
+	// Listen for other elevators to broadcast their view of your cab orders, and if you hear any, set your cab orders to be the combination of all of them (pending if any of them is pending or no order)
+	// For each elevator you hear from, check all floors, if any of the floors have pending, set that floor to pending.
+	for floor := 0; floor < N_FLOORS; floor++ {
+		if system.States[system.OwnId].CabRequests[floor] != Pending {
+			system.States[system.OwnId].CabRequests[floor] = NoOrder
+		}
+	}
+}
+
+// If only called from updatedElavatorSystemFromPeer, then I dont need the check for existence
+func AddPeer(system *ElevatorSystem, peerSystem *ElevatorSystem) {
+	peerState := peerSystem.States[peerSystem.OwnId]
+	if _, exists := system.States[peerSystem.OwnId]; !exists {
+		system.States[peerSystem.OwnId] = &ElevatorState{
+			Behavior:    peerState.Behavior,
+			Floor:       peerState.Floor,
+			Direction:   peerState.Direction,
+			CabRequests: peerState.CabRequests,
 		}
 	}
 }
 
 func UpdateElevatorSystemFromPeer(system *ElevatorSystem, peerSystem *ElevatorSystem, HallRequestsForAllElevators map[string][N_FLOORS][2]OrderStatus, CabRequestsForAllElevators map[string][N_FLOORS]OrderStatus) {
 	if _, exists := system.States[peerSystem.OwnId]; !exists {
-		AddPeer(system, peerSystem.OwnId)
+		AddPeer(system, peerSystem)
 	}
 	system.States[peerSystem.OwnId] = peerSystem.States[peerSystem.OwnId]
 
@@ -116,25 +137,11 @@ func UpdateElevatorSystemFromPeer(system *ElevatorSystem, peerSystem *ElevatorSy
 
 // I utgangspunktet har jeg en annen funksjon som fikser andre transisjoner ...., kanskje nok å sette HallRequest listen to the appropriate, og så finne derfifra hva man skal sette
 // Hvor ofte skal man sjekke transisjoner? med en gang etter man har updated
-// Spesify IDs as arguments when initializing (legge til et eller annet sted? Peer place??)
-
-// Initialize, json, cost_function
 
 // Funksjon for transisjoner mellom states (når man skal gå fra en state til en annen)
 // Denne burde si hvilke transisjoner som skal gjøres (en pure function)
 // Og så burde man ha en funskjon som utfører transjosjonen med påfølgende handlinger
-// Union funksjon for å sette alle states til det andre sender som states
 
-// Lage et map over alle ideene sine hallrequests, som brukes til å avgjøre state overganger.
-// burde endre assigner til å bare endre sin egen hall request, men da med korrekt statet
-// Man burde sikkert bare kunne sette floor osv på egen id og ikke på andres
-
-// Kan hende man burde sende egen ID også under ElevatorState struct, lettere da å legge inn hallrequests riktig i henhold til den store matrisa alle holder på?
-// Endre ider til å være strings i stedet for ints (matcher bedre med det Odin har gjort.
-// Endre slik at man kun kan sette egne floors osv, og ikke andres, for å unngå feil
-// Should be possible for some sort of unioning, or getting the other elevators states
-
-// Sette noOrder der det ikke er noe enda
 // Må deale med transisjoner, når man skal sette pending? når man skal gå til de andre? Skal man gjøre det når man får inn fra andre (hvertfall pending?)
 // Når transisjon så man kansje gjøre ting også så jeg har jo en pure en
 // Må på et tidspunkt oppdatere HallRequest med egen id sin hallrequests også og cabRequests.
