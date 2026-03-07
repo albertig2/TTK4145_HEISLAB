@@ -1,4 +1,4 @@
-package Hardware
+package hardware
 
 import (
 	"Driver-go/elevio"

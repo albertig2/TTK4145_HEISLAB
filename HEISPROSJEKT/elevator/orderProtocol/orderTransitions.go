@@ -1,4 +1,8 @@
-package main
+package orderProtocol
+
+import (
+	"HEISPROSJEKT/elevatorHardware"
+)
 
 type OrderTransition int
 
@@ -11,8 +15,8 @@ const (
 )
 
 func CheckOrderTransitionStatusForHallRequests(
-	system *ElevatorSystem,
-	HallRequestsForAllElevators map[string][N_FLOORS][2]orderStatus,
+	system *elevatorHardware.ElevatorSystem,
+	HallRequestsForAllElevators map[string][elevatorHardware.N_FLOORS][2]elevatorHardware.OrderStatus,
 	halldir int,
 	floor int,
 	alivePeers []string) OrderTransition {
@@ -23,22 +27,22 @@ func CheckOrderTransitionStatusForHallRequests(
 	assignedtocomplete := false
 
 	for _, peerId := range alivePeers {
-		if HallRequestsForAllElevators[peerId][floor][halldir] != pending {
+		if HallRequestsForAllElevators[peerId][floor][halldir] != elevatorHardware.Pending {
 			pendingtoassigned = false
 		}
-		if HallRequestsForAllElevators[peerId][floor][halldir] == completed && peerId != system.OwnId {
+		if HallRequestsForAllElevators[peerId][floor][halldir] == elevatorHardware.Completed && peerId != system.OwnId {
 			pendingtonoorder = true
 		}
-		if HallRequestsForAllElevators[peerId][floor][halldir] != noOrder && peerId != system.OwnId {
+		if HallRequestsForAllElevators[peerId][floor][halldir] != elevatorHardware.NoOrder && peerId != system.OwnId {
 			completetonoorder = false
 		}
 	}
 
-	if HallRequestsForAllElevators[system.OwnId][floor][halldir] != completed && completetonoorder {
+	if HallRequestsForAllElevators[system.OwnId][floor][halldir] != elevatorHardware.Completed && completetonoorder {
 		completetonoorder = false
 	}
 
-	if HallRequestsForAllElevators[system.OwnId][floor][halldir] == assigned && elevator_floorSensor() == floor {
+	if HallRequestsForAllElevators[system.OwnId][floor][halldir] == elevatorHardware.Assigned && elevatorHardware.Elevator_floorSensor() == floor {
 		assignedtocomplete = true
 	}
 
@@ -55,8 +59,8 @@ func CheckOrderTransitionStatusForHallRequests(
 }
 
 func CheckOrderTransitionStatusForCabRequests(
-	system *ElevatorSystem,
-	CabRequestsForAllElevators map[string][N_FLOORS]orderStatus,
+	system *elevatorHardware.ElevatorSystem,
+	CabRequestsForAllElevators map[string][elevatorHardware.N_FLOORS]elevatorHardware.OrderStatus,
 	floor int,
 	alivePeers []string) OrderTransition {
 
@@ -66,22 +70,22 @@ func CheckOrderTransitionStatusForCabRequests(
 	assignedtocomplete := false
 
 	for _, peerId := range alivePeers {
-		if CabRequestsForAllElevators[peerId][floor] != pending {
+		if CabRequestsForAllElevators[peerId][floor] != elevatorHardware.Pending {
 			pendingtoassigned = false
 		}
-		if CabRequestsForAllElevators[peerId][floor] == completed && peerId != system.OwnId {
+		if CabRequestsForAllElevators[peerId][floor] == elevatorHardware.Completed && peerId != system.OwnId {
 			pendingtonoorder = true
 		}
-		if CabRequestsForAllElevators[peerId][floor] != noOrder && peerId != system.OwnId {
+		if CabRequestsForAllElevators[peerId][floor] != elevatorHardware.NoOrder && peerId != system.OwnId {
 			completetonoorder = false
 		}
 	}
 
-	if CabRequestsForAllElevators[system.OwnId][floor] != completed && completetonoorder {
+	if CabRequestsForAllElevators[system.OwnId][floor] != elevatorHardware.Completed && completetonoorder {
 		completetonoorder = false
 	}
 
-	if CabRequestsForAllElevators[system.OwnId][floor] == assigned && elevator_floorSensor() == floor {
+	if CabRequestsForAllElevators[system.OwnId][floor] == elevatorHardware.Assigned && elevatorHardware.Elevator_floorSensor() == floor {
 		assignedtocomplete = true
 	}
 
@@ -99,7 +103,7 @@ func CheckOrderTransitionStatusForCabRequests(
 
 // has to be made ... similar to the one above just checking cab requests instead of hall requests, and only for own elevator, since cab requests are not shared between elevators.
 // might now have to have to functions, can probably just pass in cabrequests instead and handle the up and down stuff differently (just dont care if cab requests)
-func set_OrderStatus(system *ElevatorSystem, floor int, halldir int, status orderStatus) {
+func set_OrderStatus(system *elevatorHardware.ElevatorSystem, floor int, halldir int, status elevatorHardware.OrderStatus) {
 	system.HallRequests[floor][halldir] = status
 }
 

@@ -2,36 +2,48 @@ package main
 
 import (
 	"Driver-go/elevio"
-	"HEISPROSJEKT/Hardware"
 	"flag"
+	"fmt"
 	"strconv"
-	// "Net"
-	// "fmt"
+
+	"HEISPROSJEKT/communication"
+	"HEISPROSJEKT/hardware"
+	"Network-go/network/bcast"
+	"Network-go/network/peers"
 )
 
 func main() {
-	// id := flag.Int("id", 1, "Input id")
+	fmt.Println("Jeg nekter å kommentere ut fmt hver gang jeg skal debugge")
+	id := flag.Int("id", 1, "Input id")
 	port := flag.Int("port", 15657, "Input port")
 	flag.Parse()
 
 	numFloors := 4
+	peerPort := 30004
+	bcastPort := 30400
 
+	//init functions
 	elevio.Init("localhost:"+strconv.Itoa(*port), numFloors)
+	hardwareChannels := hardware.InitElevatorHardware()
+	channels := communication.InitNetworkChannels()
 
-	// go peers.Receiver(65004, peerUpdateChl)
-	// go peers.Transmitter(65004, strconv.Itoa(*id), peerRecieveEnableChl)
+	go peers.Receiver(peerPort, channels.PeerUpdateChl)
+	go peers.Transmitter(peerPort, strconv.Itoa(*id), channels.PeerTxEnableCh)
 
-	hardwareChannels := Hardware.InitElevatorHardware()
+	go bcast.Transmitter(bcastPort, channels.BcastOutgoingMessagesChannel)
+	go bcast.Receiver(bcastPort, channels.BcastIncomingMessagesChannel)
+
+	go communication.BroadcastElevatorWorldView(strconv.Itoa(*id), channels.BcastOutgoingMessagesChannel, hardwareChannels.ElevatorStateChannel)
+	go communication.RecieveBroadcastfWorldViewfFromPeer(channels.BcastIncomingMessagesChannel)
+
+	go communication.UpdatePeerList(channels)
 
 	go elevio.PollButtons(hardwareChannels.PollOrderButtonsChannel)
 	go elevio.PollFloorSensor(hardwareChannels.FloorSensorChannel)
 	go elevio.PollObstructionSwitch(hardwareChannels.PollObstructionChannel)
 	go elevio.PollStopButton(hardwareChannels.PollStopButtonChannel)
 
-
-	go Hardware.RunElevatorHardware(hardwareChannels)
-
+	go hardware.RunElevatorHardware(hardwareChannels)
 
 	select {}
-
 }
