@@ -1,14 +1,19 @@
 package communication
 
-import "encoding/json"
+import( 
+	"encoding/json"
+	"HEISPROSJEKT/elevatorHardware"
+	
 
-func encodeElevatorSystem(system *ElevatorSystem) string {
+)
+
+func EncodeElevatorSystem(system *elevatorHardware.ElevatorSystem) string {
 	jsonData, _ := json.Marshal(&system)
 	return string(jsonData)
 }
 
-func decodeElevatorSystem(jsonStr string) ElevatorSystem {
-	var system ElevatorSystem
+func DecodeElevatorSystem(jsonStr string) elevatorHardware.ElevatorSystem {
+	var system elevatorHardware.ElevatorSystem
 	json.Unmarshal([]byte(jsonStr), &system)
 	return system
 }
