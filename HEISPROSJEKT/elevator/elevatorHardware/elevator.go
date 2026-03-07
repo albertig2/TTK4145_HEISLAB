@@ -38,6 +38,7 @@ type Config struct {
 }
 
 type Elevator struct {
+	OwnId    string
 	Floor     int
 	Dirn      Dirn
 	Requests  [N_FLOORS][N_BUTTONS]bool
@@ -82,6 +83,22 @@ func Elevator_buttonToString(b Button) string {
 	default:
 		return "B_UNDEFINED"
 	}
+}
+func InitializeElevatorObject(id string) Elevator {
+
+	config := Config {
+		DoorOpenDuration_s : 3*time.Second,
+	}
+
+	elevator := Elevator {
+		OwnId : id,
+		Floor : elevio.GetFloor(),
+		Dirn  : D_Stop,   
+		Requests : [N_FLOORS][N_BUTTONS]bool{},
+		Behaviour : EB_Idle,
+		Config    : config,
+	}
+	return elevator
 }
 
 func Elevator_print(es Elevator) {

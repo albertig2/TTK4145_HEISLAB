@@ -1,6 +1,7 @@
 package elevatorHardware
 
 import (
+	"Driver-go/elevio"
 	"HEISPROSJEKT/timer"
 	"fmt"
 )
@@ -14,8 +15,8 @@ func SetAllLights(es Elevator) {
 }
 
 func Fsm_onInitBetweenFloors(e *Elevator) {
-	Elevator_motorDirection(D_Down)
-	e.Dirn = D_Down
+	Elevator_motorDirection(elevio.MD_Down)
+	e.Dirn = elevio.MD_Down
 	e.Behaviour = EB_Moving
 }
 

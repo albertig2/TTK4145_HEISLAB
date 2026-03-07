@@ -2,9 +2,9 @@ package hardware
 
 import (
 	"Driver-go/elevio"
+	"HEISPROSJEKT/elevatorHardware"
 	"fmt"
 	"time"
-	"HEISPROSJEKT/elevatorHardware"
 )
 
 var _numFloors int = 4
@@ -28,7 +28,18 @@ var currentElevatorState ElevatorState = IDLE
 var _nextMotorDirection elevio.MotorDirection = elevio.MD_Up
 var _lastKnownDirection elevio.MotorDirection = elevio.MD_Stop
 
-func updateMotorDirection(motorDirection chan elevio.MotorDirection) {
+/*
+func updateElevatorObject(elevatorUpdateChannel chan elevatorHardware.Elevator, elevator *elevatorHardware.Elevator) {
+	for {
+		elvatorUpdate := <-elevatorUpdateChannel
+
+		*elevator = elvatorUpdate
+	}
+
+}
+	*/
+
+func updateMotorDirection(motorDirection chan elevio.MotorDirection){
 	for {
 		d := <-motorDirection
 		println("Motordirection:", d)
@@ -41,6 +52,7 @@ func updateMotorDirection(motorDirection chan elevio.MotorDirection) {
 		if d != elevio.MD_Stop {
 			_lastKnownDirection = d
 		}
+		
 
 		elevio.SetMotorDirection(d)
 	}
@@ -63,8 +75,7 @@ type ElevatorHardwareChannelsStruckt struct {
 	FloorSensorChannel      chan int
 	DoorOpenChannel         chan bool
 	MotorDirectionChannel   chan elevio.MotorDirection
-	ElevatorStateChannel    chan elevatorHardware.Behavior
-	
+	ElevatorObjectChannel   chan elevatorHardware.Elevator
 }
 
 func InitElevatorHardware() ElevatorHardwareChannelsStruckt {
@@ -76,7 +87,7 @@ func InitElevatorHardware() ElevatorHardwareChannelsStruckt {
 		FloorSensorChannel:      make(chan int),
 		DoorOpenChannel:         make(chan bool),
 		MotorDirectionChannel:   make(chan elevio.MotorDirection),
-		ElevatorStateChannel:    make(chan  elevatorHardware.Behavior),
+		ElevatorObjectChannel:    make(chan elevatorHardware.Elevator),
 	}
 
 	//small initialisation sequence to put the elevator in a known state
@@ -98,11 +109,10 @@ func InitElevatorHardware() ElevatorHardwareChannelsStruckt {
 	return hardwareChannels
 }
 
-func OpenDoor(doorTimer *time.Timer, timeOpenSeconds time.Duration, elevator *elevatorHardware.Elevator) {
+func OpenDoor(doorTimer *time.Timer, timeOpenSeconds time.Duration) {
 
 	if !isBetweenFloors() {
 
-		elevator.Behaviour = elevatorHardware.EB_DoorOpen
 		fmt.Println("Door Open")
 		doorTimer.Reset(timeOpenSeconds)
 		elevio.SetDoorOpenLamp(true)
@@ -116,14 +126,14 @@ func OpenDoor(doorTimer *time.Timer, timeOpenSeconds time.Duration, elevator *el
 
 // }
 
-func TriggerStopButtonSideEffects(doorTimer *time.Timer, MotorDirectionChannel chan elevio.MotorDirection,elevator *elevatorHardware.Elevator) {
+func TriggerStopButtonSideEffects(doorTimer *time.Timer, MotorDirectionChannel chan elevio.MotorDirection) {
 	fmt.Println("Stop was activated")
 	TurnOffAllOrderLights()
 	elevio.SetStopLamp(true)
 	MotorDirectionChannel <- elevio.MD_Stop
 
 	if !isBetweenFloors() { //If stop is triggerd while at a floor, the door is opend and keep open until stop is reset + 3 seconds more
-		OpenDoor(doorTimer, 3*time.Second, elevator)
+		OpenDoor(doorTimer, 3*time.Second)
 		doorTimer.Stop()
 	}
 
@@ -137,29 +147,41 @@ func TriggerObstructionSideEffects(doorTimer *time.Timer, MotorDirectionChannel 
 
 }
 
-func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt, elevator *elevatorHardware.Elevator) {
+func RunElevatorHardware(elevatorID string, hardwareChannels ElevatorHardwareChannelsStruckt) {
 
 	doorTimer := time.NewTimer(_doorOpenTime)
 	doorTimer.Stop()
+	elevatorObject := elevatorHardware.InitializeElevatorObject(elevatorID)
 
 	go updateMotorDirection(hardwareChannels.MotorDirectionChannel)
 
 	for {
 		select {
 		case floor := <-hardwareChannels.FloorSensorChannel:
+			elevatorObject.Floor = floor
 			hardwareChannels.MotorDirectionChannel <- elevio.MD_Stop
 			fmt.Printf("Elevator arrived at floor %+v\n", floor)
+
 			if floor == _numFloors-1 {
 				_nextMotorDirection = elevio.MD_Down
+				elevio.SetButtonLamp(elevio.BT_HallDown, floor, false)
 			} else if floor == 0 {
 				_nextMotorDirection = elevio.MD_Up
+				elevio.SetButtonLamp(elevio.BT_HallUp, floor, false)
 			}
+			
 
-			OpenDoor(doorTimer, 3*time.Second, elevator)
+			OpenDoor(doorTimer, 3*time.Second)
+			elevatorObject.Behaviour = elevatorHardware.EB_DoorOpen
+
+		case recievedOrder := <-hardwareChannels.PollOrderButtonsChannel:
+			elevio.SetButtonLamp(recievedOrder.Button, recievedOrder.Floor, true)
+			elevatorObject.Requests[recievedOrder.Floor][int(recievedOrder.Button)] = true
+
 		case stopActivated := <-hardwareChannels.PollStopButtonChannel:
 			if stopActivated {
 
-				TriggerStopButtonSideEffects(doorTimer, hardwareChannels.MotorDirectionChannel,elevator)
+				TriggerStopButtonSideEffects(doorTimer, hardwareChannels.MotorDirectionChannel)
 
 				/*
 					TurnOffAllOrderLights()
@@ -179,14 +201,14 @@ func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt, eleva
 				if isBetweenFloors() {
 					hardwareChannels.MotorDirectionChannel <- _lastKnownDirection
 				} else {
-					OpenDoor(doorTimer, 3*time.Second, elevator) //keeps door open for 3 more seconds after obstruction was cleard
+					OpenDoor(doorTimer, 3*time.Second) //keeps door open for 3 more seconds after obstruction was cleard
 
 				}
-
 			}
+			
 		case obstructionActivated := <-hardwareChannels.PollObstructionChannel:
 			if obstructionActivated {
-				if elevator.Behaviour == elevatorHardware.EB_DoorOpen {
+				if elevatorObject.Behaviour== elevatorHardware.EB_DoorOpen {
 					// fmt.Println("Obstruction was activated")
 					// hardwareChannels.MotorDirectionChannel <- elevio.MD_Stop
 					// doorTimer.Stop()
@@ -198,14 +220,24 @@ func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt, eleva
 
 			} else {
 				fmt.Println("Obstruction was Reset")
-				OpenDoor(doorTimer, 3*time.Second, elevator) //keeps door open for 3 more seconds after obstruction was cleard
+				elevatorObject.Behaviour = elevatorHardware.EB_DoorOpen
+				OpenDoor(doorTimer, 3*time.Second) //keeps door open for 3 more seconds after obstruction was cleard
 			}
+			
 
 		case <-doorTimer.C:
 			elevio.SetDoorOpenLamp(false)
 			fmt.Println("Door Closed")
 			hardwareChannels.MotorDirectionChannel <- _nextMotorDirection
+			elevatorObject.Behaviour = elevatorHardware.EB_Moving
+			elevatorObject.Dirn = elevatorHardware.Dirn(_nextMotorDirection)
 			//hardwareChannels.ElevatorStateChannel <- currentElevatorState
+			
+		}
+
+		select{
+		case hardwareChannels.ElevatorObjectChannel <-elevatorObject:
+		default:
 		}
 	}
 }
