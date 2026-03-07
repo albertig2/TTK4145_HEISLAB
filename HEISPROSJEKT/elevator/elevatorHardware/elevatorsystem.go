@@ -95,7 +95,7 @@ func Initialize(system *ElevatorSystem, id string) {
 func initializeHallRequests(system *ElevatorSystem) {
 	for floor := 0; floor < N_FLOORS; floor++ {
 		for _, halldir := range HallDirs {
-			system.HallRequests[floor][halldir] = noOrder
+			system.HallRequests[floor][halldir] = NoOrder
 		}
 	}
 }
@@ -104,8 +104,8 @@ func initializeCabRequests(system *ElevatorSystem) {
 	// Listen for other elevators to broadcast their view of your cab orders, and if you hear any, set your cab orders to be the combination of all of them (pending if any of them is pending or no order)
 	// For each elevator you hear from, check all floors, if any of the floors have pending, set that floor to pending.
 	for floor := 0; floor < N_FLOORS; floor++ {
-		if system.States[system.OwnId].CabRequests[floor] != pending {
-			system.States[system.OwnId].CabRequests[floor] = noOrder
+		if system.States[system.OwnId].CabRequests[floor] != Pending {
+			system.States[system.OwnId].CabRequests[floor] = NoOrder
 		}
 	}
 }

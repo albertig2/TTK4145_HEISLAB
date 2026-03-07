@@ -21,7 +21,7 @@ type BoolElevatorSystem struct {
 }
 
 // Converts ElevatorSystem and order status to a boolean-based system for assignment logic
-func BuildBoolElevatorSystem(system ElevatorSystem, hallRequestTransitions [N_FLOORS][2]OrderTransition, alivePeers []string) BoolElevatorSystem {
+func BuildBoolElevatorSystem(system elevatorHardware.ElevatorSystem, hallRequestTransitions [N_FLOORS][2]OrderTransition, alivePeers []string) BoolElevatorSystem {
 	boolSystem := BoolElevatorSystem{
 		HallRequests: [elevatorHardware.N_FLOORS][2]bool{},
 		States:       make(map[string]*BoolElevatorState),
@@ -38,8 +38,8 @@ func BuildBoolElevatorSystem(system ElevatorSystem, hallRequestTransitions [N_FL
 	}
 
 	for floor := range N_FLOORS {
-		for _, hallDir := range HallDirs {
-			if hallRequestTransitions[floor][hallDir] == pendingToAssigned {
+		for _, hallDir := range elevatorHardware.HallDirs {
+			if hallRequestTransitions[floor][hallDir] == PendingToAssigned {
 				boolSystem.HallRequests[floor][hallDir] = true
 			}
 		}
@@ -47,7 +47,7 @@ func BuildBoolElevatorSystem(system ElevatorSystem, hallRequestTransitions [N_FL
 	return boolSystem
 }
 
-func HallRequestAssigner(system *ElevatorSystem, hallRequestTransitions [N_FLOORS][2]OrderTransition, alivePeers []string) map[string][][2]bool {
+func HallRequestAssigner(system *elevatorHardware.ElevatorSystem, hallRequestTransitions [N_FLOORS][2]OrderTransition, alivePeers []string) map[string][][2]bool {
 	Executable := ""
 	switch runtime.GOOS {
 	case "linux":
@@ -65,7 +65,7 @@ func HallRequestAssigner(system *ElevatorSystem, hallRequestTransitions [N_FLOOR
 		fmt.Println("json.Marshal error: ", err)
 		return nil
 	}
-	ret, err := exec.Command("../cost_fns/hall_request_assigner/"+Executable, "-i", string(jsonBytes)).CombinedOutput()
+	ret, err := exec.Command("../../cost_fns/hall_request_assigner/"+Executable, "-i", string(jsonBytes)).CombinedOutput()
 	if err != nil {
 		fmt.Println("exec.Command error: ", err)
 		fmt.Println(string(ret))
