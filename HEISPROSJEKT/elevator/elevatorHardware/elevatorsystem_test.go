@@ -1,58 +1,72 @@
 package elevatorHardware_test
 
 import (
-	"testing"
-	"HEISPROSJEKT/orderProtocol"
-	"HEISPROSJEKT/elevatorHardware"
 	"HEISPROSJEKT/communication"
+	"HEISPROSJEKT/elevatorHardware"
+	"HEISPROSJEKT/orderProtocol"
+	"testing"
 )
+
+const N_FLOORS int = 4
+const N_BUTTONS int = 3
 
 // go test -v -run TestInitialize
 func TestInitialize(t *testing.T) {
-	HallRequestsForAllElevators := make(map[string][elevatorHardware.N_FLOORS][2]elevatorHardware.OrderStatus)
-	CabRequestsForAllElevators := make(map[string][elevatorHardware.N_FLOORS]elevatorHardware.OrderStatus)
+	// Sholuld always update these maps with own state before checking for transitions or doing anything based on the status of the floors
+	HallRequestsForAllElevators := make(map[string][N_FLOORS][2]elevatorHardware.OrderStatus)
+	CabRequestsForAllElevators := make(map[string][N_FLOORS]elevatorHardware.OrderStatus)
 
 	system1 := elevatorHardware.ElevatorSystem{}
 	elevatorHardware.Initialize(&system1, "1")
-	elevatorHardware.SetFloor(&system1, 2)
-	elevatorHardware.SetDirection(&system1, elevatorHardware.Up)
-	elevatorHardware.SetBehavior(&system1, elevatorHardware.Moving)
-	elevatorHardware.SetCabRequests(&system1, 1, elevatorHardware.Pending)
+	elevatorHardware.SetFloor(&system1, 3)
+	elevatorHardware.SetDirection(&system1, elevatorHardware.Stop)
+	elevatorHardware.SetBehavior(&system1, elevatorHardware.DoorOpen)
+	elevatorHardware.SetHallRequests(&system1, 2, elevatorHardware.HallDown, elevatorHardware.Pending)
 
 	system2 := elevatorHardware.ElevatorSystem{}
 	elevatorHardware.Initialize(&system2, "2")
-	elevatorHardware.SetFloor(&system2, 3)
+	elevatorHardware.SetFloor(&system2, 0)
 	elevatorHardware.SetDirection(&system2, elevatorHardware.Stop)
 	elevatorHardware.SetBehavior(&system2, elevatorHardware.Idle)
-	elevatorHardware.SetCabRequests(&system2, 2, elevatorHardware.Assigned)
 	elevatorHardware.SetHallRequests(&system2, 3, elevatorHardware.HallUp, elevatorHardware.Pending)
 
 	system3 := elevatorHardware.ElevatorSystem{}
 	elevatorHardware.Initialize(&system3, "3")
-	elevatorHardware.SetFloor(&system3, 3)
-	elevatorHardware.SetDirection(&system3, elevatorHardware.Stop)
-	elevatorHardware.SetBehavior(&system3, elevatorHardware.DoorOpen)
-	elevatorHardware.SetHallRequests(&system3, 2, elevatorHardware.HallDown, elevatorHardware.Pending)
+	elevatorHardware.SetFloor(&system3, 1)
+	elevatorHardware.SetDirection(&system3, elevatorHardware.Up)
+	elevatorHardware.SetBehavior(&system3, elevatorHardware.Moving)
+	elevatorHardware.SetCabRequests(&system3, 1, elevatorHardware.Pending)
 	elevatorHardware.SetHallRequests(&system3, 3, elevatorHardware.HallUp, elevatorHardware.Pending)
 
 	elevatorHardware.UpdateElevatorSystemFromPeer(&system1, &system2, HallRequestsForAllElevators, CabRequestsForAllElevators)
 	elevatorHardware.UpdateElevatorSystemFromPeer(&system1, &system3, HallRequestsForAllElevators, CabRequestsForAllElevators)
 
-	HallRequestsForAllElevators["1"] = system1.HallRequests
-	CabRequestsForAllElevators["1"] = system1.States["1"].CabRequests
-	//HallRequestsForAllElevators["2"] = [N_FLOORS][2]orderStatus{{noOrder, noOrder}, {noOrder, noOrder}, {pending, noOrder}, {noOrder, noOrder}}
-	//HallRequestsForAllElevators["3"] = [N_FLOORS][2]orderStatus{{noOrder, noOrder}, {noOrder, noOrder}, {pending, noOrder}, {noOrder, noOrder}}
+	HallRequestsForAllElevators["1"] = system1.HallRequests           // Always update these before checking for transitions or doing anything based on the status of the floors
+	CabRequestsForAllElevators["1"] = system1.States["1"].CabRequests // Always update these before checking for transitions or doing anything based on the status of the floors
 
-	orderProtocol.HallRequestAssigner(&system1, HallRequestsForAllElevators, []string{"1", "2", "3"})
+	t.Logf("HallRequest for elevator 1: %v", HallRequestsForAllElevators["1"])
+	orderTransition := orderProtocol.CheckOrderTransitionStatusForHallRequests(&system1, HallRequestsForAllElevators, elevatorHardware.HallUp, 3, []string{"1", "2", "3"})
+	t.Logf("orderTransition: %v", orderTransition)
+	elevatorHardware.SetHallRequests(&system1, 3, elevatorHardware.HallUp, elevatorHardware.Pending)
+	HallRequestsForAllElevators["1"] = system1.HallRequests // Remember to update
+	orderTransition2 := orderProtocol.CheckOrderTransitionStatusForHallRequests(&system1, HallRequestsForAllElevators, elevatorHardware.HallUp, 3, []string{"1", "2", "3"})
+	t.Logf("orderTransition2: %v", orderTransition2)
+
+	hallRequestTransitions := orderProtocol.GetAllHallRequestTransitions(&system1, HallRequestsForAllElevators, []string{"1", "2", "3"})
+	orderProtocol.HallRequestAssigner(&system1, hallRequestTransitions, []string{"1", "2", "3"})
+	t.Logf("HallRequest for system1 before assigning: %v", system1.HallRequests[3][elevatorHardware.HallUp])
+	orderProtocol.TransitionForHallRequestsByType(&system1, hallRequestTransitions, orderProtocol.PendingToAssigned, []string{"1", "2", "3"})
+	t.Logf("HallRequest for system1 after assigning: %v", system1.HallRequests[3][elevatorHardware.HallUp])
+
 	t.Logf("system json: %s", communication.EncodeElevatorSystem(&system1))
 	transition := orderProtocol.CheckOrderTransitionStatusForHallRequests(&system1, HallRequestsForAllElevators, elevatorHardware.HallUp, 2, []string{"1", "2", "3"})
 	t.Logf("transition: %v", transition)
 	t.Logf("HallRequests: %v", HallRequestsForAllElevators)
 	t.Logf("CabRequests: %v", CabRequestsForAllElevators)
-	//message := encodeElevatorSystem(&system)
+	//message := communication.EncodeElevatorSystem(&system)
 	//fmt.Print(message)
-	//system2 := decodeElevatorSystem(message)
-	//initialize(&system2, 4)
+	//system2 := communication.DecodeElevatorSystem(message)
+	//orderProtocol.Initialize(&system2, 4)
 	//setCabRequests(&system2, 4, 1, true)
 
 	//t.Logf("system2 json: %s", toJsonString(system2))

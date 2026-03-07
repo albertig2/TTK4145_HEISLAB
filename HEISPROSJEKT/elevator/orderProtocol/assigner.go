@@ -21,7 +21,7 @@ type BoolElevatorSystem struct {
 }
 
 // Converts ElevatorSystem and order status to a boolean-based system for assignment logic
-func BuildBoolElevatorSystem(system elevatorHardware.ElevatorSystem, HallRequestsForAllElevators map[string][elevatorHardware.N_FLOORS][2]elevatorHardware.OrderStatus, alivePeers []string) BoolElevatorSystem {
+func BuildBoolElevatorSystem(system elevatorHardware.ElevatorSystem, hallRequestTransitions [N_FLOORS][2]OrderTransition, alivePeers []string) BoolElevatorSystem {
 	boolSystem := BoolElevatorSystem{
 		HallRequests: [elevatorHardware.N_FLOORS][2]bool{},
 		States:       make(map[string]*BoolElevatorState),
@@ -37,9 +37,9 @@ func BuildBoolElevatorSystem(system elevatorHardware.ElevatorSystem, HallRequest
 		}
 	}
 
-	for floor := range elevatorHardware.N_FLOORS {
+	for floor := range N_FLOORS {
 		for _, hallDir := range elevatorHardware.HallDirs {
-			if CheckOrderTransitionStatusForHallRequests(&system, HallRequestsForAllElevators, hallDir, floor, alivePeers) == pendingToAssigned {
+			if hallRequestTransitions[floor][hallDir] == PendingToAssigned {
 				boolSystem.HallRequests[floor][hallDir] = true
 			}
 		}
@@ -47,7 +47,7 @@ func BuildBoolElevatorSystem(system elevatorHardware.ElevatorSystem, HallRequest
 	return boolSystem
 }
 
-func HallRequestAssigner(system *elevatorHardware.ElevatorSystem, HallRequestsForAllElevators map[string][elevatorHardware.N_FLOORS][2]elevatorHardware.OrderStatus, alivePeers []string) {
+func HallRequestAssigner(system *elevatorHardware.ElevatorSystem, hallRequestTransitions [N_FLOORS][2]OrderTransition, alivePeers []string) map[string][][2]bool {
 	Executable := ""
 	switch runtime.GOOS {
 	case "linux":
@@ -58,25 +58,25 @@ func HallRequestAssigner(system *elevatorHardware.ElevatorSystem, HallRequestsFo
 		panic("OS not supported")
 	}
 
-	input := BuildBoolElevatorSystem(*system, HallRequestsForAllElevators, alivePeers)
+	input := BuildBoolElevatorSystem(*system, hallRequestTransitions, alivePeers)
 
 	jsonBytes, err := json.Marshal(input)
 	if err != nil {
 		fmt.Println("json.Marshal error: ", err)
-		return
+		return nil
 	}
-	ret, err := exec.Command("../cost_fns/hall_request_assigner/"+Executable, "-i", string(jsonBytes)).CombinedOutput()
+	ret, err := exec.Command("../../cost_fns/hall_request_assigner/"+Executable, "-i", string(jsonBytes)).CombinedOutput()
 	if err != nil {
 		fmt.Println("exec.Command error: ", err)
 		fmt.Println(string(ret))
-		return
+		return nil
 	}
 
 	output := new(map[string][][2]bool)
 	err = json.Unmarshal(ret, &output)
 	if err != nil {
 		fmt.Println("json.Unmarshal error: ", err)
-		return
+		return nil
 	}
 
 	fmt.Printf("output: \n")
@@ -84,11 +84,5 @@ func HallRequestAssigner(system *elevatorHardware.ElevatorSystem, HallRequestsFo
 		fmt.Printf("%6v :  %+v\n", id, hallRequests)
 	}
 
-	for floor := range elevatorHardware.N_FLOORS {
-		for _, hallDir := range elevatorHardware.HallDirs {
-			if (*output)[system.OwnId][floor][hallDir] {
-				elevatorHardware.SetHallRequests(system, floor, hallDir, elevatorHardware.Assigned)
-			}
-		}
-	}
+	return *output
 }
