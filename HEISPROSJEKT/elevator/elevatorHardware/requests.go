@@ -7,9 +7,9 @@ type DirnBehaviourPair struct {
 
 // static i C -> privat i Go (liten forbokstav)
 func Requests_above(e Elevator) bool {
-	for f := e.floor + 1; f < N_FLOORS; f++ {
+	for f := e.Floor + 1; f < N_FLOORS; f++ {
 		for btn := 0; btn < N_BUTTONS; btn++ {
-			if e.requests[f][btn] {
+			if e.Requests[f][btn] {
 				return true
 			}
 		}
@@ -18,9 +18,9 @@ func Requests_above(e Elevator) bool {
 }
 
 func Requests_below(e Elevator) bool {
-	for f := 0; f < e.floor; f++ {
+	for f := 0; f < e.Floor; f++ {
 		for btn := 0; btn < N_BUTTONS; btn++ {
-			if e.requests[f][btn] {
+			if e.Requests[f][btn] {
 				return true
 			}
 		}
@@ -30,7 +30,7 @@ func Requests_below(e Elevator) bool {
 
 func Requests_here(e Elevator) bool {
 	for btn := 0; btn < N_BUTTONS; btn++ {
-		if e.requests[e.floor][btn] {
+		if e.Requests[e.Floor][btn] {
 			return true
 		}
 	}
@@ -39,7 +39,7 @@ func Requests_here(e Elevator) bool {
 
 // “API” lik headeren: behold navnet
 func requests_chooseDirection(e Elevator) DirnBehaviourPair {
-	switch e.dirn {
+	switch e.Dirn {
 	case D_Up:
 		if Requests_above(e) {
 			return DirnBehaviourPair{D_Up, EB_Moving}
@@ -82,15 +82,15 @@ func requests_chooseDirection(e Elevator) DirnBehaviourPair {
 }
 
 func Requests_shouldStop(e Elevator) bool {
-	switch e.dirn {
+	switch e.Dirn {
 	case D_Down:
-		return e.requests[e.floor][B_HallDown] ||
-			e.requests[e.floor][B_Cab] ||
+		return e.Requests[e.Floor][B_HallDown] ||
+			e.Requests[e.Floor][B_Cab] ||
 			!Requests_below(e)
 
 	case D_Up:
-		return e.requests[e.floor][B_HallUp] ||
-			e.requests[e.floor][B_Cab] ||
+		return e.Requests[e.Floor][B_HallUp] ||
+			e.Requests[e.Floor][B_Cab] ||
 			!Requests_above(e)
 
 	case D_Stop:
@@ -101,34 +101,34 @@ func Requests_shouldStop(e Elevator) bool {
 }
 
 func Requests_shouldClearImmediately(e Elevator, btn_floor int, btn_type Button) bool {
-	return e.floor == btn_floor &&
-		((e.dirn == D_Up && btn_type == B_HallUp) ||
-			(e.dirn == D_Down && btn_type == B_HallDown) ||
-			e.dirn == D_Stop ||
+	return e.Floor == btn_floor &&
+		((e.Dirn == D_Up && btn_type == B_HallUp) ||
+			(e.Dirn == D_Down && btn_type == B_HallDown) ||
+			e.Dirn == D_Stop ||
 			btn_type == B_Cab)
 }
 
 func Requests_clearAtCurrentFloor(e Elevator) Elevator {
-	e.requests[e.floor][B_Cab] = false
+	e.Requests[e.Floor][B_Cab] = false
 
-	switch e.dirn {
+	switch e.Dirn {
 	case D_Up:
-		if !Requests_above(e) && !e.requests[e.floor][B_HallUp] {
-			e.requests[e.floor][B_HallDown] = false
+		if !Requests_above(e) && !e.Requests[e.Floor][B_HallUp] {
+			e.Requests[e.Floor][B_HallDown] = false
 		}
-		e.requests[e.floor][B_HallUp] = false
+		e.Requests[e.Floor][B_HallUp] = false
 
 	case D_Down:
-		if !Requests_below(e) && !e.requests[e.floor][B_HallDown] {
-			e.requests[e.floor][B_HallUp] = false
+		if !Requests_below(e) && !e.Requests[e.Floor][B_HallDown] {
+			e.Requests[e.Floor][B_HallUp] = false
 		}
-		e.requests[e.floor][B_HallDown] = false
+		e.Requests[e.Floor][B_HallDown] = false
 
 	case D_Stop:
 		fallthrough
 	default:
-		e.requests[e.floor][B_HallUp] = false
-		e.requests[e.floor][B_HallDown] = false
+		e.Requests[e.Floor][B_HallUp] = false
+		e.Requests[e.Floor][B_HallDown] = false
 	}
 
 	return e
