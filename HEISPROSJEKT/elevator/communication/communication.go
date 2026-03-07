@@ -1,7 +1,7 @@
 package communication
 
 import (
-	"HEISPROSJEKT/hardware"
+	"HEISPROSJEKT/elevatorConfig"
 	"Network-go/network/peers"
 	"fmt"
 	"strconv"
@@ -76,14 +76,14 @@ func GetDeadPeersList() []string {
 	return deadPeersList
 }
 
-func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan messageStrc, harwdwareInputChannel chan hardware.ElevatorState) {
+func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan messageStrc, harwdwareInputChannel chan elevatorConfig.Behavior) {
 	//messageTimer := time.NewTimer(1*time.Second)
 	for {
-		state := <-harwdwareInputChannel
+		behavior := <-harwdwareInputChannel
 
 		outgoingMessage := messageStrc{
 			Id:      id,
-			Message: strconv.Itoa(int(state)),
+			Message: strconv.Itoa(int(behavior)),
 		}
 		fmt.Printf("SenderID: %s tried to send: %s \n", outgoingMessage.Id, outgoingMessage.Message)
 

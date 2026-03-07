@@ -2,35 +2,9 @@ package elevatorHardware
 
 import (
 	"Driver-go/elevio"
+	"HEISPROSJEKT/elevatorConfig"
 	"fmt"
 	"time"
-)
-
-const N_FLOORS int = 4
-const N_BUTTONS int = 3
-
-type Dirn int
-
-const (
-	D_Down Dirn = -1
-	D_Stop Dirn = 0
-	D_Up   Dirn = 1
-)
-
-type Button int
-
-const (
-	B_HallUp   Button = 0
-	B_HallDown Button = 1
-	B_Cab      Button = 2
-)
-
-type ElevatorBehaviour int
-
-const (
-	EB_Idle     ElevatorBehaviour = 0
-	EB_DoorOpen ElevatorBehaviour = 1
-	EB_Moving   ElevatorBehaviour = 2
 )
 
 type Config struct {
@@ -39,62 +13,23 @@ type Config struct {
 
 type Elevator struct {
 	floor     int
-	dirn      Dirn
-	requests  [N_FLOORS][N_BUTTONS]bool
-	behaviour ElevatorBehaviour
+	direction elevatorConfig.Direction
+	requests  [elevatorConfig.N_FLOORS][elevatorConfig.N_BUTTONS]bool
+	behavior  elevatorConfig.Behavior
 	config    Config
-}
-
-func Elevator_behaviorToString(eb ElevatorBehaviour) string {
-	switch eb {
-	case EB_Idle:
-		return "EB_Idle"
-	case EB_DoorOpen:
-		return "EB_DoorOpen"
-	case EB_Moving:
-		return "EB_Moving"
-	default:
-		return "EB_UNDEFINED"
-	}
-}
-
-func Elevator_dirnToString(d Dirn) string {
-	switch d {
-	case D_Up:
-		return "D_Up"
-	case D_Down:
-		return "D_Down"
-	case D_Stop:
-		return "D_Stop"
-	default:
-		return "D_UNDEFINED"
-	}
-}
-
-func Elevator_buttonToString(b Button) string {
-	switch b {
-	case B_HallUp:
-		return "B_HallUp"
-	case B_HallDown:
-		return "B_HallDown"
-	case B_Cab:
-		return "B_Cab"
-	default:
-		return "B_UNDEFINED"
-	}
 }
 
 func Elevator_print(es Elevator) {
 	fmt.Println("  +--------------------+")
 	fmt.Printf("  |%-6s = %-2d          |\n", "floor", es.floor)
-	fmt.Printf("  |%-6s = %-12.12s|\n", "dirn", Elevator_dirnToString(es.dirn))
-	fmt.Printf("  |%-6s = %-12.12s|\n", "behav", Elevator_behaviorToString(es.behaviour))
+	fmt.Printf("  |%-6s = %-12.12s|\n", "dirn", elevatorConfig.DirectionToString(es.direction))
+	fmt.Printf("  |%-6s = %-12.12s|\n", "behav", elevatorConfig.BehaviorToString(es.behavior))
 	fmt.Println("  +--------------------+")
 	fmt.Println("  |  | up  | dn  | cab |")
-	for f := N_FLOORS - 1; f >= 0; f-- {
+	for f := elevatorConfig.N_FLOORS - 1; f >= 0; f-- {
 		fmt.Printf("  | %d", f)
-		for btn := 0; btn < N_BUTTONS; btn++ {
-			if (f == N_FLOORS-1 && Button(btn) == B_HallUp) || (f == 0 && Button(btn) == B_HallDown) {
+		for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
+			if (f == elevatorConfig.N_FLOORS-1 && elevatorConfig.Button(btn) == elevatorConfig.HallUp) || (f == 0 && elevatorConfig.Button(btn) == elevatorConfig.HallDown) {
 				fmt.Printf("|     ")
 			} else {
 				if es.requests[f][btn] {
@@ -110,8 +45,8 @@ func Elevator_print(es Elevator) {
 }
 
 func Elevator_uninitialized() Elevator {
-	elevio.Init("localhost:15657", N_FLOORS)
-	es := Elevator{floor: -1, dirn: D_Stop, behaviour: EB_Idle, config: Config{doorOpenDuration_s: 3.0}}
+	elevio.Init("localhost:15657", elevatorConfig.N_FLOORS)
+	es := Elevator{floor: -1, direction: elevatorConfig.Stop, behavior: elevatorConfig.Idle, config: Config{doorOpenDuration_s: 3.0}}
 	return es
 }
 
@@ -119,7 +54,7 @@ func Elevator_floorSensor() int {
 	return elevio.GetFloor()
 }
 
-func Elevator_requestButton(f int, b Button) bool {
+func Elevator_requestButton(f int, b elevatorConfig.Button) bool {
 	return elevio.GetButton((elevio.ButtonType)(b), f)
 }
 
@@ -135,7 +70,7 @@ func Elevator_floorIndicator(f int) {
 	elevio.SetFloorIndicator(f)
 }
 
-func Elevator_requestButtonLight(f int, b Button, v bool) {
+func Elevator_requestButtonLight(f int, b elevatorConfig.Button, v bool) {
 	elevio.SetButtonLamp(elevio.ButtonType(b), f, v)
 }
 
@@ -149,7 +84,7 @@ func Elevator_stopButtonLight(v bool) {
 
 }
 
-func Elevator_motorDirection(d Dirn) {
+func Elevator_motorDirection(d elevatorConfig.Direction) {
 	elevio.SetMotorDirection(elevio.MotorDirection(d))
 
 }
