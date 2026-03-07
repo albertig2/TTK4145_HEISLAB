@@ -21,12 +21,12 @@ const (
 	DoorOpen Behavior = "doorOpen"
 )
 
-type Direction string
+type Direction int
 
 const (
-	Up   Direction = "up"
-	Down Direction = "down"
-	Stop Direction = "stop"
+	Down Direction = -1
+	Stop Direction = 0
+	Up   Direction = 1
 )
 
 const (
