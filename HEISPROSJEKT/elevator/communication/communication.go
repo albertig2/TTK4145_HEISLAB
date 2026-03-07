@@ -2,6 +2,7 @@ package communication
 
 import (
 	"HEISPROSJEKT/hardware"
+	"HEISPROSJEKT/elevatorHardware"
 	"Network-go/network/peers"
 	"fmt"
 	"strconv"
@@ -14,8 +15,8 @@ type messageStrc struct {
 type networkChannels struct {
 	PeerUpdateChl                chan peers.PeerUpdate
 	PeerTxEnableCh               chan bool
-	BcastIncomingMessagesChannel chan messageStrc
-	BcastOutgoingMessagesChannel chan messageStrc
+	BcastIncomingMessagesChannel chan elevatorHardware.ElevatorSystem
+	BcastOutgoingMessagesChannel chan elevatorHardware.ElevatorSystem
 }
 
 var (
@@ -27,8 +28,8 @@ func InitNetworkChannels() networkChannels {
 	channels := networkChannels{
 		PeerUpdateChl:                make(chan peers.PeerUpdate),
 		PeerTxEnableCh:               make(chan bool),
-		BcastIncomingMessagesChannel: make(chan messageStrc),
-		BcastOutgoingMessagesChannel: make(chan messageStrc),
+		BcastIncomingMessagesChannel: make(chan elevatorHardware.ElevatorSystem),
+		BcastOutgoingMessagesChannel: make(chan elevatorHardware.ElevatorSystem),
 	}
 
 	return channels
@@ -76,7 +77,7 @@ func GetDeadPeersList() []string {
 	return deadPeersList
 }
 
-func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan messageStrc, harwdwareInputChannel chan hardware.ElevatorState) {
+func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan elevatorHardware.ElevatorSystem, harwdwareInputChannel chan hardware.ElevatorState) {
 	//messageTimer := time.NewTimer(1*time.Second)
 	for {
 		state := <-harwdwareInputChannel
@@ -92,15 +93,14 @@ func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan mes
 		//messageTimer.Reset(1*time.Second)
 
 	}
-
 }
 
-func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan messageStrc) {
+func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan elevatorHardware.ElevatorSystem) {
 	for {
 		IncomingMessage := <-BcastIncomingMessagesChannel
-		senderID := IncomingMessage.Id
-		message := IncomingMessage.Message
+
 		fmt.Printf("SenderID: %s said: %s \n", senderID, message)
+		
 
 	}
 
