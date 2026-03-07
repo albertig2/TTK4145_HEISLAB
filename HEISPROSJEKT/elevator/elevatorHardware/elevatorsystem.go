@@ -1,110 +1,110 @@
-package main
+package elevatorHardware
 
 //"flag"
 
 //flag.Int("id", 1, "Input id")
-type orderStatus string
+type OrderStatus string
 
-// Cab order only needs to go from no order to pending to completed, while hall orders also need assigned, since they are assigned to an elevator by the assigner
+// Cab order only needs to go from no order to Pending to Completed, while hall orders also need Assigned, since they are Assigned to an elevator by the assigner
 const (
-	noOrder   orderStatus = "no order"
-	pending   orderStatus = "pending"
-	assigned  orderStatus = "assigned"
-	completed orderStatus = "completed"
+	NoOrder   OrderStatus = "no order"
+	Pending   OrderStatus = "pending"
+	Assigned  OrderStatus = "assigned"
+	Completed OrderStatus = "completed"
 )
 
 type Behavior string
 
 const (
-	idle     Behavior = "idle"
-	moving   Behavior = "moving"
-	doorOpen Behavior = "doorOpen"
+	Idle     Behavior = "idle"
+	Moving   Behavior = "moving"
+	DoorOpen Behavior = "doorOpen"
 )
 
 type Direction string
 
 const (
-	up   Direction = "up"
-	down Direction = "down"
-	stop Direction = "stop"
+	Up   Direction = "up"
+	Down Direction = "down"
+	Stop Direction = "stop"
 )
 
 const (
-	hallUp   = 0
-	hallDown = 1
+	HallUp   = 0
+	HallDown = 1
 )
 
-var HallDirs = [2]int{hallUp, hallDown}
+var HallDirs = [2]int{HallUp, HallDown}
 
 type ElevatorState struct {
 	Behavior    Behavior              `json:"behaviour"`
 	Floor       int                   `json:"floor"`
 	Direction   Direction             `json:"direction"`
-	CabRequests [N_FLOORS]orderStatus `json:"cabRequests"`
+	CabRequests [N_FLOORS]OrderStatus `json:"cabRequests"`
 }
 
 type ElevatorSystem struct {
 	OwnId        string                    `json:"ownId"`
-	HallRequests [N_FLOORS][2]orderStatus  `json:"hallRequests"`
+	HallRequests [N_FLOORS][2]OrderStatus  `json:"hallRequests"`
 	States       map[string]*ElevatorState `json:"states"`
 }
 
-func setBehavior(system *ElevatorSystem, b Behavior) {
+func SetBehavior(system *ElevatorSystem, b Behavior) {
 	state := system.States[system.OwnId]
 	state.Behavior = b
 }
 
-func setFloor(system *ElevatorSystem, f int) {
+func SetFloor(system *ElevatorSystem, f int) {
 	state := system.States[system.OwnId]
 	state.Floor = f
 }
 
-func setDirection(system *ElevatorSystem, dir Direction) {
+func SetDirection(system *ElevatorSystem, dir Direction) {
 	state := system.States[system.OwnId]
 	state.Direction = dir
 }
 
 // Usikker på om jeg skal kalle det on eller off? eller en funksjon for på og en for av
-func setCabRequests(system *ElevatorSystem, f int, orderstatus orderStatus) {
+func SetCabRequests(system *ElevatorSystem, f int, orderstatus OrderStatus) {
 	state := system.States[system.OwnId]
 	state.CabRequests[f] = orderstatus
 }
 
 // Usikker på om jeg skal kalle den up or down eller dont know
-func setHallRequests(system *ElevatorSystem, f int, halldir int, orderstatus orderStatus) {
+func SetHallRequests(system *ElevatorSystem, f int, halldir int, orderstatus OrderStatus) {
 	system.HallRequests[f][halldir] = orderstatus
 }
 
-func initialize(system *ElevatorSystem, id string) {
+func Initialize(system *ElevatorSystem, id string) {
 	// To decide floor can just do the get_floor_sensor_signal() and initialize to that floor, but for now hardcoded
 	system.OwnId = id
-	system.HallRequests = [N_FLOORS][2]orderStatus{}
+	system.HallRequests = [N_FLOORS][2]OrderStatus{}
 	system.States = make(map[string]*ElevatorState)
 	currentFloor := 1 // Get floor sensor. (men helst ikke -1? så siste faktisk floor)
 	system.States[id] = &ElevatorState{
-		Behavior:    idle,
+		Behavior:    Idle,
 		Floor:       currentFloor,
-		Direction:   stop,
-		CabRequests: [N_FLOORS]orderStatus{},
+		Direction:   Stop,
+		CabRequests: [N_FLOORS]OrderStatus{},
 	}
 }
 
 // Mulig initialiser med noOrder
 
-func addPeer(system *ElevatorSystem, id string) {
+func AddPeer(system *ElevatorSystem, id string) {
 	if _, exists := system.States[id]; !exists {
 		system.States[id] = &ElevatorState{
-			Behavior:    idle,
+			Behavior:    Idle,
 			Floor:       1, // Usikker på hva dette skal være (-1? for undefined until man får høre det fra heisen selv?)
-			Direction:   stop,
-			CabRequests: [N_FLOORS]orderStatus{},
+			Direction:   Stop,
+			CabRequests: [N_FLOORS]OrderStatus{},
 		}
 	}
 }
 
-func updateElevatorSystemFromPeer(system *ElevatorSystem, peerSystem *ElevatorSystem, HallRequestsForAllElevators map[string][N_FLOORS][2]orderStatus, CabRequestsForAllElevators map[string][N_FLOORS]orderStatus) {
+func UpdateElevatorSystemFromPeer(system *ElevatorSystem, peerSystem *ElevatorSystem, HallRequestsForAllElevators map[string][N_FLOORS][2]OrderStatus, CabRequestsForAllElevators map[string][N_FLOORS]OrderStatus) {
 	if _, exists := system.States[peerSystem.OwnId]; !exists {
-		addPeer(system, peerSystem.OwnId)
+		AddPeer(system, peerSystem.OwnId)
 	}
 	system.States[peerSystem.OwnId] = peerSystem.States[peerSystem.OwnId]
 
