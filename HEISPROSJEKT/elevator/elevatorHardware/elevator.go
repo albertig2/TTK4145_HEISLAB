@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	DoorOpenDuration_s time.Duration
+	MotorTimeout_s time.Duration
 }
 
 type Elevator struct {
