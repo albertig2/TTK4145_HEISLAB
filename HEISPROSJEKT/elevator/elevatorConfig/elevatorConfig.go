@@ -1,11 +1,14 @@
 package elevatorConfig
 
 import (
+	"Driver-go/elevio"
 	"time"
 )
 
 const N_FLOORS int = 4
 const N_BUTTONS int = 3
+
+const DOOR_OPEN_DURATION_S = 3*time.Second
 
 type Direction int
 
@@ -22,6 +25,7 @@ const (
 	HallDown Button = 1
 	Cab      Button = 2
 )
+
 type ButtonEvent struct {
 	Floor  int
 	Button Button
@@ -37,7 +41,7 @@ const (
 
 type Config struct {
 	DoorOpenDuration_s time.Duration
-	MotorTimeout_s time.Duration
+	MotorTimeout_s     time.Duration
 }
 
 type Elevator struct {
@@ -50,7 +54,7 @@ type Elevator struct {
 }
 
 type ElevatorHardwareChannelsStruckt struct {
-	PollOrderButtonsChannel chan ButtonEvent
+	PollOrderButtonsChannel chan elevio.ButtonEvent
 	PollObstructionChannel  chan bool
 	PollStopButtonChannel   chan bool
 	FloorSensorChannel      chan int
@@ -58,7 +62,6 @@ type ElevatorHardwareChannelsStruckt struct {
 	MotorDirectionChannel   chan Direction
 	ElevatorObjectChannel   chan Elevator
 }
-
 
 func DirectionToString(direction Direction) string {
 	switch direction {
