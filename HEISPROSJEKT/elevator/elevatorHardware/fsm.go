@@ -6,21 +6,21 @@ import (
 	"fmt"
 )
 
-func SetAllLights(elevator elevatorConfig.Elevator) {
-	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
-		for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
-			Elevator_requestButtonLight(floor, elevatorConfig.Button(btn), elevator.Requests[floor][btn])
-		}
-	}
-}
+// func SetAllLights(elevator elevatorConfig.Elevator) {
+// 	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
+// 		for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
+// 			Elevator_requestButtonLight(floor, elevatorConfig.Button(btn), elevator.Requests[floor][btn])
+// 		}
+// 	}
+// }
 
 func Fsm_onInitBetweenFloors(elevator *elevatorConfig.Elevator) {
-	Elevator_motorDirection(elevatorConfig.Down)
+	ElevatorMotorDirection(elevatorConfig.Down)
 	elevator.Direction = elevatorConfig.Down
 	elevator.Behavior = elevatorConfig.Moving
 }
 
-func Fsm_handleRequestButtonPress (elevator *elevatorConfig.Elevator, btn_floor int, btn_type elevatorConfig.Button) {
+func Fsm_onRequestButtonPress(elevator *elevatorConfig.Elevator, btn_floor int, btn_type elevatorConfig.Button) {
 	fmt.Printf("\n\n%s(%d, %s)\n", "Fsm_handleRequestButtonPress", btn_floor, elevatorConfig.ButtonToString(btn_type))
 	Elevator_print(*elevator)
 
@@ -43,12 +43,12 @@ func Fsm_handleRequestButtonPress (elevator *elevatorConfig.Elevator, btn_floor 
 
 		switch pair.behavior {
 		case elevatorConfig.DoorOpen:
-			Elevator_doorLight(true)
+			ElevatorDoorLight(true)
 			timer.Timer_start(elevator.Config.DoorOpenDuration_s)
 			*elevator = Requests_clearAtCurrentFloor(*elevator)
 
 		case elevatorConfig.Moving:
-			Elevator_motorDirection(elevator.Direction)
+			ElevatorMotorDirection(elevator.Direction)
 
 		case elevatorConfig.Idle:
 			// nothing
@@ -66,13 +66,13 @@ func Fsm_onFloorArrival(elevator *elevatorConfig.Elevator, newFloor int) {
 	Elevator_print(*elevator)
 
 	elevator.Floor = newFloor
-	Elevator_floorIndicator(elevator.Floor)
+	ElevatorFloorIndicator(elevator.Floor)
 
 	switch elevator.Behavior {
 	case elevatorConfig.Moving:
 		if Requests_shouldStop(*elevator) {
-			Elevator_motorDirection(elevatorConfig.Stop)
-			Elevator_doorLight(true)
+			ElevatorMotorDirection(elevatorConfig.Stop)
+			ElevatorDoorLight(true)
 			*elevator = Requests_clearAtCurrentFloor(*elevator)
 			timer.Timer_start(elevator.Config.DoorOpenDuration_s)
 			SetAllLights(*elevator)
@@ -103,8 +103,8 @@ func fsm_onDoorTimeout(elevator *elevatorConfig.Elevator) {
 			SetAllLights(*elevator)
 
 		case elevatorConfig.Moving, elevatorConfig.Idle:
-			Elevator_doorLight(false)
-			Elevator_motorDirection(elevator.Direction)
+			ElevatorDoorLight(false)
+			ElevatorMotorDirection(elevator.Direction)
 		}
 	default:
 		// nothing
