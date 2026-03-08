@@ -78,7 +78,7 @@ func isBetweenFloors() bool {
 }
 
 func HandleOnFloorArrival(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, newFloor int, MotorDirectionChannel chan elevatorConfig.Direction) {
-	fmt.Printf("\n\n%s(%d)\n", "fsm_onFloorArrival", newFloor)
+	fmt.Println( "Elevator arrived at:", newFloor)
 	Elevator_print(*elevator)
 
 	elevator.Floor = newFloor
@@ -102,7 +102,7 @@ func HandleOnFloorArrival(elevator *elevatorConfig.Elevator, doorTimer *time.Tim
 		// nothing
 	}
 
-	fmt.Printf("\nNew state:\n")
+	fmt.Printf("\nNew state after HandleOnFloorArrival:\n")
 	Elevator_print(*elevator)
 }
 
@@ -152,7 +152,7 @@ func OnDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer) {
 		// nothing
 	}
 
-	fmt.Printf("\nNew state:\n")
+	fmt.Printf("\nNew state after  OnDoorTimeout:\n")
 	Elevator_print(*elevator)
 }
 
@@ -197,7 +197,7 @@ func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time
 
 	SetAllLights(*elevator)
 
-	fmt.Printf("\nNew state:\n")
+	fmt.Printf("\nNew state after HandleRequestButtonPres:\n")
 	Elevator_print(*elevator)
 }
 
@@ -279,6 +279,7 @@ func RunElevatorHardware(elevatorID string, hardwareChannels elevatorConfig.Elev
 			HandleRequestButtonPress(&elevatorObject, doorTimer, int(recievedOrder.Floor), elevatorConfig.Button(recievedOrder.Button), hardwareChannels.MotorDirectionChannel)
 
 		case stopActivated := <-hardwareChannels.PollStopButtonChannel:
+
 			if stopActivated {
 				HandleStopButtonActivated(&elevatorObject, doorTimer, hardwareChannels.MotorDirectionChannel)
 			} else {
