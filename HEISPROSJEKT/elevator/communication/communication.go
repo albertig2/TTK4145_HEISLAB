@@ -2,7 +2,9 @@ package communication
 
 import (
 	//"HEISPROSJEKT/hardware"
+	"HEISPROSJEKT/elevatorConfig"
 	"HEISPROSJEKT/elevatorHardware"
+
 	//"HEISPROSJEKT/elevatorConfig"
 	"Network-go/network/peers"
 	"fmt"
@@ -79,7 +81,7 @@ func GetDeadPeersList() []string {
 	return deadPeersList
 }
 
-func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan elevatorHardware.Elevator, elevatorChannel chan elevatorHardware.Elevator) {
+func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan elevatorConfig.Elevator, elevatorChannel chan elevatorHardware.Elevator) {
 	messageTimer := time.NewTimer(1 * time.Second)
 	for {
 
@@ -94,7 +96,7 @@ func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan ele
 	}
 }
 
-func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan elevatorHardware.Elevator) {
+func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan elevatorConfig.Elevator) {
 	for {
 		incomingMessage := <-BcastIncomingMessagesChannel
 

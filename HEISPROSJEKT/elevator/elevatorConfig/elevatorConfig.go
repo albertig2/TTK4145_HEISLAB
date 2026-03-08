@@ -1,5 +1,9 @@
 package elevatorConfig
 
+import (
+	"time"
+)
+
 const N_FLOORS int = 4
 const N_BUTTONS int = 3
 
@@ -18,6 +22,10 @@ const (
 	HallDown Button = 1
 	Cab      Button = 2
 )
+type ButtonEvent struct {
+	Floor  int
+	Button Button
+}
 
 type Behavior int
 
@@ -26,6 +34,31 @@ const (
 	DoorOpen Behavior = 1
 	Moving   Behavior = 2
 )
+
+type Config struct {
+	DoorOpenDuration_s time.Duration
+	MotorTimeout_s time.Duration
+}
+
+type Elevator struct {
+	OwnId     string
+	Floor     int
+	Direction Direction
+	Requests  [N_FLOORS][N_BUTTONS]bool
+	Behavior  Behavior
+	Config    Config
+}
+
+type ElevatorHardwareChannelsStruckt struct {
+	PollOrderButtonsChannel chan ButtonEvent
+	PollObstructionChannel  chan bool
+	PollStopButtonChannel   chan bool
+	FloorSensorChannel      chan int
+	DoorOpenChannel         chan bool
+	MotorDirectionChannel   chan Direction
+	ElevatorObjectChannel   chan Elevator
+}
+
 
 func DirectionToString(direction Direction) string {
 	switch direction {

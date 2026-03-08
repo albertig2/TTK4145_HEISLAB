@@ -10,7 +10,7 @@ type DirectionBehaviorPair struct {
 }
 
 // static i C -> privat i Go (liten forbokstav)
-func Requests_above(e Elevator) bool {
+func Requests_above(e elevatorConfig.Elevator) bool {
 	for f := e.Floor + 1; f < elevatorConfig.N_FLOORS; f++ {
 		for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
 			if e.Requests[f][btn] {
@@ -21,7 +21,7 @@ func Requests_above(e Elevator) bool {
 	return false
 }
 
-func Requests_below(e Elevator) bool {
+func Requests_below(e elevatorConfig.Elevator) bool {
 	for f := 0; f < e.Floor; f++ {
 		for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
 			if e.Requests[f][btn] {
@@ -32,7 +32,7 @@ func Requests_below(e Elevator) bool {
 	return false
 }
 
-func Requests_here(e Elevator) bool {
+func Requests_here(e elevatorConfig.Elevator) bool {
 	for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
 		if e.Requests[e.Floor][btn] {
 			return true
@@ -42,7 +42,7 @@ func Requests_here(e Elevator) bool {
 }
 
 // “API” lik headeren: behold navnet
-func Requests_chooseDirection(e Elevator) DirectionBehaviorPair {
+func Requests_chooseDirection(e elevatorConfig.Elevator) DirectionBehaviorPair {
 	switch e.Direction {
 	case elevatorConfig.Up:
 		if Requests_above(e) {
@@ -85,7 +85,7 @@ func Requests_chooseDirection(e Elevator) DirectionBehaviorPair {
 	}
 }
 
-func Requests_shouldStop(e Elevator) bool {
+func Requests_shouldStop(e elevatorConfig.Elevator) bool {
 	switch e.Direction {
 	case elevatorConfig.Down:
 		return e.Requests[e.Floor][elevatorConfig.HallDown] ||
@@ -104,7 +104,7 @@ func Requests_shouldStop(e Elevator) bool {
 	}
 }
 
-func Requests_shouldClearImmediately(e Elevator, btn_Floor int, btn_type elevatorConfig.Button) bool {
+func Requests_shouldClearImmediately(e elevatorConfig.Elevator, btn_Floor int, btn_type elevatorConfig.Button) bool {
 	return e.Floor == btn_Floor &&
 		((e.Direction == elevatorConfig.Up && btn_type == elevatorConfig.HallUp) ||
 			(e.Direction == elevatorConfig.Down && btn_type == elevatorConfig.HallDown) ||
@@ -112,7 +112,7 @@ func Requests_shouldClearImmediately(e Elevator, btn_Floor int, btn_type elevato
 			btn_type == elevatorConfig.Cab)
 }
 
-func Requests_clearAtCurrentFloor(e Elevator) Elevator {
+func Requests_clearAtCurrentFloor(e elevatorConfig.Elevator) elevatorConfig.Elevator {
 	e.Requests[e.Floor][elevatorConfig.Cab] = false
 
 	switch e.Direction {
