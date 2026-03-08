@@ -3,6 +3,7 @@ package communication
 import (
 	//"HEISPROSJEKT/hardware"
 	"HEISPROSJEKT/elevatorHardware"
+	//"HEISPROSJEKT/elevatorConfig"
 	"Network-go/network/peers"
 	"fmt"
 	"strconv"
@@ -82,10 +83,10 @@ func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan ele
 	messageTimer := time.NewTimer(1 * time.Second)
 	for {
 
-		elevator := <- elevatorChannel
+		elevator := <-elevatorChannel
 
 		<-messageTimer.C
-		
+
 		BcastOutgoingMessagesChannel <- elevator
 
 		messageTimer.Reset(1 * time.Second)
