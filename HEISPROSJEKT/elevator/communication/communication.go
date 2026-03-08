@@ -19,8 +19,8 @@ type messageStrc struct {
 type networkChannels struct {
 	PeerUpdateChl                chan peers.PeerUpdate
 	PeerTxEnableCh               chan bool
-	BcastIncomingMessagesChannel chan elevatorHardware.Elevator
-	BcastOutgoingMessagesChannel chan elevatorHardware.Elevator
+	BcastIncomingMessagesChannel chan elevatorConfig.Elevator
+	BcastOutgoingMessagesChannel chan elevatorConfig.Elevator
 }
 
 var (
@@ -32,8 +32,8 @@ func InitNetworkChannels() networkChannels {
 	channels := networkChannels{
 		PeerUpdateChl:                make(chan peers.PeerUpdate),
 		PeerTxEnableCh:               make(chan bool),
-		BcastIncomingMessagesChannel: make(chan elevatorHardware.Elevator),
-		BcastOutgoingMessagesChannel: make(chan elevatorHardware.Elevator),
+		BcastIncomingMessagesChannel: make(chan elevatorConfig.Elevator),
+		BcastOutgoingMessagesChannel: make(chan elevatorConfig.Elevator),
 	}
 
 	return channels
@@ -81,7 +81,7 @@ func GetDeadPeersList() []string {
 	return deadPeersList
 }
 
-func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan elevatorConfig.Elevator, elevatorChannel chan elevatorHardware.Elevator) {
+func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan elevatorConfig.Elevator, elevatorChannel chan elevatorConfig.Elevator) {
 	messageTimer := time.NewTimer(1 * time.Second)
 	for {
 
