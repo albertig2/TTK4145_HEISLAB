@@ -1,10 +1,13 @@
 package communication
 
 import (
-	"HEISPROSJEKT/elevatorConfig"
+	//"HEISPROSJEKT/hardware"
+	"HEISPROSJEKT/elevatorHardware"
+	//"HEISPROSJEKT/elevatorConfig"
 	"Network-go/network/peers"
 	"fmt"
 	"strconv"
+	"time"
 )
 
 type messageStrc struct {
@@ -14,8 +17,8 @@ type messageStrc struct {
 type networkChannels struct {
 	PeerUpdateChl                chan peers.PeerUpdate
 	PeerTxEnableCh               chan bool
-	BcastIncomingMessagesChannel chan messageStrc
-	BcastOutgoingMessagesChannel chan messageStrc
+	BcastIncomingMessagesChannel chan elevatorHardware.Elevator
+	BcastOutgoingMessagesChannel chan elevatorHardware.Elevator
 }
 
 var (
@@ -27,8 +30,8 @@ func InitNetworkChannels() networkChannels {
 	channels := networkChannels{
 		PeerUpdateChl:                make(chan peers.PeerUpdate),
 		PeerTxEnableCh:               make(chan bool),
-		BcastIncomingMessagesChannel: make(chan messageStrc),
-		BcastOutgoingMessagesChannel: make(chan messageStrc),
+		BcastIncomingMessagesChannel: make(chan elevatorHardware.Elevator),
+		BcastOutgoingMessagesChannel: make(chan elevatorHardware.Elevator),
 	}
 
 	return channels
@@ -76,31 +79,34 @@ func GetDeadPeersList() []string {
 	return deadPeersList
 }
 
-func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan messageStrc, harwdwareInputChannel chan elevatorConfig.Behavior) {
-	//messageTimer := time.NewTimer(1*time.Second)
+func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan elevatorHardware.Elevator, elevatorChannel chan elevatorHardware.Elevator) {
+	messageTimer := time.NewTimer(1 * time.Second)
 	for {
-		behavior := <-harwdwareInputChannel
 
-		outgoingMessage := messageStrc{
-			Id:      id,
-			Message: strconv.Itoa(int(behavior)),
-		}
-		fmt.Printf("SenderID: %s tried to send: %s \n", outgoingMessage.Id, outgoingMessage.Message)
+		elevator := <-elevatorChannel
 
-		//<- messageTimer.C
-		BcastOutgoingMessagesChannel <- outgoingMessage
-		//messageTimer.Reset(1*time.Second)
+		<-messageTimer.C
+
+		BcastOutgoingMessagesChannel <- elevator
+
+		messageTimer.Reset(1 * time.Second)
 
 	}
-
 }
 
-func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan messageStrc) {
+func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan elevatorHardware.Elevator) {
 	for {
-		IncomingMessage := <-BcastIncomingMessagesChannel
-		senderID := IncomingMessage.Id
-		message := IncomingMessage.Message
-		fmt.Printf("SenderID: %s said: %s \n", senderID, message)
+		incomingMessage := <-BcastIncomingMessagesChannel
+
+		senderID := incomingMessage.OwnId
+		/*
+			direction := incomingMessage.Dirn
+			request := incomingMessage.Requests
+			behaviour := incomingMessage.Behaviour
+		*/
+
+		fmt.Println("Sender ID:", senderID)
+		elevatorHardware.Elevator_print(incomingMessage)
 
 	}
 

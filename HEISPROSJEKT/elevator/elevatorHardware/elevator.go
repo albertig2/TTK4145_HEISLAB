@@ -8,22 +8,40 @@ import (
 )
 
 type Config struct {
-	doorOpenDuration_s time.Duration
+	DoorOpenDuration_s time.Duration
 }
 
 type Elevator struct {
-	floor     int
-	direction elevatorConfig.Direction
-	requests  [elevatorConfig.N_FLOORS][elevatorConfig.N_BUTTONS]bool
-	behavior  elevatorConfig.Behavior
-	config    Config
+	OwnId     string
+	Floor     int
+	Direction elevatorConfig.Direction
+	Requests  [elevatorConfig.N_FLOORS][elevatorConfig.N_BUTTONS]bool
+	Behavior  elevatorConfig.Behavior
+	Config    Config
+}
+
+func InitializeElevatorObject(id string) Elevator {
+
+	config := Config{
+		DoorOpenDuration_s: 3 * time.Second,
+	}
+
+	elevator := Elevator{
+		OwnId:     id,
+		Floor:     elevio.GetFloor(),
+		Direction:      elevatorConfig.Stop,
+		Requests:  [elevatorConfig.N_FLOORS][elevatorConfig.N_BUTTONS]bool{},
+		Behavior: elevatorConfig.Idle,
+		Config:    config,
+	}
+	return elevator
 }
 
 func Elevator_print(es Elevator) {
 	fmt.Println("  +--------------------+")
-	fmt.Printf("  |%-6s = %-2d          |\n", "floor", es.floor)
-	fmt.Printf("  |%-6s = %-12.12s|\n", "dirn", elevatorConfig.DirectionToString(es.direction))
-	fmt.Printf("  |%-6s = %-12.12s|\n", "behav", elevatorConfig.BehaviorToString(es.behavior))
+	fmt.Printf("  |%-6s = %-2d          |\n", "floor", es.Floor)
+	fmt.Printf("  |%-6s = %-12.12s|\n", "dirn", elevatorConfig.DirectionToString(es.Direction))
+	fmt.Printf("  |%-6s = %-12.12s|\n", "behav", elevatorConfig.BehaviorToString(es.Behavior))
 	fmt.Println("  +--------------------+")
 	fmt.Println("  |  | up  | dn  | cab |")
 	for f := elevatorConfig.N_FLOORS - 1; f >= 0; f-- {
@@ -32,7 +50,7 @@ func Elevator_print(es Elevator) {
 			if (f == elevatorConfig.N_FLOORS-1 && elevatorConfig.Button(btn) == elevatorConfig.HallUp) || (f == 0 && elevatorConfig.Button(btn) == elevatorConfig.HallDown) {
 				fmt.Printf("|     ")
 			} else {
-				if es.requests[f][btn] {
+				if es.Requests[f][btn] {
 					fmt.Printf("|  #  ")
 				} else {
 					fmt.Printf("|  -  ")
@@ -46,7 +64,7 @@ func Elevator_print(es Elevator) {
 
 func Elevator_uninitialized() Elevator {
 	elevio.Init("localhost:15657", elevatorConfig.N_FLOORS)
-	es := Elevator{floor: -1, direction: elevatorConfig.Stop, behavior: elevatorConfig.Idle, config: Config{doorOpenDuration_s: 3.0}}
+	es := Elevator{Floor: -1, Direction: elevatorConfig.Stop, Behavior: elevatorConfig.Idle, Config: Config{DoorOpenDuration_s: 3.0}}
 	return es
 }
 
