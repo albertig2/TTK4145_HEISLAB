@@ -3,7 +3,7 @@ package elevatorHardware
 import (
 	"Driver-go/elevio"
 	"HEISPROSJEKT/elevatorConfig"
-	"HEISPROSJEKT/timer"
+	//"HEISPROSJEKT/timer"
 	"fmt"
 	"time"
 	//"fmt"
@@ -86,14 +86,14 @@ func HandleOnFloorArrival(elevator *elevatorConfig.Elevator, doorTimer *time.Tim
 
 	switch elevator.Behavior {
 	case elevatorConfig.Moving:
-		if Requests_shouldStop(*elevator) {
+		if RequestsShouldStop(*elevator) {
 
 			ElevatorMotorDirection(elevatorConfig.Stop)
 
 			//MotorDirectionChannel <- elevio.MD_Stop
 			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S)
 			//Elevator_doorLight(true)
-			*elevator = Requests_clearAtCurrentFloor(*elevator)
+			//*elevator = RequestsClearAtCurrentFloor(*elevator)
 			//timer.Timer_start(elevatorConfig.DOOR_OPEN_DURATION_S)
 			//SetAllLights(*elevator)
 			//elevator.Behavior = elevatorConfig.DoorOpen
@@ -111,9 +111,13 @@ func OpenDoor(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, timeOpen
 	if !isBetweenFloors() {
 
 		fmt.Println("Door Open")
+
+		elevio.SetDoorOpenLamp(true)
+		*elevator = RequestsClearAtCurrentFloor(*elevator)
+
 		doorTimer.Stop()
 		doorTimer.Reset(timeOpenSeconds)
-		elevio.SetDoorOpenLamp(true)
+
 		SetAllLights(*elevator)
 		elevator.Behavior = elevatorConfig.DoorOpen
 
@@ -123,8 +127,8 @@ func OpenDoor(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, timeOpen
 	}
 }
 
-func OnDoorTimeout(elevator *elevatorConfig.Elevator) {
-	fmt.Printf("Door timeout")
+func OnDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer) {
+	fmt.Println("Door timeout")
 	Elevator_print(*elevator)
 
 	switch elevator.Behavior {
@@ -135,9 +139,10 @@ func OnDoorTimeout(elevator *elevatorConfig.Elevator) {
 
 		switch elevator.Behavior {
 		case elevatorConfig.DoorOpen:
-			timer.Timer_start(elevator.Config.DoorOpenDuration_s)
-			*elevator = Requests_clearAtCurrentFloor(*elevator)
-			SetAllLights(*elevator)
+			// timer.Timer_start(elevator.Config.DoorOpenDuration_s)
+			// *elevator = RequestsClearAtCurrentFloor(*elevator)
+			// SetAllLights(*elevator)
+			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S)
 
 		case elevatorConfig.Moving, elevatorConfig.Idle:
 			ElevatorDoorLight(false)
@@ -151,14 +156,16 @@ func OnDoorTimeout(elevator *elevatorConfig.Elevator) {
 	Elevator_print(*elevator)
 }
 
-func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, btn_floor int, btn_type elevatorConfig.Button, MotorDirectionChannel chan elevatorConfig.Direction) {
+func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, btn_floor int, btn_type elevatorConfig.Button, MotorDirectionChannel chan elevatorConfig.Direction) {
 	fmt.Printf("\n\n%s(%d, %s)\n", "Recieved the following order:", btn_floor, elevatorConfig.ButtonToString(btn_type))
 	Elevator_print(*elevator)
 
 	switch elevator.Behavior {
 	case elevatorConfig.DoorOpen:
-		if Requests_shouldClearImmediately(*elevator, btn_floor, btn_type) {
-			timer.Timer_start(elevatorConfig.DOOR_OPEN_DURATION_S)
+		if RequestsShouldClearImmediately(*elevator, btn_floor, btn_type) {
+			doorTimer.Stop()
+			doorTimer.Reset(elevatorConfig.DOOR_OPEN_DURATION_S)
+			//timer.Timer_start(elevatorConfig.DOOR_OPEN_DURATION_S)
 		} else {
 			elevator.Requests[btn_floor][btn_type] = true
 		}
@@ -175,9 +182,10 @@ func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, btn_floor int, 
 		switch pair.behavior {
 
 		case elevatorConfig.DoorOpen:
-			ElevatorDoorLight(true)
-			timer.Timer_start(elevatorConfig.DOOR_OPEN_DURATION_S)
-			*elevator = Requests_clearAtCurrentFloor(*elevator)
+			// ElevatorDoorLight(true)
+			// timer.Timer_start(elevatorConfig.DOOR_OPEN_DURATION_S)
+			// *elevator = RequestsClearAtCurrentFloor(*elevator)
+			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S)
 
 		case elevatorConfig.Moving:
 			ElevatorMotorDirection(elevator.Direction)
@@ -193,7 +201,7 @@ func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, btn_floor int, 
 	Elevator_print(*elevator)
 }
 
-func HandleStopButtonActivated (elevator *elevatorConfig.Elevator, doorTimer *time.Timer, MotorDirectionChannel chan elevatorConfig.Direction) {
+func HandleStopButtonActivated(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, MotorDirectionChannel chan elevatorConfig.Direction) {
 	fmt.Println("Stop was activated")
 	TurnOffAllOrderLights()
 	elevio.SetStopLamp(true)
@@ -216,7 +224,7 @@ func HandleStopButtonActivated (elevator *elevatorConfig.Elevator, doorTimer *ti
 
 }
 
-func HandleStopButtonreset (elevator *elevatorConfig.Elevator, doorTimer *time.Timer, MotorDirectionChannel chan elevatorConfig.Direction) {
+func HandleStopButtonreset(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, MotorDirectionChannel chan elevatorConfig.Direction) {
 	fmt.Println("Stop was activated")
 	TurnOffAllOrderLights()
 	elevio.SetStopLamp(true)
@@ -225,9 +233,9 @@ func HandleStopButtonreset (elevator *elevatorConfig.Elevator, doorTimer *time.T
 
 	switch elevator.Behavior {
 
-	case elevatorConfig.Moving,elevatorConfig.Idle:
+	case elevatorConfig.Moving, elevatorConfig.Idle:
 		InitElevatorBetweenFloors(elevator)
-		
+
 	default:
 
 	}
@@ -268,7 +276,7 @@ func RunElevatorHardware(elevatorID string, hardwareChannels elevatorConfig.Elev
 
 		case recievedOrder := <-hardwareChannels.PollOrderButtonsChannel:
 
-			HandleRequestButtonPress(&elevatorObject, int(recievedOrder.Floor), elevatorConfig.Button(recievedOrder.Button), hardwareChannels.MotorDirectionChannel)
+			HandleRequestButtonPress(&elevatorObject, doorTimer, int(recievedOrder.Floor), elevatorConfig.Button(recievedOrder.Button), hardwareChannels.MotorDirectionChannel)
 
 		case stopActivated := <-hardwareChannels.PollStopButtonChannel:
 			if stopActivated {
@@ -280,12 +288,12 @@ func RunElevatorHardware(elevatorID string, hardwareChannels elevatorConfig.Elev
 		case obstructionActivated := <-hardwareChannels.PollObstructionChannel:
 			if obstructionActivated {
 				HandleObstructionActivated(&elevatorObject, doorTimer, hardwareChannels.MotorDirectionChannel)
-			}else {
+			} else {
 				OpenDoor(&elevatorObject, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S)
 			}
 
 		case <-doorTimer.C:
-			OnDoorTimeout(&elevatorObject)
+			OnDoorTimeout(&elevatorObject, doorTimer)
 
 		}
 
