@@ -127,7 +127,7 @@ func OpenDoor(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, timeOpen
 
 func OnDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer) {
 	fmt.Println("Door timeout")
-	debuggingHelpers.Elevator_print(*elevator)
+	// debuggingHelpers.Elevator_print(*elevator)
 
 	switch elevator.Behavior {
 	case elevatorConfig.DoorOpen:
