@@ -2,7 +2,9 @@ package communication
 
 import (
 	//"HEISPROSJEKT/hardware"
+	"HEISPROSJEKT/elevatorConfig"
 	"HEISPROSJEKT/elevatorHardware"
+
 	//"HEISPROSJEKT/elevatorConfig"
 	"Network-go/network/peers"
 	"fmt"
@@ -17,8 +19,8 @@ type messageStrc struct {
 type networkChannels struct {
 	PeerUpdateChl                chan peers.PeerUpdate
 	PeerTxEnableCh               chan bool
-	BcastIncomingMessagesChannel chan elevatorHardware.Elevator
-	BcastOutgoingMessagesChannel chan elevatorHardware.Elevator
+	BcastIncomingMessagesChannel chan elevatorConfig.Elevator
+	BcastOutgoingMessagesChannel chan elevatorConfig.Elevator
 }
 
 var (
@@ -30,8 +32,8 @@ func InitNetworkChannels() networkChannels {
 	channels := networkChannels{
 		PeerUpdateChl:                make(chan peers.PeerUpdate),
 		PeerTxEnableCh:               make(chan bool),
-		BcastIncomingMessagesChannel: make(chan elevatorHardware.Elevator),
-		BcastOutgoingMessagesChannel: make(chan elevatorHardware.Elevator),
+		BcastIncomingMessagesChannel: make(chan elevatorConfig.Elevator),
+		BcastOutgoingMessagesChannel: make(chan elevatorConfig.Elevator),
 	}
 
 	return channels
@@ -68,7 +70,6 @@ func UpdatePeerList(channels networkChannels) {
 		fmt.Printf("Peers: %q\n", GetAlivePeersList())
 		fmt.Printf("Dead: %q\n", GetDeadPeersList())
 	}
-
 }
 
 func GetAlivePeersList() []string {
@@ -79,7 +80,7 @@ func GetDeadPeersList() []string {
 	return deadPeersList
 }
 
-func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan elevatorHardware.Elevator, elevatorChannel chan elevatorHardware.Elevator) {
+func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan elevatorConfig.Elevator, elevatorChannel chan elevatorConfig.Elevator) {
 	messageTimer := time.NewTimer(1 * time.Second)
 	for {
 
@@ -94,7 +95,9 @@ func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan ele
 	}
 }
 
-func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan elevatorHardware.Elevator) {
+func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan elevatorConfig.Elevator) {
+	
+
 	for {
 		incomingMessage := <-BcastIncomingMessagesChannel
 
@@ -110,4 +113,8 @@ func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan eleva
 
 	}
 
+}
+
+func synchroniseElevators(){
+	
 }

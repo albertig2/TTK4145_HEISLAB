@@ -6,110 +6,110 @@ import (
 	"fmt"
 )
 
-func SetAllLights(es Elevator) {
-	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
-		for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
-			Elevator_requestButtonLight(floor, elevatorConfig.Button(btn), es.Requests[floor][btn])
-		}
-	}
+// func SetAllLights(elevator elevatorConfig.Elevator) {
+// 	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
+// 		for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
+// 			Elevator_requestButtonLight(floor, elevatorConfig.Button(btn), elevator.Requests[floor][btn])
+// 		}
+// 	}
+// }
+
+func Fsm_onInitBetweenFloors(elevator *elevatorConfig.Elevator) {
+	ElevatorMotorDirection(elevatorConfig.Down)
+	elevator.Direction = elevatorConfig.Down
+	elevator.Behavior = elevatorConfig.Moving
 }
 
-func Fsm_onInitBetweenFloors(e *Elevator) {
-	Elevator_motorDirection(elevatorConfig.Down)
-	e.Direction = elevatorConfig.Down
-	e.Behavior = elevatorConfig.Moving
-}
+func Fsm_onRequestButtonPress(elevator *elevatorConfig.Elevator, btn_floor int, btn_type elevatorConfig.Button) {
+	fmt.Printf("\n\n%s(%d, %s)\n", "Fsm_handleRequestButtonPress", btn_floor, elevatorConfig.ButtonToString(btn_type))
+	Elevator_print(*elevator)
 
-func Fsm_onRequestButtonPress(e *Elevator, btn_floor int, btn_type elevatorConfig.Button) {
-	fmt.Printf("\n\n%s(%d, %s)\n", "fsm_onRequestButtonPress", btn_floor, elevatorConfig.ButtonToString(btn_type))
-	Elevator_print(*e)
-
-	switch e.Behavior {
+	switch elevator.Behavior {
 	case elevatorConfig.DoorOpen:
-		if Requests_shouldClearImmediately(*e, btn_floor, btn_type) {
-			timer.Timer_start(e.Config.DoorOpenDuration_s)
+		if RequestsShouldClearImmediately(*elevator, btn_floor, btn_type) {
+			timer.Timer_start(elevator.Config.DoorOpenDuration_s)
 		} else {
-			e.Requests[btn_floor][btn_type] = true
+			elevator.Requests[btn_floor][btn_type] = true
 		}
 
 	case elevatorConfig.Moving:
-		e.Requests[btn_floor][btn_type] = true
+		elevator.Requests[btn_floor][btn_type] = true
 
 	case elevatorConfig.Idle:
-		e.Requests[btn_floor][btn_type] = true
-		pair := Requests_chooseDirection(*e)
-		e.Direction = pair.Direction
-		e.Behavior = pair.behavior
+		elevator.Requests[btn_floor][btn_type] = true
+		pair := Requests_chooseDirection(*elevator)
+		elevator.Direction = pair.Direction
+		elevator.Behavior = pair.behavior
 
 		switch pair.behavior {
 		case elevatorConfig.DoorOpen:
-			Elevator_doorLight(true)
-			timer.Timer_start(e.Config.DoorOpenDuration_s)
-			*e = Requests_clearAtCurrentFloor(*e)
+			ElevatorDoorLight(true)
+			timer.Timer_start(elevator.Config.DoorOpenDuration_s)
+			*elevator = RequestsClearAtCurrentFloor(*elevator)
 
 		case elevatorConfig.Moving:
-			Elevator_motorDirection(e.Direction)
+			ElevatorMotorDirection(elevator.Direction)
 
 		case elevatorConfig.Idle:
 			// nothing
 		}
 	}
 
-	SetAllLights(*e)
+	SetAllLights(*elevator)
 
 	fmt.Printf("\nNew state:\n")
-	Elevator_print(*e)
+	Elevator_print(*elevator)
 }
 
-func Fsm_onFloorArrival(e *Elevator, newFloor int) {
+func Fsm_onFloorArrival(elevator *elevatorConfig.Elevator, newFloor int) {
 	fmt.Printf("\n\n%s(%d)\n", "fsm_onFloorArrival", newFloor)
-	Elevator_print(*e)
+	Elevator_print(*elevator)
 
-	e.Floor = newFloor
-	Elevator_floorIndicator(e.Floor)
+	elevator.Floor = newFloor
+	ElevatorFloorIndicator(elevator.Floor)
 
-	switch e.Behavior {
+	switch elevator.Behavior {
 	case elevatorConfig.Moving:
-		if Requests_shouldStop(*e) {
-			Elevator_motorDirection(elevatorConfig.Stop)
-			Elevator_doorLight(true)
-			*e = Requests_clearAtCurrentFloor(*e)
-			timer.Timer_start(e.Config.DoorOpenDuration_s)
-			SetAllLights(*e)
-			e.Behavior = elevatorConfig.DoorOpen
+		if RequestsShouldStop(*elevator) {
+			ElevatorMotorDirection(elevatorConfig.Stop)
+			ElevatorDoorLight(true)
+			*elevator = RequestsClearAtCurrentFloor(*elevator)
+			timer.Timer_start(elevator.Config.DoorOpenDuration_s)
+			SetAllLights(*elevator)
+			elevator.Behavior = elevatorConfig.DoorOpen
 		}
 	default:
 		// nothing
 	}
 
 	fmt.Printf("\nNew state:\n")
-	Elevator_print(*e)
+	Elevator_print(*elevator)
 }
 
-func fsm_onDoorTimeout(e *Elevator) {
+func fsm_onDoorTimeout(elevator *elevatorConfig.Elevator) {
 	fmt.Printf("\n\n%s()\n", "fsm_onDoorTimeout")
-	Elevator_print(*e)
+	Elevator_print(*elevator)
 
-	switch e.Behavior {
+	switch elevator.Behavior {
 	case elevatorConfig.DoorOpen:
-		pair := Requests_chooseDirection(*e)
-		e.Direction = pair.Direction
-		e.Behavior = pair.behavior
+		pair := Requests_chooseDirection(*elevator)
+		elevator.Direction = pair.Direction
+		elevator.Behavior = pair.behavior
 
-		switch e.Behavior {
+		switch elevator.Behavior {
 		case elevatorConfig.DoorOpen:
-			timer.Timer_start(e.Config.DoorOpenDuration_s)
-			*e = Requests_clearAtCurrentFloor(*e)
-			SetAllLights(*e)
+			timer.Timer_start(elevator.Config.DoorOpenDuration_s)
+			*elevator = RequestsClearAtCurrentFloor(*elevator)
+			SetAllLights(*elevator)
 
 		case elevatorConfig.Moving, elevatorConfig.Idle:
-			Elevator_doorLight(false)
-			Elevator_motorDirection(e.Direction)
+			ElevatorDoorLight(false)
+			ElevatorMotorDirection(elevator.Direction)
 		}
 	default:
 		// nothing
 	}
 
 	fmt.Printf("\nNew state:\n")
-	Elevator_print(*e)
+	Elevator_print(*elevator)
 }
