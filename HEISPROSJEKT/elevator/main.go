@@ -43,7 +43,7 @@ func main() {
 	go elevio.PollObstructionSwitch(hardwareChannels.PollObstructionChannel)
 	go elevio.PollStopButton(hardwareChannels.PollStopButtonChannel)
 
-	go elevatorHardware.RunElevatorHardware(strconv.Itoa(*id), hardwareChannels)
+	go elevatorHardware.RunElevatorFsm(strconv.Itoa(*id), hardwareChannels)
 
 	// go communication.BroadcastElevatorWorldView(strconv.Itoa(*id), channels.BcastOutgoingMessagesChannel, hardwareChannels.ElevatorObjectChannel)
 	// go communication.RecieveBroadcastfWorldViewfFromPeer(channels.BcastIncomingMessagesChannel)
