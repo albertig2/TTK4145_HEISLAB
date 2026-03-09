@@ -1,6 +1,7 @@
 package elevatorHardware
 
 import (
+	"HEISPROSJEKT/debuggingHelpers"
 	"HEISPROSJEKT/elevatorConfig"
 	"HEISPROSJEKT/timer"
 	"fmt"
@@ -22,7 +23,7 @@ func Fsm_onInitBetweenFloors(elevator *elevatorConfig.Elevator) {
 
 func Fsm_onRequestButtonPress(elevator *elevatorConfig.Elevator, btn_floor int, btn_type elevatorConfig.Button) {
 	fmt.Printf("\n\n%s(%d, %s)\n", "Fsm_handleRequestButtonPress", btn_floor, elevatorConfig.ButtonToString(btn_type))
-	Elevator_print(*elevator)
+	debuggingHelpers.Elevator_print(*elevator)
 
 	switch elevator.Behavior {
 	case elevatorConfig.DoorOpen:
@@ -58,12 +59,12 @@ func Fsm_onRequestButtonPress(elevator *elevatorConfig.Elevator, btn_floor int, 
 	SetAllLights(*elevator)
 
 	fmt.Printf("\nNew state:\n")
-	Elevator_print(*elevator)
+	debuggingHelpers.Elevator_print(*elevator)
 }
 
 func Fsm_onFloorArrival(elevator *elevatorConfig.Elevator, newFloor int) {
 	fmt.Printf("\n\n%s(%d)\n", "fsm_onFloorArrival", newFloor)
-	Elevator_print(*elevator)
+	debuggingHelpers.Elevator_print(*elevator)
 
 	elevator.Floor = newFloor
 	ElevatorFloorIndicator(elevator.Floor)
@@ -83,12 +84,12 @@ func Fsm_onFloorArrival(elevator *elevatorConfig.Elevator, newFloor int) {
 	}
 
 	fmt.Printf("\nNew state:\n")
-	Elevator_print(*elevator)
+	debuggingHelpers.Elevator_print(*elevator)
 }
 
 func fsm_onDoorTimeout(elevator *elevatorConfig.Elevator) {
 	fmt.Printf("\n\n%s()\n", "fsm_onDoorTimeout")
-	Elevator_print(*elevator)
+	debuggingHelpers.Elevator_print(*elevator)
 
 	switch elevator.Behavior {
 	case elevatorConfig.DoorOpen:
@@ -111,5 +112,5 @@ func fsm_onDoorTimeout(elevator *elevatorConfig.Elevator) {
 	}
 
 	fmt.Printf("\nNew state:\n")
-	Elevator_print(*elevator)
+	debuggingHelpers.Elevator_print(*elevator)
 }

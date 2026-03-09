@@ -2,10 +2,10 @@ package elevatorHardware
 
 import (
 	"Driver-go/elevio"
+	"HEISPROSJEKT/debuggingHelpers"
 	"HEISPROSJEKT/elevatorConfig"
 	"fmt"
 	"time"
-
 )
 
 func SetAllLights(elevator elevatorConfig.Elevator) {
@@ -74,8 +74,8 @@ func isBetweenFloors() bool {
 }
 
 func HandleOnFloorArrival(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, newFloor int, MotorDirectionChannel chan elevatorConfig.Direction) {
-	fmt.Println( "Elevator arrived at:", newFloor)
-	Elevator_print(*elevator)
+	fmt.Println("Elevator arrived at:", newFloor)
+	debuggingHelpers.Elevator_print(*elevator)
 
 	elevator.Floor = newFloor
 	ElevatorFloorIndicator(elevator.Floor)
@@ -99,7 +99,7 @@ func HandleOnFloorArrival(elevator *elevatorConfig.Elevator, doorTimer *time.Tim
 	}
 
 	fmt.Printf("\nNew state after HandleOnFloorArrival:\n")
-	Elevator_print(*elevator)
+	debuggingHelpers.Elevator_print(*elevator)
 }
 
 func OpenDoor(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, timeOpenSeconds time.Duration) {
@@ -125,7 +125,7 @@ func OpenDoor(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, timeOpen
 
 func OnDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer) {
 	fmt.Println("Door timeout")
-	Elevator_print(*elevator)
+	debuggingHelpers.Elevator_print(*elevator)
 
 	switch elevator.Behavior {
 	case elevatorConfig.DoorOpen:
@@ -149,12 +149,12 @@ func OnDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer) {
 	}
 
 	fmt.Printf("\nNew state after  OnDoorTimeout:\n")
-	Elevator_print(*elevator)
+	debuggingHelpers.Elevator_print(*elevator)
 }
 
 func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, btn_floor int, btn_type elevatorConfig.Button, MotorDirectionChannel chan elevatorConfig.Direction) {
 	fmt.Printf("\n\n%s(%d, %s)\n", "Recieved the following order:", btn_floor, elevatorConfig.ButtonToString(btn_type))
-	Elevator_print(*elevator)
+	debuggingHelpers.Elevator_print(*elevator)
 
 	switch elevator.Behavior {
 	case elevatorConfig.DoorOpen:
@@ -194,7 +194,7 @@ func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time
 	SetAllLights(*elevator)
 
 	fmt.Printf("\nNew state after HandleRequestButtonPres:\n")
-	Elevator_print(*elevator)
+	debuggingHelpers.Elevator_print(*elevator)
 }
 
 func HandleStopButtonActivated(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, MotorDirectionChannel chan elevatorConfig.Direction) {
