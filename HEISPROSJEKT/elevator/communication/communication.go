@@ -2,8 +2,8 @@ package communication
 
 import (
 	//"HEISPROSJEKT/hardware"
+	"HEISPROSJEKT/debuggingHelpers"
 	"HEISPROSJEKT/elevatorConfig"
-	"HEISPROSJEKT/elevatorHardware"
 
 	//"HEISPROSJEKT/elevatorConfig"
 	"Network-go/network/peers"
@@ -96,7 +96,6 @@ func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan ele
 }
 
 func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan elevatorConfig.Elevator) {
-	
 
 	for {
 		incomingMessage := <-BcastIncomingMessagesChannel
@@ -109,12 +108,12 @@ func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan eleva
 		*/
 
 		fmt.Println("Sender ID:", senderID)
-		elevatorHardware.Elevator_print(incomingMessage)
+		debuggingHelpers.Elevator_print(incomingMessage)
 
 	}
 
 }
 
-func synchroniseElevators(){
-	
+func synchroniseElevators() {
+
 }
