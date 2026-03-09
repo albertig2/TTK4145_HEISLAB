@@ -32,11 +32,8 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 			HandleStopButtonActivated( stopActivated, &elevatorObject, doorTimer, hardwareChannels.MotorDirectionChannel)
 
 		case obstructionActivated := <-hardwareChannels.PollObstructionChannel:
-			if obstructionActivated {
-				HandleObstructionActivated(&elevatorObject, doorTimer, hardwareChannels.MotorDirectionChannel)
-			} else {
-				OpenDoor(&elevatorObject, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S)
-			}
+	
+			HandleObstructionActivated(obstructionActivated, &elevatorObject, doorTimer, hardwareChannels.MotorDirectionChannel)
 
 		case <-doorTimer.C:
 			OnDoorTimeout(&elevatorObject, doorTimer)

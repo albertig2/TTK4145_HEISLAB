@@ -231,7 +231,7 @@ func HandleStopButtonActivated(stopActivated bool, elevator *elevatorConfig.Elev
 
 		case elevatorConfig.Moving, elevatorConfig.Idle:
 			InitElevatorBetweenFloors(elevator)
-		
+
 		case elevatorConfig.DoorOpen:
 			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S) // keep door open for 3 more sek
 
@@ -261,19 +261,33 @@ func HandleStopButtonActivated(stopActivated bool, elevator *elevatorConfig.Elev
 
 // }
 
-func HandleObstructionActivated(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, MotorDirectionChannel chan elevatorConfig.Direction) {
+func HandleObstructionActivated(obstructionActivated bool, elevator *elevatorConfig.Elevator, doorTimer *time.Timer, MotorDirectionChannel chan elevatorConfig.Direction) {
 
-	fmt.Println("Obstruction was activated")
-	//ElevatorMotorDirection(elevatorConfig.Stop)
-	//MotorDirectionChannel <- elevatorConfig.Stop
+	if obstructionActivated {
+		fmt.Println("Obstruction was activated")
+		//ElevatorMotorDirection(elevatorConfig.Stop)
+		//MotorDirectionChannel <- elevatorConfig.Stop
 
-	switch elevator.Behavior {
+		switch elevator.Behavior {
 
-	case elevatorConfig.DoorOpen:
-		doorTimer.Stop()
+		case elevatorConfig.DoorOpen:
+			doorTimer.Stop()
 
-	default:
-		//Do nothing if the door is not open
+		default:
+			//Do nothing if the door is not open
+		}
+
+	} else {
+		fmt.Println("Obstruction was reset")
+		switch elevator.Behavior {
+
+		case elevatorConfig.DoorOpen:
+			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S)
+
+		default:
+			//Do nothing if the door is not open
+		}
+
 	}
 
 }
