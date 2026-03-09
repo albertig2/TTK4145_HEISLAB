@@ -1,4 +1,4 @@
-package communication
+package synchronisation
 
 import( 
 	"encoding/json"

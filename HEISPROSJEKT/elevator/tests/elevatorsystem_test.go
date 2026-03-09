@@ -1,7 +1,7 @@
 package elevatorHardware_test
 
 import (
-	"HEISPROSJEKT/communication"
+	"HEISPROSJEKT/synchronisation"
 	"HEISPROSJEKT/elevatorConfig"
 	"HEISPROSJEKT/elevatorHardware"
 	"HEISPROSJEKT/orderProtocol"
@@ -56,7 +56,7 @@ func TestInitialize(t *testing.T) {
 	orderProtocol.TransitionForHallRequestsByType(&system1, hallRequestTransitions, orderProtocol.PendingToAssigned, []string{"1", "2", "3"})
 	t.Logf("HallRequest for system1 after assigning: %v", system1.HallRequests[3][int(elevatorConfig.HallUp)])
 
-	t.Logf("system json: %s", communication.EncodeElevatorSystem(&system1))
+	t.Logf("system json: %s", synchronisation.EncodeElevatorSystem(&system1))
 	transition := orderProtocol.CheckOrderTransitionStatusForHallRequests(&system1, HallRequestsForAllElevators, int(elevatorConfig.HallUp), 2, []string{"1", "2", "3"})
 	t.Logf("transition: %v", transition)
 	t.Logf("HallRequests: %v", HallRequestsForAllElevators)

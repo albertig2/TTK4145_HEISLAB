@@ -1,4 +1,4 @@
-package communication
+package synchronisation
 
 import (
 	//"HEISPROSJEKT/hardware"
