@@ -1,4 +1,4 @@
-package elevatorHardware
+package synchronisation
 
 import (
 	"HEISPROSJEKT/elevatorConfig"

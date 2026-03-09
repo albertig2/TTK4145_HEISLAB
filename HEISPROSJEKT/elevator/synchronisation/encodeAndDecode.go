@@ -2,18 +2,19 @@ package synchronisation
 
 import( 
 	"encoding/json"
-	"HEISPROSJEKT/elevatorHardware"
+	//"HEISPROSJEKT/elevatorHardware"
+
 	
 
 )
 
-func EncodeElevatorSystem(system *elevatorHardware.ElevatorSystem) string {
+func EncodeElevatorSystem(system *ElevatorSystem) string {
 	jsonData, _ := json.Marshal(&system)
 	return string(jsonData)
 }
 
-func DecodeElevatorSystem(jsonStr string) elevatorHardware.ElevatorSystem {
-	var system elevatorHardware.ElevatorSystem
+func DecodeElevatorSystem(jsonStr string) ElevatorSystem {
+	var system ElevatorSystem
 	json.Unmarshal([]byte(jsonStr), &system)
 	return system
 }

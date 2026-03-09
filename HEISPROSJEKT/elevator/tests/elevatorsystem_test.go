@@ -1,9 +1,9 @@
-package elevatorHardware_test
+package elevatorsystem_test
 
 import (
 	"HEISPROSJEKT/synchronisation"
 	"HEISPROSJEKT/elevatorConfig"
-	"HEISPROSJEKT/elevatorHardware"
+	//"HEISPROSJEKT/elevatorHardware"
 	"HEISPROSJEKT/orderProtocol"
 	"testing"
 )
@@ -11,33 +11,33 @@ import (
 // go test -v -run TestInitialize
 func TestInitialize(t *testing.T) {
 	// Sholuld always update these maps with own state before checking for transitions or doing anything based on the status of the floors
-	HallRequestsForAllElevators := make(map[string][elevatorConfig.N_FLOORS][2]elevatorHardware.OrderStatus)
-	CabRequestsForAllElevators := make(map[string][elevatorConfig.N_FLOORS]elevatorHardware.OrderStatus)
+	HallRequestsForAllElevators := make(map[string][elevatorConfig.N_FLOORS][2]synchronisation.OrderStatus)
+	CabRequestsForAllElevators := make(map[string][elevatorConfig.N_FLOORS]synchronisation.OrderStatus)
 
-	system1 := elevatorHardware.ElevatorSystem{}
-	elevatorHardware.InitializeElevatorSystem(&system1, "1")
-	elevatorHardware.SetFloor(&system1, 3)
-	elevatorHardware.SetDirection(&system1, elevatorConfig.Stop)
-	elevatorHardware.SetBehavior(&system1, elevatorConfig.DoorOpen)
-	elevatorHardware.SetHallRequests(&system1, 2, int(elevatorConfig.HallDown), elevatorHardware.Pending)
+	system1 := synchronisation.ElevatorSystem{}
+	synchronisation.InitializeElevatorSystem(&system1, "1")
+	synchronisation.SetFloor(&system1, 3)
+	synchronisation.SetDirection(&system1, elevatorConfig.Stop)
+	synchronisation.SetBehavior(&system1, elevatorConfig.DoorOpen)
+	synchronisation.SetHallRequests(&system1, 2, int(elevatorConfig.HallDown), synchronisation.Pending)
 
-	system2 := elevatorHardware.ElevatorSystem{}
-	elevatorHardware.InitializeElevatorSystem(&system2, "2")
-	elevatorHardware.SetFloor(&system2, 0)
-	elevatorHardware.SetDirection(&system2, elevatorConfig.Stop)
-	elevatorHardware.SetBehavior(&system2, elevatorConfig.Idle)
-	elevatorHardware.SetHallRequests(&system2, 3, int(elevatorConfig.HallUp), elevatorHardware.Pending)
+	system2 := synchronisation.ElevatorSystem{}
+	synchronisation.InitializeElevatorSystem(&system2, "2")
+	synchronisation.SetFloor(&system2, 0)
+	synchronisation.SetDirection(&system2, elevatorConfig.Stop)
+	synchronisation.SetBehavior(&system2, elevatorConfig.Idle)
+	synchronisation.SetHallRequests(&system2, 3, int(elevatorConfig.HallUp), synchronisation.Pending)
 
-	system3 := elevatorHardware.ElevatorSystem{}
-	elevatorHardware.InitializeElevatorSystem(&system3, "3")
-	elevatorHardware.SetFloor(&system3, 1)
-	elevatorHardware.SetDirection(&system3, elevatorConfig.Up)
-	elevatorHardware.SetBehavior(&system3, elevatorConfig.Moving)
-	elevatorHardware.SetCabRequests(&system3, 1, elevatorHardware.Pending)
-	elevatorHardware.SetHallRequests(&system3, 3, int(elevatorConfig.HallUp), elevatorHardware.Pending)
+	system3 := synchronisation.ElevatorSystem{}
+	synchronisation.InitializeElevatorSystem(&system3, "3")
+	synchronisation.SetFloor(&system3, 1)
+	synchronisation.SetDirection(&system3, elevatorConfig.Up)
+	synchronisation.SetBehavior(&system3, elevatorConfig.Moving)
+	synchronisation.SetCabRequests(&system3, 1, synchronisation.Pending)
+	synchronisation.SetHallRequests(&system3, 3, int(elevatorConfig.HallUp), synchronisation.Pending)
 
-	elevatorHardware.UpdateElevatorSystemFromPeer(&system1, &system2, HallRequestsForAllElevators, CabRequestsForAllElevators)
-	elevatorHardware.UpdateElevatorSystemFromPeer(&system1, &system3, HallRequestsForAllElevators, CabRequestsForAllElevators)
+	synchronisation.UpdateElevatorSystemFromPeer(&system1, &system2, HallRequestsForAllElevators, CabRequestsForAllElevators)
+	synchronisation.UpdateElevatorSystemFromPeer(&system1, &system3, HallRequestsForAllElevators, CabRequestsForAllElevators)
 
 	HallRequestsForAllElevators["1"] = system1.HallRequests           // Always update these before checking for transitions or doing anything based on the status of the floors
 	CabRequestsForAllElevators["1"] = system1.States["1"].CabRequests // Always update these before checking for transitions or doing anything based on the status of the floors
@@ -45,7 +45,7 @@ func TestInitialize(t *testing.T) {
 	t.Logf("HallRequest for elevator 1: %v", HallRequestsForAllElevators["1"])
 	orderTransition := orderProtocol.CheckOrderTransitionStatusForHallRequests(&system1, HallRequestsForAllElevators, int(elevatorConfig.HallUp), 3, []string{"1", "2", "3"})
 	t.Logf("orderTransition: %v", orderTransition)
-	elevatorHardware.SetHallRequests(&system1, 3, int(elevatorConfig.HallUp), elevatorHardware.Pending)
+	synchronisation.SetHallRequests(&system1, 3, int(elevatorConfig.HallUp), synchronisation.Pending)
 	HallRequestsForAllElevators["1"] = system1.HallRequests // Remember to update
 	orderTransition2 := orderProtocol.CheckOrderTransitionStatusForHallRequests(&system1, HallRequestsForAllElevators, int(elevatorConfig.HallUp), 3, []string{"1", "2", "3"})
 	t.Logf("orderTransition2: %v", orderTransition2)
