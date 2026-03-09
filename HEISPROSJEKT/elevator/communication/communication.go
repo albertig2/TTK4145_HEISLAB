@@ -70,7 +70,6 @@ func UpdatePeerList(channels networkChannels) {
 		fmt.Printf("Peers: %q\n", GetAlivePeersList())
 		fmt.Printf("Dead: %q\n", GetDeadPeersList())
 	}
-
 }
 
 func GetAlivePeersList() []string {
@@ -97,6 +96,8 @@ func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan ele
 }
 
 func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan elevatorConfig.Elevator) {
+	
+
 	for {
 		incomingMessage := <-BcastIncomingMessagesChannel
 
@@ -112,4 +113,8 @@ func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan eleva
 
 	}
 
+}
+
+func synchroniseElevators(){
+	
 }
