@@ -29,11 +29,7 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 
 		case stopActivated := <-hardwareChannels.PollStopButtonChannel:
 
-			if stopActivated {
-				HandleStopButtonActivated(&elevatorObject, doorTimer, hardwareChannels.MotorDirectionChannel)
-			} else {
-				HandleStopButtonreset(&elevatorObject, doorTimer, hardwareChannels.MotorDirectionChannel)
-			}
+			HandleStopButtonActivated( stopActivated, &elevatorObject, doorTimer, hardwareChannels.MotorDirectionChannel)
 
 		case obstructionActivated := <-hardwareChannels.PollObstructionChannel:
 			if obstructionActivated {

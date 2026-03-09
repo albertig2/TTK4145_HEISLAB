@@ -1,6 +1,5 @@
 package elevatorHardware
 
-
 import (
 	"Driver-go/elevio"
 	"HEISPROSJEKT/debuggingHelpers"
@@ -8,7 +7,6 @@ import (
 	"fmt"
 	"time"
 )
-
 
 func InitElevatorBetweenFloors(elevator *elevatorConfig.Elevator) {
 	ElevatorMotorDirection(elevatorConfig.Down)
@@ -201,46 +199,67 @@ func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time
 	debuggingHelpers.Elevator_print(*elevator)
 }
 
-func HandleStopButtonActivated(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, MotorDirectionChannel chan elevatorConfig.Direction) {
-	fmt.Println("Stop was activated")
-	TurnOffAllOrderLights()
-	elevio.SetStopLamp(true)
+func HandleStopButtonActivated(stopActivated bool, elevator *elevatorConfig.Elevator, doorTimer *time.Timer, MotorDirectionChannel chan elevatorConfig.Direction) {
 
-	//MotorDirectionChannel <- elevatorConfig.Stop
+	if stopActivated {
+		//MotorDirectionChannel <- elevatorConfig.Stop
 
-	switch elevator.Behavior {
+		switch elevator.Behavior {
 
-	case elevatorConfig.DoorOpen:
-		//If stop is triggerd while at a floor, the door is opend and keep open until stop is reset + 3 seconds more
-		OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S)
-		doorTimer.Stop()
+		case elevatorConfig.DoorOpen:
+			//If stop is triggerd while at a floor, the door is opend and keep open until stop is reset + 3 seconds more
+			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S)
+			doorTimer.Stop()
 
-	case elevatorConfig.Moving:
-		ElevatorMotorDirection(elevatorConfig.Stop)
+		case elevatorConfig.Moving:
+			ElevatorMotorDirection(elevatorConfig.Stop)
 
-	default:
+		default:
+
+		}
+		fmt.Println("Stop was activated")
+		TurnOffAllOrderLights()
+		elevio.SetStopLamp(true)
+
+	} else {
+		fmt.Println("Stop was reset")
+		elevio.SetStopLamp(false)
+
+		//MotorDirectionChannel <- elevatorConfig.Stop
+
+		switch elevator.Behavior {
+
+		case elevatorConfig.Moving, elevatorConfig.Idle:
+			InitElevatorBetweenFloors(elevator)
+		
+		case elevatorConfig.DoorOpen:
+			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S) // keep door open for 3 more sek
+
+		default:
+
+		}
 
 	}
 
 }
 
-func HandleStopButtonreset(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, MotorDirectionChannel chan elevatorConfig.Direction) {
-	fmt.Println("Stop was activated")
-	TurnOffAllOrderLights()
-	elevio.SetStopLamp(true)
+// func HandleStopButtonreset(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, MotorDirectionChannel chan elevatorConfig.Direction) {
+// 	fmt.Println("Stop was activated")
+// 	TurnOffAllOrderLights()
+// 	elevio.SetStopLamp(true)
 
-	//MotorDirectionChannel <- elevatorConfig.Stop
+// 	//MotorDirectionChannel <- elevatorConfig.Stop
 
-	switch elevator.Behavior {
+// 	switch elevator.Behavior {
 
-	case elevatorConfig.Moving, elevatorConfig.Idle:
-		InitElevatorBetweenFloors(elevator)
+// 	case elevatorConfig.Moving, elevatorConfig.Idle:
+// 		InitElevatorBetweenFloors(elevator)
 
-	default:
+// 	default:
 
-	}
+// 	}
 
-}
+// }
 
 func HandleObstructionActivated(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, MotorDirectionChannel chan elevatorConfig.Direction) {
 
