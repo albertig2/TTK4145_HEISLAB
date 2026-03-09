@@ -1,21 +1,16 @@
 package synchronisation
 
 import (
-	//"HEISPROSJEKT/hardware"
 	"HEISPROSJEKT/debuggingHelpers"
 	"HEISPROSJEKT/elevatorConfig"
-
-	//"HEISPROSJEKT/elevatorConfig"
 	"Network-go/network/peers"
+	
 	"fmt"
 	"strconv"
 	"time"
 )
 
-type messageStrc struct {
-	Id      string
-	Message string
-}
+
 type networkChannels struct {
 	PeerUpdateChl                chan peers.PeerUpdate
 	PeerTxEnableCh               chan bool
