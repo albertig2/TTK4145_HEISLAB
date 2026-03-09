@@ -3,13 +3,9 @@ package elevatorHardware
 import (
 	"Driver-go/elevio"
 	"HEISPROSJEKT/elevatorConfig"
-	//"HEISPROSJEKT/timer"
 	"fmt"
 	"time"
-	//"fmt"
-	// "HEISPROSJEKT/elevatorConfig"
-	// "HEISPROSJEKT/timer"
-	// "fmt"
+
 )
 
 func SetAllLights(elevator elevatorConfig.Elevator) {
