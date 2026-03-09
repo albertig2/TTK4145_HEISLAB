@@ -15,21 +15,21 @@ func TestInitialize(t *testing.T) {
 	CabRequestsForAllElevators := make(map[string][elevatorConfig.N_FLOORS]elevatorHardware.OrderStatus)
 
 	system1 := elevatorHardware.ElevatorSystem{}
-	elevatorHardware.Initialize(&system1, "1")
+	elevatorHardware.InitializeElevatorSystem(&system1, "1")
 	elevatorHardware.SetFloor(&system1, 3)
 	elevatorHardware.SetDirection(&system1, elevatorConfig.Stop)
 	elevatorHardware.SetBehavior(&system1, elevatorConfig.DoorOpen)
 	elevatorHardware.SetHallRequests(&system1, 2, int(elevatorConfig.HallDown), elevatorHardware.Pending)
 
 	system2 := elevatorHardware.ElevatorSystem{}
-	elevatorHardware.Initialize(&system2, "2")
+	elevatorHardware.InitializeElevatorSystem(&system2, "2")
 	elevatorHardware.SetFloor(&system2, 0)
 	elevatorHardware.SetDirection(&system2, elevatorConfig.Stop)
 	elevatorHardware.SetBehavior(&system2, elevatorConfig.Idle)
 	elevatorHardware.SetHallRequests(&system2, 3, int(elevatorConfig.HallUp), elevatorHardware.Pending)
 
 	system3 := elevatorHardware.ElevatorSystem{}
-	elevatorHardware.Initialize(&system3, "3")
+	elevatorHardware.InitializeElevatorSystem(&system3, "3")
 	elevatorHardware.SetFloor(&system3, 1)
 	elevatorHardware.SetDirection(&system3, elevatorConfig.Up)
 	elevatorHardware.SetBehavior(&system3, elevatorConfig.Moving)
