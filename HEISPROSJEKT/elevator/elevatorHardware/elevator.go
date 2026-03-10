@@ -3,88 +3,67 @@ package elevatorHardware
 import (
 	"Driver-go/elevio"
 	"HEISPROSJEKT/elevatorConfig"
-	"fmt"
-	"time"
+	//"time"
 )
 
-type Config struct {
-	doorOpenDuration_s time.Duration
-}
+//------------------Sensors-------------------------------
 
-type Elevator struct {
-	floor     int
-	direction elevatorConfig.Direction
-	requests  [elevatorConfig.N_FLOORS][elevatorConfig.N_BUTTONS]bool
-	behavior  elevatorConfig.Behavior
-	config    Config
-}
-
-func Elevator_print(es Elevator) {
-	fmt.Println("  +--------------------+")
-	fmt.Printf("  |%-6s = %-2d          |\n", "floor", es.floor)
-	fmt.Printf("  |%-6s = %-12.12s|\n", "dirn", elevatorConfig.DirectionToString(es.direction))
-	fmt.Printf("  |%-6s = %-12.12s|\n", "behav", elevatorConfig.BehaviorToString(es.behavior))
-	fmt.Println("  +--------------------+")
-	fmt.Println("  |  | up  | dn  | cab |")
-	for f := elevatorConfig.N_FLOORS - 1; f >= 0; f-- {
-		fmt.Printf("  | %d", f)
-		for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
-			if (f == elevatorConfig.N_FLOORS-1 && elevatorConfig.Button(btn) == elevatorConfig.HallUp) || (f == 0 && elevatorConfig.Button(btn) == elevatorConfig.HallDown) {
-				fmt.Printf("|     ")
-			} else {
-				if es.requests[f][btn] {
-					fmt.Printf("|  #  ")
-				} else {
-					fmt.Printf("|  -  ")
-				}
-			}
-		}
-		fmt.Println("|")
-	}
-	fmt.Println("  +--------------------+")
-}
-
-func Elevator_uninitialized() Elevator {
-	elevio.Init("localhost:15657", elevatorConfig.N_FLOORS)
-	es := Elevator{floor: -1, direction: elevatorConfig.Stop, behavior: elevatorConfig.Idle, config: Config{doorOpenDuration_s: 3.0}}
-	return es
-}
-
-func Elevator_floorSensor() int {
+func ElevatorFloorSensor() int {
 	return elevio.GetFloor()
 }
 
-func Elevator_requestButton(f int, b elevatorConfig.Button) bool {
+//-------------------motor------------------------------------
+func ElevatorMotorDirection(d elevatorConfig.Direction) {
+	elevio.SetMotorDirection(elevio.MotorDirection(d))
+}
+
+
+// ------------------Buttons--------------------------------
+func ElevatorRequestButton(f int, b elevatorConfig.Button) bool {
 	return elevio.GetButton((elevio.ButtonType)(b), f)
 }
 
-func Elevator_stopButton() bool {
+func ElevatorStopButton() bool {
 	return elevio.GetStop()
 }
 
-func Elevator_obstruction() bool {
+func ElevatorObstruction() bool {
 	return elevio.GetObstruction()
 }
 
-func Elevator_floorIndicator(f int) {
+//-------------------Lights----------------------------------
+
+func ElevatorFloorIndicatorLight(f int) {
 	elevio.SetFloorIndicator(f)
 }
 
-func Elevator_requestButtonLight(f int, b elevatorConfig.Button, v bool) {
+func ElevatorRequestButtonLight(f int, b elevatorConfig.Button, v bool) {
 	elevio.SetButtonLamp(elevio.ButtonType(b), f, v)
 }
 
-func Elevator_doorLight(v bool) {
+func ElevatorDoorLight(v bool) {
 	elevio.SetDoorOpenLamp(v)
 
 }
 
-func Elevator_stopButtonLight(v bool) {
+func ElevatorStopButtonLight(v bool) {
 	elevio.SetStopLamp(v)
-
 }
 
-func Elevator_motorDirection(d elevatorConfig.Direction) {
-	elevio.SetMotorDirection(elevio.MotorDirection(d))
-
+func SetAllLights(elevator elevatorConfig.Elevator) {
+	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
+		for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
+			ElevatorRequestButtonLight(floor, elevatorConfig.Button(btn), elevator.Requests[floor][btn])
+		}
+	}
 }
+func TurnOffAllOrderLights() {
+	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
+		for button := elevio.ButtonType(0); button < 3; button++ {
+			elevio.SetButtonLamp(button, floor, false)
+		}
+	}
+}
+
+
+

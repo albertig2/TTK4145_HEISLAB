@@ -141,7 +141,7 @@ func RunElevatorHardware(hardwareChannels ElevatorHardwareChannelsStruckt) {
 			if floor == elevatorConfig.N_FLOORS-1 {
 				_nextMotorDirection = elevatorConfig.Down
 			} else if floor == 0 {
-				_nextMotorDirection = elevatorCOnfig.Up
+				_nextMotorDirection = elevatorConfig.Up
 			}
 
 			OpenDoor(doorTimer, 3*time.Second)
