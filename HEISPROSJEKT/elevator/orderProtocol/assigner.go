@@ -2,7 +2,8 @@ package orderProtocol
 
 import (
 	"HEISPROSJEKT/elevatorConfig"
-	"HEISPROSJEKT/elevatorHardware"
+	//"HEISPROSJEKT/elevatorHardware"
+	"HEISPROSJEKT/synchronisation"
 	"encoding/json"
 	"fmt"
 	"os/exec"
@@ -22,7 +23,7 @@ type BoolElevatorSystem struct {
 }
 
 // Converts ElevatorSystem and order status to a boolean-based system for assignment logic
-func BuildBoolElevatorSystem(system elevatorHardware.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, alivePeers []string) BoolElevatorSystem {
+func BuildBoolElevatorSystem(system synchronisation.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, alivePeers []string) BoolElevatorSystem {
 	boolSystem := BoolElevatorSystem{
 		HallRequests: [elevatorConfig.N_FLOORS][2]bool{},
 		States:       make(map[string]*BoolElevatorState),
@@ -40,7 +41,7 @@ func BuildBoolElevatorSystem(system elevatorHardware.ElevatorSystem, hallRequest
 	}
 
 	for floor := range elevatorConfig.N_FLOORS {
-		for _, hallDir := range elevatorHardware.HallDirections {
+		for _, hallDir := range synchronisation.HallDirections {
 			if hallRequestTransitions[floor][hallDir] == PendingToAssigned {
 				boolSystem.HallRequests[floor][hallDir] = true
 			}
@@ -49,7 +50,7 @@ func BuildBoolElevatorSystem(system elevatorHardware.ElevatorSystem, hallRequest
 	return boolSystem
 }
 
-func HallRequestAssigner(system *elevatorHardware.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, alivePeers []string) map[string][][2]bool {
+func HallRequestAssigner(system *synchronisation.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, alivePeers []string) map[string][][2]bool {
 	Executable := ""
 	switch runtime.GOOS {
 	case "linux":
