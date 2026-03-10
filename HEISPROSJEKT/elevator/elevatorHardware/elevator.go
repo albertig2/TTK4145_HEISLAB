@@ -10,6 +10,7 @@ import (
 type Config struct {
 	DoorOpenDuration_s time.Duration
 }
+//testcommit
 
 type Elevator struct {
 	OwnId     string
