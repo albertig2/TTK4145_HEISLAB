@@ -11,6 +11,9 @@ import (
 func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt) {
 	doorTimer := time.NewTimer(elevatorConfig.DOOR_OPEN_DURATION_S)
 	doorTimer.Stop()
+
+	//motorTimer =  time.NewTimer(elevatorConfig.DOOR_OPEN_DURATION_S)
+	//motortimer.Stop()
 	elevatorObject := InitializeElevator(elevatorID)
 
 	InitElevatorHardware(&elevatorObject)
@@ -44,6 +47,12 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 
 		}
 
+		// case <-motortimer.C:
+		// 	HandleMotorFailur(&elevatorObject, doorTimer)
+
+		// }
+
+		
 		select {
 		case hardwareChannels.ElevatorObjectChannel <- elevatorObject:
 		default:
