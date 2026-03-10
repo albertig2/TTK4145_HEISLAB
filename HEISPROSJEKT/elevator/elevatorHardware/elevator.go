@@ -13,7 +13,11 @@ func ElevatorFloorSensor() int {
 }
 
 //-------------------motor------------------------------------
+
+//motortimer *time.Timer
 func ElevatorMotorDirection(d elevatorConfig.Direction) {
+	//if d = 0 ->stop timer
+	//else doorTimer.Reset(timeOpenSeconds) 
 	elevio.SetMotorDirection(elevio.MotorDirection(d))
 }
 
