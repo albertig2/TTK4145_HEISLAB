@@ -71,7 +71,20 @@ func InitializeElevatorSystem(system *ElevatorSystem, id string) {
 		CabRequests: [elevatorConfig.N_FLOORS]OrderStatus{},
 	}
 
+
+
+
+
 	initializeHallRequests(system)
+	
+	//timer
+
+	//listen for broadcast
+	//if recieved -> stop timer 
+	// else timeout AND RUN AS SINGLE ELEVATOR
+	//<-timer.C
+
+
 	initializeCabRequests(system)
 }
 

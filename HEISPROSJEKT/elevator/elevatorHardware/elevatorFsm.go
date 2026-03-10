@@ -20,10 +20,12 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 	for {
 		select {
 		case floor := <-hardwareChannels.FloorSensorChannel:
+			//serviced order <- floor, order (elevatorsystem)
 
 			HandleOnFloorArrival(&elevatorObject, doorTimer, floor, hardwareChannels.MotorDirectionChannel)
 
 		case recievedOrder := <-hardwareChannels.PollOrderButtonsChannel:
+			//neworder <- floor, buttontype (butten event)
 
 			HandleRequestButtonPress(&elevatorObject, doorTimer, int(recievedOrder.Floor), elevatorConfig.Button(recievedOrder.Button), hardwareChannels.MotorDirectionChannel)
 
@@ -35,6 +37,8 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 	
 			HandleObstructionActivated(obstructionActivated, &elevatorObject, doorTimer, hardwareChannels.MotorDirectionChannel)
 
+
+		// orderdque <- new order quqe (REq_matrix)
 		case <-doorTimer.C:
 			OnDoorTimeout(&elevatorObject, doorTimer)
 
