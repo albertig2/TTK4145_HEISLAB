@@ -9,6 +9,7 @@ const N_FLOORS int = 4
 const N_BUTTONS int = 3
 
 const DOOR_OPEN_DURATION_S = 3*time.Second
+const MOTOR_TIMEOUT_DURATION_S = 4*time.Seconds
 
 type Direction int
 

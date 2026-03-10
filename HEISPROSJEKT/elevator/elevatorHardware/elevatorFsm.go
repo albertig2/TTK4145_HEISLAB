@@ -12,8 +12,9 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 	doorTimer := time.NewTimer(elevatorConfig.DOOR_OPEN_DURATION_S)
 	doorTimer.Stop()
 
-	//motorTimer =  time.NewTimer(elevatorConfig.DOOR_OPEN_DURATION_S)
-	//motortimer.Stop()
+	motorTimeoutTimer =  time.NewTimer(elevatorConfig.MOTOR_TIMEOUT_DURATION_S)
+	motorTimeoutTimer.Stop()
+
 	elevatorObject := InitializeElevator(elevatorID)
 
 	InitElevatorHardware(&elevatorObject)
@@ -45,16 +46,16 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 		case <-doorTimer.C:
 			OnDoorTimeout(&elevatorObject, doorTimer)
 
+		
+
+		case <-motortimer.C:
+			//HandleMotorFailure()
 		}
-
-		// case <-motortimer.C:
-		// 	HandleMotorFailur(&elevatorObject, doorTimer)
-
-		// }
 
 		
 		select {
 		case hardwareChannels.ElevatorObjectChannel <- elevatorObject:
+		
 		default:
 		}
 	}
