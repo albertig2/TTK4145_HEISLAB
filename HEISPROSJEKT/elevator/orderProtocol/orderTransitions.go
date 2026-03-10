@@ -16,6 +16,9 @@ const (
 	AssignedToComplete
 	AssignedToNoOrder
 	CompleteToNoOrder
+	UnknownToPending  // for cab requests after recovery
+	UnknownToNoOrder  // for cab requests after recovery
+	UnknownToAssigned // for cab requests after recovery
 )
 
 func CheckOrderTransitionStatusForHallRequests(
@@ -105,7 +108,43 @@ func CheckOrderTransitionStatusForCabRequests(
 	noordertopending := false
 	pendingtoassigned := true
 	assignedtonoorder := false
+	unknowntonoorder := false
+	unknowntopending := false
+	unknowntoassigned := false
 
+	if CabRequestsForAllElevators[system.OwnId][floor] == synchronisation.Unknown {
+		allNoOrder := true
+		allAssignedOrPending := true
+		anyPending := false
+
+		for _, peerId := range alivePeers {
+			if peerId != system.OwnId {
+				peerCabStatus := CabRequestsForAllElevators[peerId][floor]
+				if peerCabStatus == synchronisation.Pending {
+					anyPending = true
+				}
+				if peerCabStatus != synchronisation.NoOrder {
+					allNoOrder = false
+				}
+				if peerCabStatus != synchronisation.Assigned && peerCabStatus != synchronisation.Pending {
+					allAssignedOrPending = false
+				}
+			}
+		}
+
+		if allNoOrder {
+			unknowntonoorder = true
+		} else if allAssignedOrPending {
+			unknowntoassigned = true
+		} else if anyPending {
+			unknowntopending = true
+		}
+		/*
+			if elevator_requestButton(floor, B_Cab) {
+				unknowntopending = true
+			}
+		*/
+	}
 	/*
 		if elevator_requestButton(floor, B_Cab) {
 			noordertopending = true
@@ -130,6 +169,12 @@ func CheckOrderTransitionStatusForCabRequests(
 		return PendingToAssigned
 	} else if assignedtonoorder {
 		return AssignedToNoOrder
+	} else if unknowntonoorder {
+		return UnknownToNoOrder
+	} else if unknowntopending {
+		return UnknownToPending
+	} else if unknowntoassigned {
+		return UnknownToAssigned
 	}
 	return NoTransition
 }
@@ -185,17 +230,17 @@ func transitionFromPendingToAssignedForHallRequests(system *synchronisation.Elev
 	}
 }
 
-func TransitionForCabRequestsByType(system *synchronisation.ElevatorSystem, cabRequestTransitions [elevatorConfig.N_FLOORS]OrderTransition, transitionType OrderTransition, alivePeers []string) {
+func TransitionForCabRequestsByType(system *synchronisation.ElevatorSystem, cabRequestTransitions [elevatorConfig.N_FLOORS]OrderTransition, transitionType OrderTransition) {
 	for floor := range elevatorConfig.N_FLOORS {
 		if cabRequestTransitions[floor] == transitionType {
 			var status synchronisation.OrderStatus
 			switch transitionType {
-			case NoOrderToPending:
+			case NoOrderToPending, UnknownToPending:
 				status = synchronisation.Pending
-			case PendingToAssigned:
+			case PendingToAssigned, UnknownToAssigned:
 				status = synchronisation.Assigned
 				// Turn on lights and stuff here
-			case AssignedToNoOrder:
+			case AssignedToNoOrder, UnknownToNoOrder:
 				status = synchronisation.NoOrder
 				// Turn off lights and stuff here
 			default:

@@ -11,6 +11,7 @@ type OrderStatus string
 
 // Cab order only needs to go from no order to Pending to Completed, while hall orders also need Assigned, since they are Assigned to an elevator by the assigner
 const (
+	Unknown   OrderStatus = "unknown"
 	NoOrder   OrderStatus = "no order"
 	Pending   OrderStatus = "pending"
 	Assigned  OrderStatus = "assigned"
@@ -94,31 +95,62 @@ func initializeHallRequests(system *ElevatorSystem) {
 func initializeCabRequests(system *ElevatorSystem) {
 	// Listen for other elevators to broadcast their view of your cab orders, and if you hear any, set your cab orders to be the combination of all of them (pending if any of them is pending or no order)
 	// For each elevator you hear from, check all floors, if any of the floors have pending, set that floor to pending.
+	/*
+		for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
+			if system.States[system.OwnId].CabRequests[floor] != Pending {
+				system.States[system.OwnId].CabRequests[floor] = NoOrder
+			}
+		}*/
 	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
-		if system.States[system.OwnId].CabRequests[floor] != Pending {
-			system.States[system.OwnId].CabRequests[floor] = NoOrder
-		}
+		system.States[system.OwnId].CabRequests[floor] = Unknown
 	}
 }
 
 // If only called from updatedElavatorSystemFromPeer, then I dont need the check for existence
-func AddPeer(system *ElevatorSystem, peerSystem *ElevatorSystem) {
-	peerState := peerSystem.States[peerSystem.OwnId]
-	if _, exists := system.States[peerSystem.OwnId]; !exists {
-		system.States[peerSystem.OwnId] = &ElevatorState{
-			Behavior:    peerState.Behavior,
-			Floor:       peerState.Floor,
-			Direction:   peerState.Direction,
-			CabRequests: peerState.CabRequests,
+// Only called if not existing
+func addPeer(system *ElevatorSystem, peerSystem *ElevatorSystem) {
+	CabRequests := peerSystem.States[peerSystem.OwnId].CabRequests
+	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
+		if CabRequests[floor] == Unknown {
+			CabRequests[floor] = NoOrder
 		}
+	}
+
+	peerState := peerSystem.States[peerSystem.OwnId]
+	system.States[peerSystem.OwnId] = &ElevatorState{
+		Behavior:    peerState.Behavior,
+		Floor:       peerState.Floor,
+		Direction:   peerState.Direction,
+		CabRequests: CabRequests,
+	}
+}
+
+func updatePeer(system *ElevatorSystem, peerSystem *ElevatorSystem) {
+	// Need to make sure that if I have info on the cabrequests of a peer and they are restarted, meaning that their caborders may be uninitialized
+	peerSystemCabRequests := peerSystem.States[peerSystem.OwnId].CabRequests
+	CabRequests := system.States[peerSystem.OwnId].CabRequests
+
+	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
+		if peerSystemCabRequests[floor] != Unknown {
+			CabRequests[floor] = peerSystemCabRequests[floor]
+		}
+	}
+
+	peerState := peerSystem.States[peerSystem.OwnId]
+	system.States[peerSystem.OwnId] = &ElevatorState{
+		Behavior:    peerState.Behavior,
+		Floor:       peerState.Floor,
+		Direction:   peerState.Direction,
+		CabRequests: CabRequests,
 	}
 }
 
 func UpdateElevatorSystemWithPeer(system *ElevatorSystem, peerSystem *ElevatorSystem, HallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]OrderStatus, CabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]OrderStatus) {
-	if _, exists := system.States[peerSystem.OwnId]; !exists {
-		AddPeer(system, peerSystem)
+	if _, exists := system.States[peerSystem.OwnId]; exists {
+		updatePeer(system, peerSystem)
+	} else {
+		addPeer(system, peerSystem)
 	}
-	system.States[peerSystem.OwnId] = peerSystem.States[peerSystem.OwnId]
 
 	HallRequestsForAllElevators[peerSystem.OwnId] = peerSystem.HallRequests
 	if _, exists := peerSystem.States[system.OwnId]; exists {
@@ -133,7 +165,7 @@ func UpdateElevatorSystemWithSelf(system *ElevatorSystem, HallRequestsForAllElev
 
 func updateElevatorSystem(system *ElevatorSystem, hallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]OrderStatus, cabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]OrderStatus, receivedWorldView chan string) {
 	peerSystem := DecodeElevatorSystem(<-receivedWorldView)
-	AddPeer(system, &peerSystem)
+	addPeer(system, &peerSystem)
 	UpdateElevatorSystemWithPeer(system, &peerSystem, hallRequestsForAllElevators, cabRequestsForAllElevators)
 	UpdateElevatorSystemWithSelf(system, hallRequestsForAllElevators, cabRequestsForAllElevators)
 }
