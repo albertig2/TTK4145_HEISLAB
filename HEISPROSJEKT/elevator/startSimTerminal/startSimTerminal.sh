@@ -9,5 +9,5 @@ done
 
 #linux
 # må ha: sudo apt install xterm
-# for å gjøre kjørbar: chmod +x startSimTerminal.sh (usikker på om denne er nødvedig)
+# for å gjøre kjørbar: chmod +x startSimTerminal.sh 
 # for å kjøre den: ./startSimTerminal.sh
