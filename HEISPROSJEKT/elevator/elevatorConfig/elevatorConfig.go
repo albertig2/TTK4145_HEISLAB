@@ -63,6 +63,12 @@ type ElevatorHardwareChannelsStruckt struct {
 	ElevatorObjectChannel   chan Elevator
 }
 
+type ElevatorOrderChannelStruckt struct {
+	NewOrderChannel chan elevio.ButtonEvent
+	UpdateRequestMatrixStruct chan [N_FLOORS][N_BUTTONS]bool
+}
+
+
 func DirectionToString(direction Direction) string {
 	switch direction {
 	case Up:
