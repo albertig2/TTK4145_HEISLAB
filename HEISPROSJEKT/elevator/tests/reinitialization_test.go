@@ -66,12 +66,11 @@ func TestReinitializeCabRequestsRecovery(t *testing.T) {
 
 	// Step 4: Run transition logic for cab requests
 	transitions := orderProtocol.GetAllCabRequestTransitions(&peerSystem, CabRequestsForAllElevators2, alivePeers)
-	t.Logf("Cab request transitions: %v", transitions)
-	orderProtocol.TransitionForCabRequestsByType(&peerSystem, transitions, orderProtocol.UnknownToPending)
-	t.Logf("Peer system cab requests after transitioning Unknown to Pending: %v", peerSystem.States[peerSystem.OwnId].CabRequests)
-	orderProtocol.TransitionForCabRequestsByType(&peerSystem, transitions, orderProtocol.UnknownToAssigned)
-	t.Logf("Peer system cab requests after transitioning Unknown to Assigned: %v", peerSystem.States[peerSystem.OwnId].CabRequests)
-	orderProtocol.TransitionForCabRequestsByType(&peerSystem, transitions, orderProtocol.UnknownToNoOrder)
-	t.Logf("Peer system cab requests after transitioning Unknown to NoOrder: %v", peerSystem.States[peerSystem.OwnId].CabRequests)
+	orderProtocol.TransitioningAllCabRequests(&peerSystem, transitions, elevatorConfig.ElevatorOrderChannelStruckt{
+		NewRecievedOrderChannel: make(chan elevatorConfig.ButtonEvent, 10),
+		NewAssignedOrderChannel: make(chan elevatorConfig.ButtonEvent, 10),
+		ServicedOrderChannel:    make(chan elevatorConfig.ButtonEvent, 10),
+	})
+	t.Logf("Peer system cab requests after transitioning: %v", peerSystem.States[peerSystem.OwnId].CabRequests)
 
 }

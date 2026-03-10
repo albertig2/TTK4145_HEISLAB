@@ -8,7 +8,7 @@ import (
 const N_FLOORS int = 4
 const N_BUTTONS int = 3
 
-const DOOR_OPEN_DURATION_S = 3*time.Second
+const DOOR_OPEN_DURATION_S = 3 * time.Second
 
 type Direction int
 
@@ -64,12 +64,10 @@ type ElevatorHardwareChannelsStruckt struct {
 }
 
 type ElevatorOrderChannelStruckt struct {
-    NewRecievedOrderChannel chan elevio.ButtonEvent //all new orders detected by the fsm from button presses are put here
-    NewAssignedOrderChannel chan elevio.ButtonEvent //when a order is assigned to this elevator, the order is put here
-    ServicedOrderChannel chan elevio.ButtonEvent //when a order is serviced, it is put here
-    
+	NewRecievedOrderChannel chan ButtonEvent //all new orders detected by the fsm from button presses are put here
+	NewAssignedOrderChannel chan ButtonEvent //when a order is assigned to this elevator, the order is put here
+	ServicedOrderChannel    chan ButtonEvent //when a order is serviced, it is put here
 }
-
 
 func DirectionToString(direction Direction) string {
 	switch direction {

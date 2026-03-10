@@ -16,10 +16,28 @@ const (
 	AssignedToComplete
 	AssignedToNoOrder
 	CompleteToNoOrder
-	UnknownToPending  // for cab requests after recovery
-	UnknownToNoOrder  // for cab requests after recovery
-	UnknownToAssigned // for cab requests after recovery
+	UnknownToPending
+	UnknownToNoOrder
+	UnknownToAssigned
 )
+
+// Not using these at the moment
+var cabTransitions = []OrderTransition{
+	NoOrderToPending,
+	PendingToAssigned,
+	AssignedToNoOrder,
+	UnknownToPending,
+	UnknownToAssigned,
+	UnknownToNoOrder,
+}
+
+var hallTransitions = []OrderTransition{
+	NoOrderToPending,
+	PendingToAssigned,
+	PendingToNoOrder,
+	AssignedToComplete,
+	CompleteToNoOrder,
+}
 
 func CheckOrderTransitionStatusForHallRequests(
 	system *synchronisation.ElevatorSystem,
@@ -81,17 +99,6 @@ func CheckOrderTransitionStatusForHallRequests(
 		return CompleteToNoOrder
 	}
 	return NoTransition
-}
-
-func GetAllHallRequestTransitions(system *synchronisation.ElevatorSystem, HallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]synchronisation.OrderStatus, alivePeers []string) [elevatorConfig.N_FLOORS][2]OrderTransition {
-	var transitions [elevatorConfig.N_FLOORS][2]OrderTransition
-	for floor := range elevatorConfig.N_FLOORS {
-		for _, halldir := range synchronisation.HallDirections {
-			transition := CheckOrderTransitionStatusForHallRequests(system, HallRequestsForAllElevators, halldir, floor, alivePeers)
-			transitions[floor][halldir] = transition
-		}
-	}
-	return transitions
 }
 
 // Dont know if this should be different or what
@@ -179,6 +186,17 @@ func CheckOrderTransitionStatusForCabRequests(
 	return NoTransition
 }
 
+func GetAllHallRequestTransitions(system *synchronisation.ElevatorSystem, HallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]synchronisation.OrderStatus, alivePeers []string) [elevatorConfig.N_FLOORS][2]OrderTransition {
+	var transitions [elevatorConfig.N_FLOORS][2]OrderTransition
+	for floor := range elevatorConfig.N_FLOORS {
+		for _, halldir := range synchronisation.HallDirections {
+			transition := CheckOrderTransitionStatusForHallRequests(system, HallRequestsForAllElevators, halldir, floor, alivePeers)
+			transitions[floor][halldir] = transition
+		}
+	}
+	return transitions
+}
+
 func GetAllCabRequestTransitions(system *synchronisation.ElevatorSystem, CabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]synchronisation.OrderStatus, alivePeers []string) [elevatorConfig.N_FLOORS]OrderTransition {
 	var transitions [elevatorConfig.N_FLOORS]OrderTransition
 	for floor := range elevatorConfig.N_FLOORS {
@@ -188,143 +206,67 @@ func GetAllCabRequestTransitions(system *synchronisation.ElevatorSystem, CabRequ
 	return transitions
 }
 
-// Should update HallRequestsForAllElevators after this
-func TransitionForHallRequestsByType(system *synchronisation.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, transitionType OrderTransition, alivePeers []string) {
-	if transitionType == PendingToAssigned {
-		transitionFromPendingToAssignedForHallRequests(system, hallRequestTransitions, alivePeers)
-	} else {
-		for floor := range elevatorConfig.N_FLOORS {
-			for _, hallDir := range synchronisation.HallDirections {
-				if hallRequestTransitions[floor][hallDir] == transitionType {
-					var status synchronisation.OrderStatus
-					switch transitionType {
-					case NoOrderToPending:
-						status = synchronisation.Pending
-					case PendingToNoOrder:
-						status = synchronisation.NoOrder
-					case AssignedToComplete:
-						status = synchronisation.Completed
-						// Turn off lights and stuff here
-					case CompleteToNoOrder:
-						status = synchronisation.NoOrder
-					default:
-						status = system.HallRequests[floor][hallDir]
-					}
-					synchronisation.SetHallRequests(system, floor, hallDir, status)
-				}
+func TransitioningAllHallRequests(system *synchronisation.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, alivePeers []string, elevatorOrderChannels elevatorConfig.ElevatorOrderChannelStruckt) {
+	for floor := range elevatorConfig.N_FLOORS {
+		for _, hallDir := range synchronisation.HallDirections {
+			var status synchronisation.OrderStatus
+			switch hallRequestTransitions[floor][hallDir] {
+			case NoOrderToPending:
+				status = synchronisation.Pending
+			case PendingToNoOrder:
+				status = synchronisation.NoOrder
+			case AssignedToComplete:
+				status = synchronisation.Completed
+				elevatorOrderChannels.ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Button(hallDir)}
+				// Turn off lights and stuff here
+			case CompleteToNoOrder:
+				status = synchronisation.NoOrder
+			default:
+				status = system.HallRequests[floor][hallDir]
 			}
+			synchronisation.SetHallRequests(system, floor, hallDir, status)
 		}
 	}
+	transitionFromPendingToAssignedForHallRequests(system, hallRequestTransitions, alivePeers, elevatorOrderChannels)
 }
 
 // Called from within the TransitionForHallRequestsByType. Setting to private to avoid it being called directly
-func transitionFromPendingToAssignedForHallRequests(system *synchronisation.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, alivePeers []string) {
+func transitionFromPendingToAssignedForHallRequests(system *synchronisation.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, alivePeers []string, elevatorOrderChannels elevatorConfig.ElevatorOrderChannelStruckt) {
 	output := HallRequestAssigner(system, hallRequestTransitions, alivePeers)
 	for floor := range elevatorConfig.N_FLOORS {
 		for _, hallDir := range synchronisation.HallDirections {
 			if (output)[system.OwnId][floor][hallDir] {
 				synchronisation.SetHallRequests(system, floor, hallDir, synchronisation.Assigned)
+				elevatorOrderChannels.NewAssignedOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Button(hallDir)}
 				// Set lights and stuff here
 			}
 		}
 	}
 }
 
-func TransitionForCabRequestsByType(system *synchronisation.ElevatorSystem, cabRequestTransitions [elevatorConfig.N_FLOORS]OrderTransition, transitionType OrderTransition) {
+func TransitioningAllCabRequests(system *synchronisation.ElevatorSystem, cabRequestTransitions [elevatorConfig.N_FLOORS]OrderTransition, elevatorOrderChannels elevatorConfig.ElevatorOrderChannelStruckt) {
 	for floor := range elevatorConfig.N_FLOORS {
-		if cabRequestTransitions[floor] == transitionType {
-			var status synchronisation.OrderStatus
-			switch transitionType {
-			case NoOrderToPending, UnknownToPending:
-				status = synchronisation.Pending
-			case PendingToAssigned, UnknownToAssigned:
-				status = synchronisation.Assigned
-				// Turn on lights and stuff here
-			case AssignedToNoOrder, UnknownToNoOrder:
-				status = synchronisation.NoOrder
-				// Turn off lights and stuff here
-			default:
-				status = system.States[system.OwnId].CabRequests[floor]
-			}
-			synchronisation.SetCabRequests(system, floor, status)
+		var status synchronisation.OrderStatus
+		switch cabRequestTransitions[floor] {
+		case NoOrderToPending, UnknownToPending:
+			status = synchronisation.Pending
+		case PendingToAssigned, UnknownToAssigned:
+			status = synchronisation.Assigned
+			// Turn on lights and stuff here
+			elevatorOrderChannels.NewAssignedOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Cab}
+		case AssignedToNoOrder, UnknownToNoOrder:
+			status = synchronisation.NoOrder
+			elevatorOrderChannels.ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Cab}
+			// Turn off lights and stuff here
+		default:
+			status = system.States[system.OwnId].CabRequests[floor]
 		}
+		synchronisation.SetCabRequests(system, floor, status)
 	}
 }
-
-/*
-func transitionHallRequests(system ElevatorSystem, HallRequestForAllElevators *map[string][elevatorConfig.N_FLOORS][2]orderStatus, floor int, halldir int, transition OrderTransition) {
-	var status orderStatus
-	switch transition {
-	case noTransition:
-		status = system.HallRequests[floor][halldir]
-	case noOrderToPending:
-		status = pending
-		//Do work
-	case pendingToAssigned:
-		//Do work
-		status = system.HallRequests[floor][halldir] // NOt necessarily taking status assigned for hall, but for cab yes
-		//Do work
-	case pendingToNoOrder:
-		status = noOrder
-		//Do work
-	case assignedToComplete:
-		status = completed
-		//Do work
-	case completeToNoOrder:
-		status = noOrder
-		//Do work
-	}
-
-	arr := (*HallRequestForAllElevators)[system.OwnId]
-	arr[floor][halldir] = status
-	(*HallRequestForAllElevators)[system.OwnId] = arr
-	setHallRequests(&system, floor, halldir, status)
-}
-*/
-//Need to make one for cab also....
 
 // has to be made ... similar to the one above just checking cab requests instead of hall requests, and only for own elevator, since cab requests are not shared between elevators.
 // might now have to have to functions, can probably just pass in cabrequests instead and handle the up and down stuff differently (just dont care if cab requests)
-
-// Not using so far but could
-
-func set_OrderStatus(system *synchronisation.ElevatorSystem, floor int, halldir int, status synchronisation.OrderStatus) {
-	system.HallRequests[floor][halldir] = status
-}
-
-/*
-func OrderIsPendingForAllElevators(HallRequestsForAllIds map[string][elevatorConfig.N_FLOORS][2]orderStatus, halldir int, floor int, alivePeers []string) bool {
-	for _, peerId := range alivePeers {
-		if HallRequestsForAllIds[peerId][floor][halldir] != pending {
-			return false
-		}
-	}
-	return true
-}
-
-func OrderIsCompletedForAnotherElevators(HallRequestsForAllIds map[string][elevatorConfig.N_FLOORS][2]orderStatus, halldir int, floor int, alivePeers []string) bool {
-	for _, peerId := range alivePeers {
-		if peerId != system.OwnId {
-			if HallRequestsForAllIds[peerId][floor][halldir] == completed {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func OrderIsNoOrderForAllOtherElevators(HallRequestsForAllIds map[string][elevatorConfig.N_FLOORS][2]orderStatus, halldir int, floor int, alivePeers []string) bool {
-	for _, peerId := range alivePeers {
-		if peerId != system.OwnId {
-			if HallRequestsForAllIds[peerId][floor][halldir] != noOrder {
-				return false
-			}
-		}
-	}
-	return true
-}
-
-*/
 /*
 Transitions:
 pending -> assigned is dealt with through assigner

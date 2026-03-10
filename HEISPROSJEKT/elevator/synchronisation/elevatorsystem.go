@@ -180,3 +180,5 @@ func updateElevatorSystem(system *ElevatorSystem, hallRequestsForAllElevators ma
 // Må deale med transisjoner, når man skal sette pending? når man skal gå til de andre? Skal man gjøre det når man får inn fra andre (hvertfall pending?)
 // Når transisjon så man kansje gjøre ting også så jeg har jo en pure en
 // Må på et tidspunkt oppdatere HallRequest med egen id sin hallrequests også og cabRequests.
+
+// SHoul maybe chnage hallup and halldown inputs to be button type instead of ints and then change inside the functions instead

@@ -54,7 +54,11 @@ func TestInitialize(t *testing.T) {
 	hallRequestTransitions := orderProtocol.GetAllHallRequestTransitions(&system1, HallRequestsForAllElevators, []string{"1", "2", "3"})
 	orderProtocol.HallRequestAssigner(&system1, hallRequestTransitions, []string{"1", "2", "3"})
 	t.Logf("HallRequest for system1 before assigning: %v", system1.HallRequests[3][int(elevatorConfig.HallUp)])
-	orderProtocol.TransitionForHallRequestsByType(&system1, hallRequestTransitions, orderProtocol.PendingToAssigned, []string{"1", "2", "3"})
+	orderProtocol.TransitioningAllHallRequests(&system1, hallRequestTransitions, []string{"1", "2", "3"}, elevatorConfig.ElevatorOrderChannelStruckt{
+		NewRecievedOrderChannel: make(chan elevatorConfig.ButtonEvent, 10),
+		NewAssignedOrderChannel: make(chan elevatorConfig.ButtonEvent, 10),
+		ServicedOrderChannel:    make(chan elevatorConfig.ButtonEvent, 10),
+	})
 	t.Logf("HallRequest for system1 after assigning: %v", system1.HallRequests[3][int(elevatorConfig.HallUp)])
 
 	t.Logf("system json: %s", synchronisation.EncodeElevatorSystem(&system1))
