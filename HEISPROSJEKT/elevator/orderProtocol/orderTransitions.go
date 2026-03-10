@@ -143,6 +143,7 @@ func GetAllCabRequestTransitions(system *elevatorHardware.ElevatorSystem, CabReq
 }
 
 // Should update HallRequestsForAllElevators after this
+
 func TransitionForHallRequestsByType(system *elevatorHardware.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, transitionType OrderTransition, alivePeers []string) {
 	if transitionType == PendingToAssigned {
 		transitionFromPendingToAssignedForHallRequests(system, hallRequestTransitions, alivePeers)
@@ -204,38 +205,6 @@ func TransitionForCabRequestsByType(system *elevatorHardware.ElevatorSystem, cab
 		}
 	}
 }
-
-/*
-func transitionHallRequests(system ElevatorSystem, HallRequestForAllElevators *map[string][elevatorConfig.N_FLOORS][2]orderStatus, floor int, halldir int, transition OrderTransition) {
-	var status orderStatus
-	switch transition {
-	case noTransition:
-		status = system.HallRequests[floor][halldir]
-	case noOrderToPending:
-		status = pending
-		//Do work
-	case pendingToAssigned:
-		//Do work
-		status = system.HallRequests[floor][halldir] // NOt necessarily taking status assigned for hall, but for cab yes
-		//Do work
-	case pendingToNoOrder:
-		status = noOrder
-		//Do work
-	case assignedToComplete:
-		status = completed
-		//Do work
-	case completeToNoOrder:
-		status = noOrder
-		//Do work
-	}
-
-	arr := (*HallRequestForAllElevators)[system.OwnId]
-	arr[floor][halldir] = status
-	(*HallRequestForAllElevators)[system.OwnId] = arr
-	setHallRequests(&system, floor, halldir, status)
-}
-*/
-//Need to make one for cab also....
 
 // has to be made ... similar to the one above just checking cab requests instead of hall requests, and only for own elevator, since cab requests are not shared between elevators.
 // might now have to have to functions, can probably just pass in cabrequests instead and handle the up and down stuff differently (just dont care if cab requests)

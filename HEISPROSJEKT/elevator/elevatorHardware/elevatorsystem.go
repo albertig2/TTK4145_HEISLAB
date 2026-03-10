@@ -1,6 +1,7 @@
 package elevatorHardware
 
 import (
+	"HEISPROSJEKT/communication"
 	"HEISPROSJEKT/elevatorConfig"
 )
 
@@ -106,7 +107,7 @@ func AddPeer(system *ElevatorSystem, peerSystem *ElevatorSystem) {
 	}
 }
 
-func UpdateElevatorSystemFromPeer(system *ElevatorSystem, peerSystem *ElevatorSystem, HallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]OrderStatus, CabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]OrderStatus) {
+func UpdateElevatorSystemWithPeer(system *ElevatorSystem, peerSystem *ElevatorSystem, HallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]OrderStatus, CabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]OrderStatus) {
 	if _, exists := system.States[peerSystem.OwnId]; !exists {
 		AddPeer(system, peerSystem)
 	}
@@ -116,6 +117,18 @@ func UpdateElevatorSystemFromPeer(system *ElevatorSystem, peerSystem *ElevatorSy
 	if _, exists := peerSystem.States[system.OwnId]; exists {
 		CabRequestsForAllElevators[peerSystem.OwnId] = peerSystem.States[system.OwnId].CabRequests
 	}
+}
+
+func UpdateElevatorSystemWithSelf(system *ElevatorSystem, HallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]OrderStatus, CabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]OrderStatus) {
+	HallRequestsForAllElevators[system.OwnId] = system.HallRequests
+	CabRequestsForAllElevators[system.OwnId] = system.States[system.OwnId].CabRequests
+}
+
+func updateElevatorSystem(system *ElevatorSystem, hallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]OrderStatus, cabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]OrderStatus, receivedWorldView chan string) {
+	peerSystem := communication.DecodeElevatorSystem(<-receivedWorldView)
+	AddPeer(system, &peerSystem)
+	UpdateElevatorSystemWithPeer(system, &peerSystem, hallRequestsForAllElevators, cabRequestsForAllElevators)
+	UpdateElevatorSystemWithSelf(system, hallRequestsForAllElevators, cabRequestsForAllElevators)
 }
 
 // I utgangspunktet har jeg en annen funksjon som fikser andre transisjoner ...., kanskje nok å sette HallRequest listen to the appropriate, og så finne derfifra hva man skal sette

@@ -2,14 +2,15 @@ package main
 
 import (
 	"Driver-go/elevio"
-	"flag"
-	"fmt"
-	"strconv"
-
 	"HEISPROSJEKT/communication"
+	"HEISPROSJEKT/elevatorConfig"
+	"HEISPROSJEKT/elevatorHardware"
 	"HEISPROSJEKT/hardware"
 	"Network-go/network/bcast"
 	"Network-go/network/peers"
+	"flag"
+	"fmt"
+	"strconv"
 )
 
 func main() {
@@ -17,6 +18,14 @@ func main() {
 	id := flag.Int("id", 1, "Input id")
 	port := flag.Int("port", 15657, "Input port")
 	flag.Parse()
+
+	system := elevatorHardware.ElevatorSystem{}
+	elevatorHardware.Initialize(&system, strconv.Itoa(*id))
+	HallRequestsForAllElevators := make(map[string][elevatorConfig.N_FLOORS][2]elevatorHardware.OrderStatus)
+	CabRequestsForAllElevators := make(map[string][elevatorConfig.N_FLOORS]elevatorHardware.OrderStatus)
+	receivedWorldView := make(chan string)
+
+	go orderProtocol.orderRutine(&system, HallRequestsForAllElevators, CabRequestsForAllElevators, receivedWorldView)
 
 	numFloors := 4
 	peerPort := 30004

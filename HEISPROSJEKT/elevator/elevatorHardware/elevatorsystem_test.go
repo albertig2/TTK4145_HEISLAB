@@ -36,8 +36,8 @@ func TestInitialize(t *testing.T) {
 	elevatorHardware.SetCabRequests(&system3, 1, elevatorHardware.Pending)
 	elevatorHardware.SetHallRequests(&system3, 3, int(elevatorConfig.HallUp), elevatorHardware.Pending)
 
-	elevatorHardware.UpdateElevatorSystemFromPeer(&system1, &system2, HallRequestsForAllElevators, CabRequestsForAllElevators)
-	elevatorHardware.UpdateElevatorSystemFromPeer(&system1, &system3, HallRequestsForAllElevators, CabRequestsForAllElevators)
+	elevatorHardware.UpdateElevatorSystemWithPeer(&system1, &system2, HallRequestsForAllElevators, CabRequestsForAllElevators)
+	elevatorHardware.UpdateElevatorSystemWithPeer(&system1, &system3, HallRequestsForAllElevators, CabRequestsForAllElevators)
 
 	HallRequestsForAllElevators["1"] = system1.HallRequests           // Always update these before checking for transitions or doing anything based on the status of the floors
 	CabRequestsForAllElevators["1"] = system1.States["1"].CabRequests // Always update these before checking for transitions or doing anything based on the status of the floors
