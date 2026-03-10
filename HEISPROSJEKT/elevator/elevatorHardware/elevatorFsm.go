@@ -7,7 +7,7 @@ import (
 	//"fmt"
 	"time"
 )
-
+//testcomment
 func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt) {
 	doorTimer := time.NewTimer(elevatorConfig.DOOR_OPEN_DURATION_S)
 	doorTimer.Stop()
