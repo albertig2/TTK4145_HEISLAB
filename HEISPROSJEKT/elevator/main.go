@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	// "HEISPROSJEKT/communication"
+	"HEISPROSJEKT/debuggingHelpers"
 	"HEISPROSJEKT/elevatorHardware"
 	//"HEISPROSJEKT/elevatorHardware"
 	//"HEISPROSJEKT/hardware"
@@ -27,6 +28,7 @@ func main() {
 	//init functions
 	elevio.Init("localhost:"+strconv.Itoa(*port), numFloors)
 	hardwareChannels := elevatorHardware.InitElevatorHardwareChannels()
+	orderChannels := debuggingHelpers.InitializeOrderChannels()
 	//channels := communication.InitNetworkChannels()
 	//elevatorObject := elevatorHardware.InitializeElevatorObject(strconv.Itoa(*id))
 
@@ -43,7 +45,9 @@ func main() {
 	go elevio.PollObstructionSwitch(hardwareChannels.PollObstructionChannel)
 	go elevio.PollStopButton(hardwareChannels.PollStopButtonChannel)
 
-	go elevatorHardware.RunElevatorFsm(strconv.Itoa(*id), hardwareChannels)
+	go debuggingHelpers.MimicOrderAssignerAndSynch(orderChannels)
+
+	go elevatorHardware.RunElevatorFsm(strconv.Itoa(*id), hardwareChannels, orderChannels)
 
 	// go communication.BroadcastElevatorWorldView(strconv.Itoa(*id), channels.BcastOutgoingMessagesChannel, hardwareChannels.ElevatorObjectChannel)
 	// go communication.RecieveBroadcastfWorldViewfFromPeer(channels.BcastIncomingMessagesChannel)
