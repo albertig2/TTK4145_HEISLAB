@@ -112,27 +112,38 @@ func RequestsShouldClearImmediately(elevator elevatorConfig.Elevator, btn_Floor 
 			btn_type == elevatorConfig.Cab)
 }
 
-func RequestsClearAtCurrentFloor(e elevatorConfig.Elevator) elevatorConfig.Elevator {
+//fix so that the order that is cleard here, also is sendt on the new order serviced channel
+//note to order handeling: this function clears order regardless of there actually was an oorder there. This means that the order 
+//state machine has to be able to handle instances where it recieves a CleardOrder message for orders in other states than assigned 
+func RequestsClearAtCurrentFloor(e elevatorConfig.Elevator, ServicedOrderChannel chan elevatorConfig.ButtonEvent) elevatorConfig.Elevator {
 	e.Requests[e.Floor][elevatorConfig.Cab] = false
+	ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor : e.Floor, Button: elevatorConfig.Cab}
 
 	switch e.Direction {
 	case elevatorConfig.Up:
 		if !RequestsAbove(e) && !e.Requests[e.Floor][elevatorConfig.HallUp] {
 			e.Requests[e.Floor][elevatorConfig.HallDown] = false
+			ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor : e.Floor, Button: elevatorConfig.HallDown}
 		}
 		e.Requests[e.Floor][elevatorConfig.HallUp] = false
+		ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor : e.Floor, Button: elevatorConfig.HallUp}
 
 	case elevatorConfig.Down:
 		if !RequestsBelow(e) && !e.Requests[e.Floor][elevatorConfig.HallDown] {
 			e.Requests[e.Floor][elevatorConfig.HallUp] = false
+			ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor : e.Floor, Button: elevatorConfig.HallUp}
+			
 		}
 		e.Requests[e.Floor][elevatorConfig.HallDown] = false
+		ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor : e.Floor, Button: elevatorConfig.HallDown}
 
 	case elevatorConfig.Stop:
 		fallthrough
 	default:
 		e.Requests[e.Floor][elevatorConfig.HallUp] = false
+		ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor : e.Floor, Button: elevatorConfig.HallUp}
 		e.Requests[e.Floor][elevatorConfig.HallDown] = false
+		ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor : e.Floor, Button: elevatorConfig.HallDown}
 	}
 
 	return e
