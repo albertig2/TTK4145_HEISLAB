@@ -20,7 +20,7 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 		case floor := <-hardwareChannels.FloorSensorChannel:
 
 
-			HandleOnFloorArrival(&elevatorObject, doorTimer, floor, hardwareChannels.MotorDirectionChannel,orderChannels.ServicedOrderChannel)
+			HandleOnFloorArrival(&elevatorObject, doorTimer, floor,orderChannels.ServicedOrderChannel)
 
 		case recievedOrder := <-hardwareChannels.PollOrderButtonsChannel:
 
@@ -31,17 +31,15 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 
 		case assignedOrder := <- orderChannels.NewAssignedOrderChannel:
 
-			HandleRequestButtonPress(&elevatorObject, doorTimer, int(assignedOrder.Floor), elevatorConfig.Button(assignedOrder.Button), hardwareChannels.MotorDirectionChannel,orderChannels.ServicedOrderChannel)
+			HandleRequestButtonPress(&elevatorObject, doorTimer, int(assignedOrder.Floor), elevatorConfig.Button(assignedOrder.Button),orderChannels.ServicedOrderChannel)
 
 		case stopActivated := <-hardwareChannels.PollStopButtonChannel:
 
-			HandleStopButtonActivated( stopActivated, &elevatorObject, doorTimer, hardwareChannels.MotorDirectionChannel,orderChannels.ServicedOrderChannel)
+			HandleStopButtonActivated( stopActivated, &elevatorObject, doorTimer,orderChannels.ServicedOrderChannel)
 
 		case obstructionActivated := <-hardwareChannels.PollObstructionChannel:
 	
-			HandleObstructionActivated(obstructionActivated, &elevatorObject, doorTimer, hardwareChannels.MotorDirectionChannel,orderChannels.ServicedOrderChannel)
-
-
+			HandleObstructionActivated(obstructionActivated, &elevatorObject, doorTimer, orderChannels.ServicedOrderChannel)
 
 		case <-doorTimer.C:
 			OnDoorTimeout(&elevatorObject, doorTimer, orderChannels.ServicedOrderChannel)
