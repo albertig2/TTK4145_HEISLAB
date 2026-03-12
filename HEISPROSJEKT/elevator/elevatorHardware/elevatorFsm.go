@@ -49,7 +49,8 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 		
 
 		case <-motortimer.C:
-			//HandleMotorFailure()
+			HandleMotorFailure(motorTimeoutTimer)
+			
 		}
 
 		

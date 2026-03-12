@@ -291,3 +291,13 @@ func HandleObstructionActivated(obstructionActivated bool, elevator *elevatorCon
 	}
 
 }
+
+func HandleMotorFailure(motorTimeoutTimer *time.Timer) {
+	//stop the elevator
+	ElevatorMotorDirection(elevatorConfig.Stop, motorTimeoutTimer)
+	//kick from network
+	
+	//make it unable to take new orders
+	//initilize
+
+}
