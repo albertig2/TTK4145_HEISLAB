@@ -12,7 +12,7 @@ import (
 
 
 //called as a go functions
-func synchroniseElevators(channels synchronisationChannels){
+func synchroniseElevators(channels SynchronisationChannels){
 	//initialise an elevatorsystem
 
 	//run all synchronisation on events (like elevator fsm, run events on most sync channel?)

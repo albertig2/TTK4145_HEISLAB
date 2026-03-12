@@ -4,12 +4,13 @@ import (
 	"Driver-go/elevio"
 	"HEISPROSJEKT/debuggingHelpers"
 	"HEISPROSJEKT/elevatorConfig"
+	"HEISPROSJEKT/synchronisation"
 	"fmt"
 	"time"
 )
 
-func InitElevatorBetweenFloors(elevator *elevatorConfig.Elevator) {
-	ElevatorMotorDirection(elevatorConfig.Down)
+func InitElevatorBetweenFloors(elevator *elevatorConfig.Elevator, motorTimeoutTimer *time.Timer) {
+	ElevatorMotorDirection(elevatorConfig.Down, motorTimeoutTimer)
 	elevator.Direction = elevatorConfig.Down
 	elevator.Behavior = elevatorConfig.Moving
 }
@@ -48,12 +49,12 @@ func InitElevatorHardwareChannels() elevatorConfig.ElevatorHardwareChannelsStruc
 
 // small initialisation sequence to put the elevator in a known behavior
 // small initialisation sequence to put elevator in a known state
-func InitElevatorHardware(elevator *elevatorConfig.Elevator) {
+func InitElevatorHardware(elevator *elevatorConfig.Elevator, motorTimeoutTimer *time.Timer) {
 
 	TurnOffAllOrderLights()
 	elevio.SetDoorOpenLamp(false)
 	elevio.SetStopLamp(false)
-	InitElevatorBetweenFloors(elevator)
+	InitElevatorBetweenFloors(elevator, motorTimeoutTimer)
 
 }
 
@@ -76,7 +77,7 @@ func isBetweenFloors() bool {
 
 }
 
-func HandleOnFloorArrival(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, newFloor int, MotorDirectionChannel chan elevatorConfig.Direction) {
+func HandleOnFloorArrival(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, newFloor int, MotorDirectionChannel chan elevatorConfig.Direction, motorTimeoutTimer *time.Timer) {
 	fmt.Println("Elevator arrived at:", newFloor)
 	debuggingHelpers.Elevator_print(*elevator)
 
@@ -87,7 +88,7 @@ func HandleOnFloorArrival(elevator *elevatorConfig.Elevator, doorTimer *time.Tim
 	case elevatorConfig.Moving:
 		if RequestsShouldStop(*elevator) {
 
-			ElevatorMotorDirection(elevatorConfig.Stop)
+			ElevatorMotorDirection(elevatorConfig.Stop, motorTimeoutTimer)
 
 			//MotorDirectionChannel <- elevio.MD_Stop
 			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S)
@@ -126,7 +127,7 @@ func OpenDoor(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, timeOpen
 	}
 }
 
-func OnDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer) {
+func OnDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, motorTimeoutTimer *time.Timer) {
 	fmt.Println("Door timeout")
 	// debuggingHelpers.Elevator_print(*elevator)
 
@@ -145,7 +146,7 @@ func OnDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer) {
 
 		case elevatorConfig.Moving, elevatorConfig.Idle:
 			ElevatorDoorLight(false)
-			ElevatorMotorDirection(elevator.Direction)
+			ElevatorMotorDirection(elevator.Direction, motorTimeoutTimer)
 		}
 	default:
 		// nothing
@@ -155,7 +156,7 @@ func OnDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer) {
 	debuggingHelpers.Elevator_print(*elevator)
 }
 
-func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, btn_floor int, btn_type elevatorConfig.Button, MotorDirectionChannel chan elevatorConfig.Direction) {
+func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, btn_floor int, btn_type elevatorConfig.Button, MotorDirectionChannel chan elevatorConfig.Direction, motorTimeoutTimer *time.Timer) {
 	fmt.Printf("\n\n%s(%d, %s)\n", "Recieved the following order:", btn_floor, elevatorConfig.ButtonToString(btn_type))
 	debuggingHelpers.Elevator_print(*elevator)
 
@@ -187,7 +188,7 @@ func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time
 			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S)
 
 		case elevatorConfig.Moving:
-			ElevatorMotorDirection(elevator.Direction)
+			ElevatorMotorDirection(elevator.Direction, motorTimeoutTimer)
 
 		case elevatorConfig.Idle:
 			// Do nothing
@@ -200,7 +201,7 @@ func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time
 	debuggingHelpers.Elevator_print(*elevator)
 }
 
-func HandleStopButtonActivated(stopActivated bool, elevator *elevatorConfig.Elevator, doorTimer *time.Timer, MotorDirectionChannel chan elevatorConfig.Direction) {
+func HandleStopButtonActivated(stopActivated bool, elevator *elevatorConfig.Elevator, doorTimer *time.Timer, MotorDirectionChannel chan elevatorConfig.Direction, motorTimeoutTimer *time.Timer) {
 
 	if stopActivated {
 		//MotorDirectionChannel <- elevatorConfig.Stop
@@ -213,7 +214,7 @@ func HandleStopButtonActivated(stopActivated bool, elevator *elevatorConfig.Elev
 			doorTimer.Stop()
 
 		case elevatorConfig.Moving:
-			ElevatorMotorDirection(elevatorConfig.Stop)
+			ElevatorMotorDirection(elevatorConfig.Stop, motorTimeoutTimer)
 
 		default:
 
@@ -231,7 +232,7 @@ func HandleStopButtonActivated(stopActivated bool, elevator *elevatorConfig.Elev
 		switch elevator.Behavior {
 
 		case elevatorConfig.Moving, elevatorConfig.Idle:
-			InitElevatorBetweenFloors(elevator)
+			InitElevatorBetweenFloors(elevator, motorTimeoutTimer)
 
 		case elevatorConfig.DoorOpen:
 			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S) // keep door open for 3 more sek
@@ -293,7 +294,7 @@ func HandleObstructionActivated(obstructionActivated bool, elevator *elevatorCon
 
 }
 
-func HandleMotorFailure(elevator *elevatorConfig.Elevator, motorTimeoutTimer *time.Timer, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels synchronisation.synchronisationChannels) {
+func HandleMotorFailure(elevatorObject *elevatorConfig.Elevator, motorTimeoutTimer *time.Timer, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels synchronisation.SynchronisationChannels) {
 	//stop the elevator
 	ElevatorMotorDirection(elevatorConfig.Stop, motorTimeoutTimer)
 	//kick from network
@@ -301,7 +302,7 @@ func HandleMotorFailure(elevator *elevatorConfig.Elevator, motorTimeoutTimer *ti
 	//make it unable to take new orders
 
 	//initilize hardware
-	InitElevatorHardware(&elevatorObject)
+	InitElevatorHardware(elevatorObject, motorTimeoutTimer)
 	//initilize system
 	hardwareChannels.MotorFailureChannel <- true
 	//put back on the network

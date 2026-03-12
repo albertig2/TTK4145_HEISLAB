@@ -8,6 +8,7 @@ import (
 
 	// "HEISPROSJEKT/communication"
 	"HEISPROSJEKT/elevatorHardware"
+	"HEISPROSJEKT/synchronisation"
 	//"HEISPROSJEKT/elevatorHardware"
 	//"HEISPROSJEKT/hardware"
 	// "Network-go/network/bcast"
@@ -27,7 +28,7 @@ func main() {
 	//init functions
 	elevio.Init("localhost:"+strconv.Itoa(*port), numFloors)
 	hardwareChannels := elevatorHardware.InitElevatorHardwareChannels()
-	//channels := communication.InitNetworkChannels()
+	SynchronisationChannels := synchronisation.InitNetworkChannels()
 	//elevatorObject := elevatorHardware.InitializeElevatorObject(strconv.Itoa(*id))
 
 	// go peers.Receiver(peerPort, channels.PeerUpdateChl)
@@ -43,7 +44,7 @@ func main() {
 	go elevio.PollObstructionSwitch(hardwareChannels.PollObstructionChannel)
 	go elevio.PollStopButton(hardwareChannels.PollStopButtonChannel)
 
-	go elevatorHardware.RunElevatorFsm(strconv.Itoa(*id), hardwareChannels)
+	go elevatorHardware.RunElevatorFsm(strconv.Itoa(*id), hardwareChannels, SynchronisationChannels)
 
 	// go communication.BroadcastElevatorWorldView(strconv.Itoa(*id), channels.BcastOutgoingMessagesChannel, hardwareChannels.ElevatorObjectChannel)
 	// go communication.RecieveBroadcastfWorldViewfFromPeer(channels.BcastIncomingMessagesChannel)

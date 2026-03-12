@@ -3,7 +3,7 @@ package elevatorHardware
 import (
 	"Driver-go/elevio"
 	"HEISPROSJEKT/elevatorConfig"
-	//"time"
+	"time"
 )
 
 //------------------Sensors-------------------------------
