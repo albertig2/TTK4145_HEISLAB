@@ -9,10 +9,11 @@ import (
 	// "HEISPROSJEKT/communication"
 	"HEISPROSJEKT/elevatorHardware"
 	"HEISPROSJEKT/synchronisation"
+
 	//"HEISPROSJEKT/elevatorHardware"
 	//"HEISPROSJEKT/hardware"
 	// "Network-go/network/bcast"
-	// "Network-go/network/peers"
+	"Network-go/network/peers"
 )
 
 func main() {
@@ -22,8 +23,8 @@ func main() {
 	flag.Parse()
 
 	numFloors := 4
-	// peerPort := 30004
-	// bcastPort := 30400
+	peerPort := 30004
+	//bcastPort := 30400
 
 	//init functions
 	elevio.Init("localhost:"+strconv.Itoa(*port), numFloors)
@@ -31,13 +32,13 @@ func main() {
 	SynchronisationChannels := synchronisation.InitNetworkChannels()
 	//elevatorObject := elevatorHardware.InitializeElevatorObject(strconv.Itoa(*id))
 
-	// go peers.Receiver(peerPort, channels.PeerUpdateChl)
-	// go peers.Transmitter(peerPort, strconv.Itoa(*id), channels.PeerTxEnableCh)
+	go peers.Receiver(peerPort, SynchronisationChannels.PeerUpdateChl)
+	go peers.Transmitter(peerPort, strconv.Itoa(*id), SynchronisationChannels.PeerTxEnableCh)
 
-	// go bcast.Transmitter(bcastPort, channels.BcastOutgoingMessagesChannel)
+	//go bcast.Transmitter(bcastPort, channels.BcastOutgoingMessagesChannel)
 	// go bcast.Receiver(bcastPort, channels.BcastIncomingMessagesChannel)
 
-	// go communication.UpdatePeerList(channels)
+	go synchronisation.UpdatePeerList(SynchronisationChannels)
 
 	go elevio.PollButtons(hardwareChannels.PollOrderButtonsChannel)
 	go elevio.PollFloorSensor(hardwareChannels.FloorSensorChannel)

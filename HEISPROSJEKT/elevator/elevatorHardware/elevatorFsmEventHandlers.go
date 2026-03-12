@@ -296,19 +296,26 @@ func HandleObstructionActivated(obstructionActivated bool, elevator *elevatorCon
 
 func HandleMotorFailure(elevatorObject *elevatorConfig.Elevator, motorTimeoutTimer *time.Timer, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels synchronisation.SynchronisationChannels) {
 	//stop the elevator
+
+	simMotorFailureTimer := time.NewTimer(2*time.Second)
+	
 	ElevatorMotorDirection(elevatorConfig.Stop, motorTimeoutTimer)
 	//kick from network
 	synchronisationChannels.PeerTxEnableCh <- false
 	//make it unable to take new orders
 
 	//initilize hardware
+	*elevatorObject = InitializeElevator(elevatorObject.OwnId)
+
+
+	<- simMotorFailureTimer.C
 	InitElevatorHardware(elevatorObject, motorTimeoutTimer)
 	//initilize system
-	hardwareChannels.MotorFailureChannel <- true
+	//hardwareChannels.MotorFailureChannel <- true
 	//put back on the network
 	synchronisationChannels.PeerTxEnableCh <- true
 
-
-
+	fmt.Printf("\nNew state after motor failure detected:\n")
+	debuggingHelpers.Elevator_print(*elevatorObject)
 
 }
