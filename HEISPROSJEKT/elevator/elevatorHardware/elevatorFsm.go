@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt) {
+func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels synchronisation.synchronisationChannels) {
 	doorTimer := time.NewTimer(elevatorConfig.DOOR_OPEN_DURATION_S)
 	doorTimer.Stop()
 
@@ -49,7 +49,7 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 		
 
 		case <-motortimer.C:
-			HandleMotorFailure(motorTimeoutTimer)
+			HandleMotorFailure(&elevatorObject, motorTimeoutTimer, hardwareChannels, synchronisationChannels)
 			
 		}
 

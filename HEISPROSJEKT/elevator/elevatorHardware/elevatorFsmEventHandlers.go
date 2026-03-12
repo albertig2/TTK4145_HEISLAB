@@ -41,6 +41,7 @@ func InitElevatorHardwareChannels() elevatorConfig.ElevatorHardwareChannelsStruc
 		DoorOpenChannel:         make(chan bool),
 		MotorDirectionChannel:   make(chan elevatorConfig.Direction),
 		ElevatorObjectChannel:   make(chan elevatorConfig.Elevator),
+		MotorFailureChannel:     make(chan bool),
 	}
 	return hardwareChannels
 }
@@ -292,12 +293,21 @@ func HandleObstructionActivated(obstructionActivated bool, elevator *elevatorCon
 
 }
 
-func HandleMotorFailure(motorTimeoutTimer *time.Timer) {
+func HandleMotorFailure(elevator *elevatorConfig.Elevator, motorTimeoutTimer *time.Timer, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels synchronisation.synchronisationChannels) {
 	//stop the elevator
 	ElevatorMotorDirection(elevatorConfig.Stop, motorTimeoutTimer)
 	//kick from network
-	
+	synchronisationChannels.PeerTxEnableCh <- false
 	//make it unable to take new orders
-	//initilize
+
+	//initilize hardware
+	InitElevatorHardware(&elevatorObject)
+	//initilize system
+	hardwareChannels.MotorFailureChannel <- true
+	//put back on the network
+	synchronisationChannels.PeerTxEnableCh <- true
+
+
+
 
 }
