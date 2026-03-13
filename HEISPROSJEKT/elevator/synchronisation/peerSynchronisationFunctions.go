@@ -16,6 +16,7 @@ type synchronisationChannels struct {
 	PeerTxEnableCh               chan bool
 	BcastIncomingMessagesChannel chan ElevatorSystem
 	BcastOutgoingMessagesChannel chan ElevatorSystem
+	UpdateElevatorSystem chan ElevatorSystem
 	//new order channel?
 }
 
@@ -30,6 +31,7 @@ func InitNetworkChannels () synchronisationChannels {
 		PeerTxEnableCh:               make(chan bool),
 		BcastIncomingMessagesChannel: make(chan ElevatorSystem),
 		BcastOutgoingMessagesChannel: make(chan ElevatorSystem),
+		UpdateElevatorSystem: make(chan ElevatorSystem),
 	}
 
 	return channels

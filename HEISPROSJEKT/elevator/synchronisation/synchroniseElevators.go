@@ -46,6 +46,12 @@ func SynchroniseElevators(elevatorUpdates chan elevatorConfig.Elevator, synchron
 			broadcastTicker.Reset(time.Second / 30)
 		}
 
+		select{
+
+		case synchronisationChannels.UpdateElevatorSystem <- elevatorSystem:
+		default:
+		}
+
 	}
 
 	//run all synchronisation on events (like elevator fsm, run events on most sync channel?)

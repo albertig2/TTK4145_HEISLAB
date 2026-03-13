@@ -94,7 +94,7 @@ func printCurrentWorkingElevators(elevatorSystem ElevatorSystem ){
 
 	//divider := "+----------------------------+"
 	fmt.Println(  "+----------------------------+" )
-	fmt.Printf(   "|%-6s                        |\n", "ElevatorID: ", elevatorSystem.OwnId)
+	fmt.Printf(   "|%-6s %v                        |\n", "ElevatorID: ", elevatorSystem.OwnId)
 	fmt.Println(  "+----------------------------+" )
 	fmt.Printf(   "|%-6s         | %-2d         |\n", "floor", workingNode.Floor)
 	fmt.Printf(   "|%-6s         | %-12.12s     |\n", "Direction", elevatorConfig.DirectionToString(workingNode.Direction))
