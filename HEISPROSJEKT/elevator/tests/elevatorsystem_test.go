@@ -15,7 +15,7 @@ func TestInitialize(t *testing.T) {
 	HallRequestsForAllElevators := make(map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus)
 	CabRequestsForAllElevators := make(map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus)
 
-	system1 := synchronisation.ElevatorSystem{}
+	system1 := elevatorConfig.ElevatorSystem{}
 	synchronisation.InitializeElevatorSystem(&system1, "1")
 	synchronisation.SetFloor(&system1, 3)
 	synchronisation.SetDirection(&system1, elevatorConfig.Stop)
@@ -23,7 +23,7 @@ func TestInitialize(t *testing.T) {
 	synchronisation.SetHallRequests(&system1, 2, int(elevatorConfig.HallDown), elevatorConfig.Pending)
 	synchronisation.SetHallRequests(&system1, 3, int(elevatorConfig.HallUp), elevatorConfig.Pending)
 
-	system2 := synchronisation.ElevatorSystem{}
+	system2 := elevatorConfig.ElevatorSystem{}
 	synchronisation.InitializeElevatorSystem(&system2, "2")
 	synchronisation.SetFloor(&system2, 0)
 	synchronisation.SetDirection(&system2, elevatorConfig.Stop)
@@ -31,7 +31,7 @@ func TestInitialize(t *testing.T) {
 	synchronisation.SetHallRequests(&system2, 3, int(elevatorConfig.HallUp), elevatorConfig.Pending)
 	synchronisation.SetHallRequests(&system2, 2, int(elevatorConfig.HallDown), elevatorConfig.Pending)
 
-	system3 := synchronisation.ElevatorSystem{}
+	system3 := elevatorConfig.ElevatorSystem{}
 	synchronisation.InitializeElevatorSystem(&system3, "3")
 	synchronisation.SetFloor(&system3, 1)
 	synchronisation.SetDirection(&system3, elevatorConfig.Up)

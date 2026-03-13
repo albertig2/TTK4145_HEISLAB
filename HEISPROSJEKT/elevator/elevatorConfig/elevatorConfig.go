@@ -2,14 +2,15 @@ package elevatorConfig
 
 import (
 	"Driver-go/elevio"
+	"Network-go/network/peers"
 	"time"
 )
 
 const N_FLOORS int = 4
 const N_BUTTONS int = 3
 
-const DOOR_OPEN_DURATION_S = 3*time.Second
-const MOTOR_TIMEOUT_DURATION_S = 4*time.Second
+const DOOR_OPEN_DURATION_S = 3 * time.Second
+const MOTOR_TIMEOUT_DURATION_S = 4 * time.Second
 
 type Direction int
 
@@ -54,6 +55,19 @@ type Elevator struct {
 	Config    Config
 }
 
+type ElevatorState struct {
+	Behavior    Behavior              `json:"behavior"`
+	Floor       int                   `json:"floor"`
+	Direction   Direction             `json:"direction"`
+	CabRequests [N_FLOORS]OrderStatus `json:"cabRequests"`
+}
+
+type ElevatorSystem struct {
+	OwnId        string                    `json:"ownId"`
+	HallRequests [N_FLOORS][2]OrderStatus  `json:"hallRequests"`
+	States       map[string]*ElevatorState `json:"states"`
+}
+
 type OrderStatus string
 
 // Cab order only needs to go from no order to Pending to Completed, while hall orders also need Assigned, since they are Assigned to an elevator by the assigner
@@ -64,6 +78,16 @@ const (
 	Assigned  OrderStatus = "assigned"
 	Completed OrderStatus = "completed"
 )
+
+type SynchronisationChannels struct {
+	PeerUpdateChl                chan peers.PeerUpdate
+	PeerTxEnableCh               chan bool
+	BcastIncomingMessagesChannel chan ElevatorSystem
+	BcastOutgoingMessagesChannel chan ElevatorSystem
+	UpdateElevatorSystem         chan ElevatorSystem
+	UpdatePeerRequests           chan PeerRequestUpdate
+	//new order channel?
+}
 
 type ElevatorHardwareChannelsStruckt struct {
 	PollOrderButtonsChannel chan elevio.ButtonEvent

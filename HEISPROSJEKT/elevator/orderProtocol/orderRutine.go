@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func orderRutine(system *synchronisation.ElevatorSystem,
+func orderRutine(system *elevatorConfig.ElevatorSystem,
 	HallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus,
 	CabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus,
 	elevatorOrderChannels elevatorConfig.ElevatorOrderChannelStruckt,
@@ -31,11 +31,11 @@ func orderRutine(system *synchronisation.ElevatorSystem,
 func RunOrder(
 	id string,
 	elevatorOrderChannels elevatorConfig.ElevatorOrderChannelStruckt,
-	synchronisationChannels synchronisation.SynchronisationChannels,
+	synchronisationChannels elevatorConfig.SynchronisationChannels,
 	hardwareChannel elevatorConfig.ElevatorHardwareChannelsStruckt,
 ) {
 
-	system := synchronisation.ElevatorSystem{}
+	system := elevatorConfig.ElevatorSystem{}
 	synchronisation.InitializeElevatorSystem(&system, id)
 
 	HallRequestsForAllElevators := make(map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus)
@@ -48,7 +48,7 @@ func RunOrder(
 	newHallOrders := make([]elevatorConfig.ButtonEvent, 0)
 	newCabOrders := make([]elevatorConfig.ButtonEvent, 0)
 	alivePeers := make([]string, 0)
-	UpdatedSystem := synchronisation.ElevatorSystem{}
+	UpdatedSystem := elevatorConfig.ElevatorSystem{}
 	synchronisation.InitializeElevatorSystem(&UpdatedSystem, id)
 	alivePeers = []string{id}
 
@@ -71,11 +71,10 @@ func RunOrder(
 			} else if newOrder.Button == elevatorConfig.Cab {
 				newCabOrders = append(newCabOrders, newOrder)
 			}
+		// etterhvert kan denne fjernes
 		case peers := <-synchronisationChannels.PeerUpdateChl:
 			alivePeers = peers.Peers
-		case peerSystem := <-synchronisationChannels.BcastIncomingMessagesChannel:
-			synchronisation.UpdateElevatorSystemWithPeer(&system, &peerSystem, HallRequestsForAllElevators, CabRequestsForAllElevators)
-		case UpdatedSystem = <-synchronisationChannels.UpdateElevatorSystem:
+		case UpdatedSystem := <-synchronisationChannels.UpdateElevatorSystem:
 			system = UpdatedSystem
 		case motorstop := <-hardwareChannel.MotorFailureChannel:
 			paused = motorstop

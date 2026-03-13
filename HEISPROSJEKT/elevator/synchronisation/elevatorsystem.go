@@ -11,52 +11,39 @@ import (
 
 var HallDirections = [2]int{int(elevatorConfig.HallUp), int(elevatorConfig.HallDown)}
 
-type ElevatorState struct {
-	Behavior    elevatorConfig.Behavior                             `json:"behavior"`
-	Floor       int                                                 `json:"floor"`
-	Direction   elevatorConfig.Direction                            `json:"direction"`
-	CabRequests [elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus `json:"cabRequests"`
-}
-
-type ElevatorSystem struct {
-	OwnId        string                                                 `json:"ownId"`
-	HallRequests [elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus `json:"hallRequests"`
-	States       map[string]*ElevatorState                              `json:"states"`
-}
-
-func SetBehavior(system *ElevatorSystem, b elevatorConfig.Behavior) {
+func SetBehavior(system *elevatorConfig.ElevatorSystem, b elevatorConfig.Behavior) {
 	state := system.States[system.OwnId]
 	state.Behavior = b
 }
 
-func SetFloor(system *ElevatorSystem, f int) {
+func SetFloor(system *elevatorConfig.ElevatorSystem, f int) {
 	state := system.States[system.OwnId]
 	state.Floor = f
 }
 
-func SetDirection(system *ElevatorSystem, dir elevatorConfig.Direction) {
+func SetDirection(system *elevatorConfig.ElevatorSystem, dir elevatorConfig.Direction) {
 	state := system.States[system.OwnId]
 	state.Direction = dir
 }
 
 // Usikker på om jeg skal kalle det on eller off? eller en funksjon for på og en for av
-func SetCabRequests(system *ElevatorSystem, f int, orderstatus elevatorConfig.OrderStatus) {
+func SetCabRequests(system *elevatorConfig.ElevatorSystem, f int, orderstatus elevatorConfig.OrderStatus) {
 	state := system.States[system.OwnId]
 	state.CabRequests[f] = orderstatus
 }
 
 // Usikker på om jeg skal kalle den up or down eller dont know
-func SetHallRequests(system *ElevatorSystem, f int, halldir int, orderstatus elevatorConfig.OrderStatus) {
+func SetHallRequests(system *elevatorConfig.ElevatorSystem, f int, halldir int, orderstatus elevatorConfig.OrderStatus) {
 	system.HallRequests[f][halldir] = orderstatus
 }
 
-func InitializeElevatorSystem(system *ElevatorSystem, id string) {
+func InitializeElevatorSystem(system *elevatorConfig.ElevatorSystem, id string) {
 	// To decide floor can just do the get_floor_sensor_signal() and initialize to that floor, but for now hardcoded
 	system.OwnId = id
 	system.HallRequests = [elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus{}
-	system.States = make(map[string]*ElevatorState)
+	system.States = make(map[string]*elevatorConfig.ElevatorState)
 	currentFloor := 1 // Get floor sensor. (men helst ikke -1? så siste faktisk floor)
-	system.States[id] = &ElevatorState{
+	system.States[id] = &elevatorConfig.ElevatorState{
 		Behavior:    elevatorConfig.Idle,
 		Floor:       currentFloor,
 		Direction:   elevatorConfig.Stop,
@@ -75,7 +62,7 @@ func InitializeElevatorSystem(system *ElevatorSystem, id string) {
 	initializeCabRequests(system)
 }
 
-func initializeHallRequests(system *ElevatorSystem) {
+func initializeHallRequests(system *elevatorConfig.ElevatorSystem) {
 	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
 		for _, halldir := range HallDirections {
 			system.HallRequests[floor][halldir] = elevatorConfig.NoOrder
@@ -83,7 +70,7 @@ func initializeHallRequests(system *ElevatorSystem) {
 	}
 }
 
-func initializeCabRequests(system *ElevatorSystem) {
+func initializeCabRequests(system *elevatorConfig.ElevatorSystem) {
 	// Listen for other elevators to broadcast their view of your cab orders, and if you hear any, set your cab orders to be the combination of all of them (pending if any of them is pending or no order)
 	// For each elevator you hear from, check all floors, if any of the floors have pending, set that floor to pending.
 	/*
@@ -99,7 +86,7 @@ func initializeCabRequests(system *ElevatorSystem) {
 
 // If only called from updatedElavatorSystemFromPeer, then I dont need the check for existence
 // Only called if not existing
-func addPeer(system *ElevatorSystem, peerSystem *ElevatorSystem) {
+func addPeer(system *elevatorConfig.ElevatorSystem, peerSystem *elevatorConfig.ElevatorSystem) {
 	CabRequests := peerSystem.States[peerSystem.OwnId].CabRequests
 	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
 		if CabRequests[floor] == elevatorConfig.Unknown {
@@ -108,7 +95,7 @@ func addPeer(system *ElevatorSystem, peerSystem *ElevatorSystem) {
 	}
 
 	peerState := peerSystem.States[peerSystem.OwnId]
-	system.States[peerSystem.OwnId] = &ElevatorState{
+	system.States[peerSystem.OwnId] = &elevatorConfig.ElevatorState{
 		Behavior:    peerState.Behavior,
 		Floor:       peerState.Floor,
 		Direction:   peerState.Direction,
@@ -116,7 +103,7 @@ func addPeer(system *ElevatorSystem, peerSystem *ElevatorSystem) {
 	}
 }
 
-func updatePeer(system *ElevatorSystem, peerSystem *ElevatorSystem) {
+func updatePeer(system *elevatorConfig.ElevatorSystem, peerSystem *elevatorConfig.ElevatorSystem) {
 	// Need to make sure that if I have info on the cabrequests of a peer and they are restarted, meaning that their caborders may be uninitialized
 	peerSystemCabRequests := peerSystem.States[peerSystem.OwnId].CabRequests
 	CabRequests := system.States[peerSystem.OwnId].CabRequests
@@ -128,7 +115,7 @@ func updatePeer(system *ElevatorSystem, peerSystem *ElevatorSystem) {
 	}
 
 	peerState := peerSystem.States[peerSystem.OwnId]
-	system.States[peerSystem.OwnId] = &ElevatorState{
+	system.States[peerSystem.OwnId] = &elevatorConfig.ElevatorState{
 		Behavior:    peerState.Behavior,
 		Floor:       peerState.Floor,
 		Direction:   peerState.Direction,
@@ -136,7 +123,7 @@ func updatePeer(system *ElevatorSystem, peerSystem *ElevatorSystem) {
 	}
 }
 
-func UpdateElevatorSystemWithPeer(system *ElevatorSystem, peerSystem *ElevatorSystem, HallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, CabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus) {
+func UpdateElevatorSystemWithPeer(system *elevatorConfig.ElevatorSystem, peerSystem *elevatorConfig.ElevatorSystem, HallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, CabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus) {
 	if _, exists := system.States[peerSystem.OwnId]; exists {
 		updatePeer(system, peerSystem)
 	} else {
@@ -149,12 +136,12 @@ func UpdateElevatorSystemWithPeer(system *ElevatorSystem, peerSystem *ElevatorSy
 	}
 }
 
-func UpdateElevatorSystemWithSelf(system *ElevatorSystem, HallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, CabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus) {
+func UpdateElevatorSystemWithSelf(system *elevatorConfig.ElevatorSystem, HallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, CabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus) {
 	HallRequestsForAllElevators[system.OwnId] = system.HallRequests
 	CabRequestsForAllElevators[system.OwnId] = system.States[system.OwnId].CabRequests
 }
 
-func updateElevatorSystem(system *ElevatorSystem, hallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, cabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus, receivedWorldView chan string) {
+func updateElevatorSystem(system *elevatorConfig.ElevatorSystem, hallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, cabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus, receivedWorldView chan string) {
 	peerSystem := DecodeElevatorSystem(<-receivedWorldView)
 	addPeer(system, &peerSystem)
 	UpdateElevatorSystemWithPeer(system, &peerSystem, hallRequestsForAllElevators, cabRequestsForAllElevators)
@@ -210,7 +197,7 @@ func printCabLine(orders []elevatorConfig.OrderStatus) {
 	}
 	fmt.Printf(" |\n")
 }
-func PrintCurrentWorkingElevators(elevatorSystem ElevatorSystem) {
+func PrintCurrentWorkingElevators(elevatorSystem elevatorConfig.ElevatorSystem) {
 	workingNode := elevatorSystem.States[elevatorSystem.OwnId]
 	hallOrders := elevatorSystem.HallRequests
 	cabOrders := workingNode.CabRequests
@@ -242,7 +229,7 @@ func PrintCurrentWorkingElevators(elevatorSystem ElevatorSystem) {
 	fmt.Printf("")
 
 }
-func PrintPeerElevators(elevatorSystem ElevatorSystem) {
+func PrintPeerElevators(elevatorSystem elevatorConfig.ElevatorSystem) {
 	currentPeers := elevatorSystem.States
 
 	for id, state := range currentPeers {
@@ -268,7 +255,7 @@ func PrintPeerElevators(elevatorSystem ElevatorSystem) {
 
 }
 
-func PrintElevatorSystem(elevatorSystem ElevatorSystem) {
+func PrintElevatorSystem(elevatorSystem elevatorConfig.ElevatorSystem) {
 
 	fmt.Println("---------Start System update-----------------")
 

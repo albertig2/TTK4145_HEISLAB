@@ -1,7 +1,6 @@
 package synchronisation
 
 import (
-	"HEISPROSJEKT/debuggingHelpers"
 	"HEISPROSJEKT/elevatorConfig"
 	"Network-go/network/peers"
 
@@ -10,40 +9,31 @@ import (
 	"time"
 )
 
-type SynchronisationChannels struct {
-	PeerUpdateChl                chan peers.PeerUpdate
-	PeerTxEnableCh               chan bool
-	BcastIncomingMessagesChannel chan ElevatorSystem
-	BcastOutgoingMessagesChannel chan ElevatorSystem
-	UpdateElevatorSystem         chan ElevatorSystem
-	//new order channel?
-}
-
 var (
 	alivePeersList []string
 	deadPeersList  []string
 )
 
-func InitNetworkChannels() SynchronisationChannels {
-	channels := SynchronisationChannels{
+func InitNetworkChannels() elevatorConfig.SynchronisationChannels {
+	channels := elevatorConfig.SynchronisationChannels{
 		PeerUpdateChl:                make(chan peers.PeerUpdate),
 		PeerTxEnableCh:               make(chan bool),
-		BcastIncomingMessagesChannel: make(chan ElevatorSystem),
-		BcastOutgoingMessagesChannel: make(chan ElevatorSystem),
-		UpdateElevatorSystem:         make(chan ElevatorSystem),
+		BcastIncomingMessagesChannel: make(chan elevatorConfig.ElevatorSystem),
+		BcastOutgoingMessagesChannel: make(chan elevatorConfig.ElevatorSystem),
+		UpdateElevatorSystem:         make(chan elevatorConfig.ElevatorSystem),
 	}
 
 	return channels
 }
 
-func StartPeerNetworking(port int, id int, channels SynchronisationChannels) {
+func StartPeerNetworking(port int, id int, channels elevatorConfig.SynchronisationChannels) {
 	fmt.Println("start")
 
 	go peers.Receiver(port, channels.PeerUpdateChl)
 	go peers.Transmitter(port, strconv.Itoa(id), channels.PeerTxEnableCh)
 }
 
-func UpdatePeerList(channels SynchronisationChannels) {
+func UpdatePeerList(channels elevatorConfig.SynchronisationChannels) {
 	for {
 		peerUpdate := <-channels.PeerUpdateChl
 
@@ -77,7 +67,7 @@ func GetDeadPeersList() []string {
 	return deadPeersList
 }
 
-func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan ElevatorSystem, elevatorSystem ElevatorSystem, elevatorChannel chan elevatorConfig.Elevator) {
+func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan elevatorConfig.ElevatorSystem, elevatorSystem elevatorConfig.ElevatorSystem, elevatorChannel chan elevatorConfig.Elevator) {
 	messageTimer := time.NewTimer(1 * time.Second) //should update slightly more often, maybe 30hz?
 	for {
 
@@ -105,7 +95,7 @@ func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan Ele
 //HandleOutgoing Broadcast
 //HandleIncommingOrderUpdate (should ths be in the state machine or mighgt be ein order protocol)
 
-func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan elevatorConfig.Elevator) {
+func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan elevatorConfig.ElevatorSystem) {
 
 	for {
 		incomingMessage := <-BcastIncomingMessagesChannel
@@ -118,12 +108,13 @@ func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan eleva
 		*/
 
 		fmt.Println("Sender ID:", senderID)
-		debuggingHelpers.Elevator_print(incomingMessage)
+		// Not elevatorsystem?
+		//debuggingHelpers.Elevator_print(incomingMessage)
 
 	}
 }
 
-func UpdateElevatorSystemFromELevator(elevator elevatorConfig.Elevator, elevatorSystem *ElevatorSystem) {
+func UpdateElevatorSystemFromELevator(elevator elevatorConfig.Elevator, elevatorSystem *elevatorConfig.ElevatorSystem) {
 
 	SetBehavior(elevatorSystem, elevatorConfig.Behavior(elevator.Direction))
 	SetDirection(elevatorSystem, elevator.Direction)

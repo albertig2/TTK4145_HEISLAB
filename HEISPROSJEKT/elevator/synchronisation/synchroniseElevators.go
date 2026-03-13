@@ -15,9 +15,9 @@ import (
 )
 
 // called as a go functions
-func SynchroniseElevators(elevatorUpdates chan elevatorConfig.Elevator, synchronisationChannels SynchronisationChannels, ownId string) {
+func SynchroniseElevators(elevatorUpdates chan elevatorConfig.Elevator, synchronisationChannels elevatorConfig.SynchronisationChannels, ownId string) {
 
-	elevatorSystem := ElevatorSystem{}
+	elevatorSystem := elevatorConfig.ElevatorSystem{}
 	InitializeElevatorSystem(&elevatorSystem, ownId)
 
 	broadcastTicker := time.NewTicker(time.Second / 30)
@@ -42,9 +42,9 @@ func SynchroniseElevators(elevatorUpdates chan elevatorConfig.Elevator, synchron
 
 			UpdateElevatorSystemFromELevator(elevatorUpdate, &elevatorSystem)
 
-		case systemUpdate := <- synchronisationChannels.UpdateElevatorSystem:
+		case systemUpdate := <-synchronisationChannels.UpdateElevatorSystem:
 			elevatorSystem = systemUpdate
-		
+
 		case <-broadcastTicker.C:
 
 			synchronisationChannels.BcastOutgoingMessagesChannel <- elevatorSystem

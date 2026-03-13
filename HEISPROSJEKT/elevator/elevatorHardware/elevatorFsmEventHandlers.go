@@ -4,7 +4,6 @@ import (
 	"Driver-go/elevio"
 	"HEISPROSJEKT/debuggingHelpers"
 	"HEISPROSJEKT/elevatorConfig"
-	"HEISPROSJEKT/synchronisation"
 	"fmt"
 	"time"
 )
@@ -253,7 +252,7 @@ func HandleObstructionActivated(obstructionActivated bool, elevator *elevatorCon
 
 }
 
-func HandleMotorFailure(elevatorObject *elevatorConfig.Elevator, motorTimeoutTimer *time.Timer, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels synchronisation.SynchronisationChannels) {
+func HandleMotorFailure(elevatorObject *elevatorConfig.Elevator, motorTimeoutTimer *time.Timer, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels elevatorConfig.SynchronisationChannels) {
 	simMotorFailureTimer := time.NewTimer(2 * time.Second)
 
 	ElevatorMotorDirection(elevatorConfig.Stop, motorTimeoutTimer)
