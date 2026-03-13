@@ -77,6 +77,9 @@ func RunOrder(
 			alivePeers = peers.Peers
 		case UpdatedSystem = <-synchronisationChannels.UpdateElevatorSystem:
 			system = UpdatedSystem
+		case UpdatedPeerRequests := <-synchronisationChannels.UpdatePeerRequests:
+			HallRequestsForAllElevators[UpdatedPeerRequests.PeerID] = UpdatedPeerRequests.HallReqs
+			CabRequestsForAllElevators[UpdatedPeerRequests.PeerID] = UpdatedPeerRequests.CabReqs
 		case motorstop := <-hardwareChannel.MotorFailureChannel:
 			paused = motorstop
 			if motorstop {
