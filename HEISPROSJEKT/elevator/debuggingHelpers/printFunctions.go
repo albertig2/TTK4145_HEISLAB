@@ -32,96 +32,125 @@ func Elevator_print(es elevatorConfig.Elevator) {
 	fmt.Println("  +--------------------+")
 }
 
-
-func PrintPeerUpdate(peerUpdate peers.PeerUpdate){
+func PrintPeerUpdate(peerUpdate peers.PeerUpdate) {
 
 	fmt.Println("---------------------New peer uppdate recieved----------------------- ")
-	
+
 	fmt.Printf("Current alive peers: ")
-	for peerIndex:= 0; peerIndex < len(peerUpdate.Peers); peerIndex++{
-		fmt.Printf( "%+v ", peerUpdate.Peers[peerIndex])
+	for peerIndex := 0; peerIndex < len(peerUpdate.Peers); peerIndex++ {
+		fmt.Printf("%+v ", peerUpdate.Peers[peerIndex])
 	}
 	fmt.Printf("\n")
 
-	if (peerUpdate.New  != ""){
-	fmt.Printf("Elevator ID  %+v just joind the network \n", peerUpdate.New )
+	if peerUpdate.New != "" {
+		fmt.Printf("Elevator ID  %+v just joind the network \n", peerUpdate.New)
 	}
 
 	fmt.Printf("Peers considerd lost: ")
-	for peerIndex:= 0; peerIndex < len(peerUpdate.Lost); peerIndex++{
-		fmt.Printf( "%+v ", peerUpdate.Lost[peerIndex])
+	for peerIndex := 0; peerIndex < len(peerUpdate.Lost); peerIndex++ {
+		fmt.Printf("%+v ", peerUpdate.Lost[peerIndex])
 	}
 	fmt.Printf("\n")
 
 	fmt.Println("---------------------End of peer update------------------------------ ")
 }
-type OrderStatus string
+
+type OrderStatus1 string
+
 const (
-	NoOrder   OrderStatus = "no order"
-	Pending   OrderStatus = "pending"
-	Assigned  OrderStatus = "assigned"
-	Completed OrderStatus = "completed"
+	NoOrder   OrderStatus1 = "no order"
+	Pending   OrderStatus1 = "pending"
+	Assigned  OrderStatus1 = "assigned"
+	Completed OrderStatus1 = "completed"
 )
-type ElevatorState struct {
-	Behavior    elevatorConfig.Behavior              `json:"behavior"`
-	Floor       int                                  `json:"floor"`
-	Direction   elevatorConfig.Direction             `json:"direction"`
-	CabRequests [elevatorConfig.N_FLOORS]OrderStatus `json:"cabRequests"`
+
+type ElevatorState1 struct {
+	Behavior    elevatorConfig.Behavior               `json:"behavior"`
+	Floor       int                                   `json:"floor"`
+	Direction   elevatorConfig.Direction              `json:"direction"`
+	CabRequests [elevatorConfig.N_FLOORS]OrderStatus1 `json:"cabRequests"`
 }
 
-type ElevatorSystem struct {
-	OwnId        string                                  `json:"ownId"`
-	HallRequests [elevatorConfig.N_FLOORS][2]OrderStatus `json:"hallRequests"`
-	States       map[string]*ElevatorState               `json:"states"`
+type ElevatorSystem1 struct {
+	OwnId        string                                   `json:"ownId"`
+	HallRequests [elevatorConfig.N_FLOORS][2]OrderStatus1 `json:"hallRequests"`
+	States       map[string]*ElevatorState1               `json:"states"`
 }
 
-func printOrderLine(orders []OrderStatus){
+func printHallLine(orders [elevatorConfig.N_FLOORS][2]OrderStatus1, orderTypeIndex int) {
 
-	for index := 0; index < len(orders); index++{
-		orderstatus := orders[index]
-		switch(orderstatus){
+	for index := 0; index < len(orders); index++ {
+		orderstatus := orders[index][orderTypeIndex]
+		switch orderstatus {
 		case NoOrder:
-
+			fmt.Printf(" - ")
+		case Pending:
+			fmt.Printf(" ! ")
+		case Assigned:
+			fmt.Printf(" * ")
+		case Completed:
+			fmt.Printf(" ^ ")
 		}
 
 	}
+	fmt.Printf(" |\n")
 }
+func printCabLine(orders []OrderStatus1) {
 
-func printCurrentWorkingElevators(elevatorSystem ElevatorSystem ){
+	for index := 0; index < len(orders); index++ {
+		orderstatus := orders[index]
+		switch orderstatus {
+		case NoOrder:
+			fmt.Printf(" - ")
+		case Pending:
+			fmt.Printf(" ! ")
+		case Assigned:
+			fmt.Printf(" * ")
+		case Completed:
+			fmt.Printf(" ^ ")
+		}
+
+	}
+	fmt.Printf(" |\n")
+}
+func PrintCurrentWorkingElevators(elevatorSystem ElevatorSystem1) {
 	workingNode := elevatorSystem.States[elevatorSystem.OwnId]
-	// hallOrders := elevatorSystem.HallRequests
-	// cabOrders := workingNode.CabRequests
+	hallOrders := elevatorSystem.HallRequests
+	cabOrders := workingNode.CabRequests
+
+	// const boxWidth = 28
+	// leftCol := 12
+	// rightCol := boxWidth - leftCol - 4
 
 	//divider := "+----------------------------+"
-	fmt.Println(  "+----------------------------+" )
-	fmt.Printf(   "|%-6s %v                        |\n", "ElevatorID: ", elevatorSystem.OwnId)
-	fmt.Println(  "+----------------------------+" )
-	fmt.Printf(   "|%-6s         | %-2d         |\n", "floor", workingNode.Floor)
-	fmt.Printf(   "|%-6s         | %-12.12s     |\n", "Direction", elevatorConfig.DirectionToString(workingNode.Direction))
-	fmt.Printf(   "|%-6s         | %-12.12s     |\n", "Behavior", elevatorConfig.BehaviorToString(workingNode.Behavior))
-	fmt.Println(  "+----------------------------+" )
-	fmt.Printf(  "| %-6s        |  1  2  3  4  |\n", "Floor")
-	fmt.Printf (  "| %-6s        |", "Up" )
-	fmt.Printf (  "| %-6s        |", "Down" )
-	fmt.Printf (  "| %-6s        |", "Cab" )
-	fmt.Println(  "+----------------------------+" )
-
-	
+	fmt.Println("+----------------------------+")
+	//fmt.Printf("| %-26s |\n", fmt.Sprintf("ElevatorID: %v", elevatorSystem.OwnId))
+	fmt.Printf("|         ElevatorID: %v      |\n", elevatorSystem.OwnId)
+	fmt.Println("+----------------------------+")
+	fmt.Printf("| %-12s | %-12d|\n", "Floor", workingNode.Floor)
+	fmt.Printf("| %-12s | %-12s|\n", "Direction", elevatorConfig.DirectionToString(workingNode.Direction))
+	fmt.Printf("| %-12s | %-12s|\n", "Behavior", elevatorConfig.BehaviorToString(workingNode.Behavior))
+	fmt.Println("+----------------------------+")
+	fmt.Printf("| %-12s | %-12s|\n", "Floor", "1  2  3  4" )
+	fmt.Printf("| %-12s |", "Up")
+	printHallLine(hallOrders, 0)
+	fmt.Printf("| %-12s |", "Down")
+	printHallLine(hallOrders, 1)
+	fmt.Printf("| %-12s |", "Cab")
+	printCabLine(cabOrders[:])
+	fmt.Println("+----------------------------+")
 	//fmt.Println(divider)
 
 	fmt.Printf("")
 
 }
-func printPeerElevators(){
-	
+func printPeerElevators() {
+
 }
 
 // func PrintElevatorSystem(elevatorSystem synchronisation.ElevatorSystem){
 
 // 	fmt.Println("---------Start System update-----------------")
-
-
-
 
 // 	fmt.Println("---------End System update-------------------")
 
@@ -250,12 +279,11 @@ func MimicOrderAssignerAndSynch(orderChannelse elevatorConfig.ElevatorOrderChann
 	for {
 		select {
 		case newOrder := <-orderChannelse.NewRecievedOrderChannel:
-			fmt.Println("New order Recieved: " , newOrder)
+			fmt.Println("New order Recieved: ", newOrder)
 			orderChannelse.NewAssignedOrderChannel <- newOrder
-			
 
 		case servicedOrder := <-orderChannelse.ServicedOrderChannel:
-			fmt.Println("New order serviced: " , servicedOrder)
+			fmt.Println("New order serviced: ", servicedOrder)
 
 		}
 
