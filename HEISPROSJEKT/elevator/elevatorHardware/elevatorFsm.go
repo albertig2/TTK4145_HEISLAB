@@ -22,6 +22,9 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 		select {
 		case floor := <-hardwareChannels.FloorSensorChannel:
 
+			motorTimeoutTimer.Stop()
+			motorTimeoutTimer.Reset(elevatorConfig.MOTOR_TIMEOUT_DURATION_S)
+
 			HandleOnFloorArrival(&elevatorObject, doorTimer, floor, orderChannels.ServicedOrderChannel,motorTimeoutTimer)
 
 		case recievedOrder := <-hardwareChannels.PollOrderButtonsChannel:
