@@ -15,14 +15,13 @@ func orderRutine(system *elevatorConfig.ElevatorSystem,
 	newHallOrders []elevatorConfig.ButtonEvent,
 	newCabOrders []elevatorConfig.ButtonEvent,
 	servicedHallOrder elevatorConfig.ButtonEvent,
-	servicedCabOrder elevatorConfig.ButtonEvent,
-	alivePeers []string) {
+	servicedCabOrder elevatorConfig.ButtonEvent) {
 
-	HallRequestTransitions := GetAllHallRequestTransitions(system, HallRequestsForAllElevators, newHallOrders, servicedHallOrder, alivePeers)
+	HallRequestTransitions := GetAllHallRequestTransitions(system, HallRequestsForAllElevators, newHallOrders, servicedHallOrder)
 
-	CabRequestTransitions := GetAllCabRequestTransitions(system, CabRequestsForAllElevators, newCabOrders, servicedCabOrder, alivePeers)
+	CabRequestTransitions := GetAllCabRequestTransitions(system, CabRequestsForAllElevators, newCabOrders, servicedCabOrder)
 
-	TransitioningAllHallRequests(system, HallRequestTransitions, alivePeers, elevatorOrderChannels)
+	TransitioningAllHallRequests(system, HallRequestTransitions, elevatorOrderChannels)
 
 	TransitioningAllCabRequests(system, CabRequestTransitions, elevatorOrderChannels)
 
@@ -48,10 +47,8 @@ func RunOrder(
 	servicedCabOrders := make([]elevatorConfig.ButtonEvent, 0)
 	newHallOrders := make([]elevatorConfig.ButtonEvent, 0)
 	newCabOrders := make([]elevatorConfig.ButtonEvent, 0)
-	alivePeers := make([]string, 0)
 	UpdatedSystem := elevatorConfig.ElevatorSystem{}
 	synchronisation.InitializeElevatorSystem(&UpdatedSystem, id)
-	alivePeers = []string{id}
 
 	paused := false
 	ticker := time.NewTicker(1 * time.Second)
@@ -73,8 +70,6 @@ func RunOrder(
 				newCabOrders = append(newCabOrders, newOrder)
 			}
 		// etterhvert kan denne fjernes
-		case peers := <-synchronisationChannels.PeerUpdateChl:
-			alivePeers = peers.Peers
 		case UpdatedSystem = <-synchronisationChannels.UpdateElevatorSystem:
 			system = UpdatedSystem
 		case UpdatedPeerRequests := <-synchronisationChannels.UpdatePeerRequests:
@@ -100,7 +95,7 @@ func RunOrder(
 					sc = servicedCabOrders[0]
 				}
 
-				orderRutine(&system, HallRequestsForAllElevators, CabRequestsForAllElevators, elevatorOrderChannels, newHallOrders, newCabOrders, sh, sc, alivePeers)
+				orderRutine(&system, HallRequestsForAllElevators, CabRequestsForAllElevators, elevatorOrderChannels, newHallOrders, newCabOrders, sh, sc)
 				HallRequestsForAllElevators[system.OwnId] = system.HallRequests
 				CabRequestsForAllElevators[system.OwnId] = system.States[system.OwnId].CabRequests
 				servicedHallOrders = servicedHallOrders[:0]
