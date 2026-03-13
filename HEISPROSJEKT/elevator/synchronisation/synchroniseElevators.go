@@ -9,6 +9,7 @@ import (
 	// "strconv"
 	"HEISPROSJEKT/debuggingHelpers"
 	"HEISPROSJEKT/elevatorConfig"
+	//"fmt"
 	"time"
 )
 
