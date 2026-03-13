@@ -105,7 +105,19 @@ func initializeCabRequests(system *ElevatorSystem) {
 
 // If only called from updatedElavatorSystemFromPeer, then I dont need the check for existence
 // Only called if not existing
+func contains(slice []string, value string) bool {
+	for _, item := range slice {
+		if item == value {
+			return true
+		}
+	}
+	return false
+}
+
 func addPeer(system *ElevatorSystem, peerSystem *ElevatorSystem) {
+	if !contains(system.alivePeers, peerSystem.OwnId) {
+		system.alivePeers = append(system.alivePeers, peerSystem.OwnId)
+	}
 	CabRequests := peerSystem.States[peerSystem.OwnId].CabRequests
 	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
 		if CabRequests[floor] == elevatorConfig.Unknown {
