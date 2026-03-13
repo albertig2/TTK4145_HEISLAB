@@ -11,7 +11,7 @@ import (
 
 var HallDirections = [2]int{int(elevatorConfig.HallUp), int(elevatorConfig.HallDown)}
 
-func SetAlviePeers(system *elevatorConfig.ElevatorSystem, alivepeers []string) {
+func SetAlivePeers(system *elevatorConfig.ElevatorSystem, alivepeers []string) {
 	system.AlivePeers = alivepeers
 }
 

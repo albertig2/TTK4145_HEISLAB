@@ -32,14 +32,25 @@ func SynchroniseElevators(elevatorUpdates chan elevatorConfig.Elevator, synchron
 		case incommingBroadcast := <-synchronisationChannels.BcastIncomingMessagesChannel:
 
 			UpdateElevatorSystemWithPeer(&elevatorSystem, &incommingBroadcast, hallRequestsForAllElevators, cabRequestsForAllElevators)
+			peerRequests := elevatorConfig.PeerRequestUpdate{
+				PeerID:   incommingBroadcast.OwnId,
+				HallReqs: hallRequestsForAllElevators[incommingBroadcast.OwnId],
+				CabReqs:  cabRequestsForAllElevators[incommingBroadcast.OwnId],
+			}
+			synchronisationChannels.UpdatePeerRequests <- peerRequests
 
 		case peerUpdate := <-synchronisationChannels.PeerUpdateChl:
-
-			SetAlviePeers(&elevatorSystem, peerUpdate.Peers)
+			filteredAlivePeers := []string{}
+			for _, peerID := range peerUpdate.Peers {
+				if _, ok := elevatorSystem.States[peerID]; ok {
+					filteredAlivePeers = append(filteredAlivePeers, peerID)
+				}
+			}
+			SetAlivePeers(&elevatorSystem, filteredAlivePeers)
 			debuggingHelpers.PrintPeerUpdate(peerUpdate)
 
 		case elevatorUpdate := <-elevatorUpdates:
-
+			// Maybe I should use this too in orders(?)
 			UpdateElevatorSystemFromELevator(elevatorUpdate, &elevatorSystem)
 
 		case systemUpdate := <-synchronisationChannels.UpdateElevatorSystem:
@@ -52,11 +63,9 @@ func SynchroniseElevators(elevatorUpdates chan elevatorConfig.Elevator, synchron
 		}
 
 		select {
-
 		case synchronisationChannels.UpdateElevatorSystem <- elevatorSystem:
 		default:
 		}
-
 	}
 
 	//run all synchronisation on events (like elevator fsm, run events on most sync channel?)
