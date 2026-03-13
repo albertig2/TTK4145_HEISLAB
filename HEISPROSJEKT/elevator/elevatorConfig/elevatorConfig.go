@@ -63,6 +63,7 @@ type ElevatorState struct {
 }
 
 type ElevatorSystem struct {
+	AlivePeers   []string                  `json:"alivePeers"`
 	OwnId        string                    `json:"ownId"`
 	HallRequests [N_FLOORS][2]OrderStatus  `json:"hallRequests"`
 	States       map[string]*ElevatorState `json:"states"`

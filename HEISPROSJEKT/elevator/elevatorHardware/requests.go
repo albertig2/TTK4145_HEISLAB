@@ -2,7 +2,6 @@ package elevatorHardware
 
 import (
 	"HEISPROSJEKT/elevatorConfig"
-	"fmt"
 )
 
 type DirectionBehaviorPair struct {
@@ -117,10 +116,10 @@ func RequestsShouldClearImmediately(elevator elevatorConfig.Elevator, btn_Floor 
 //note to order handeling: this function clears order regardless of there actually was an oorder there. This means that the order 
 //state machine has to be able to handle instances where it recieves a CleardOrder message for orders in other states than assigned 
 func RequestsClearAtCurrentFloor(e elevatorConfig.Elevator, ServicedOrderChannel chan elevatorConfig.ButtonEvent) elevatorConfig.Elevator {
-	fmt.Println("Started RequestsClearAtCurrentFloor")
+
 	e.Requests[e.Floor][elevatorConfig.Cab] = false
 	ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor : e.Floor, Button: elevatorConfig.Cab}
-	fmt.Println("After first send in RequestsClearAtCurrentFloor")
+
 	switch e.Direction {
 	case elevatorConfig.Up:
 		if !RequestsAbove(e) && !e.Requests[e.Floor][elevatorConfig.HallUp] {
@@ -147,7 +146,7 @@ func RequestsClearAtCurrentFloor(e elevatorConfig.Elevator, ServicedOrderChannel
 		e.Requests[e.Floor][elevatorConfig.HallDown] = false
 		ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor : e.Floor, Button: elevatorConfig.HallDown}
 	}
-	fmt.Println("End RequestsClearAtCurrentFloor")
+
 
 	return e
 }

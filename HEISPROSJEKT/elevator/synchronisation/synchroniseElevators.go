@@ -35,7 +35,7 @@ func SynchroniseElevators(elevatorUpdates chan elevatorConfig.Elevator, synchron
 
 		case peerUpdate := <-synchronisationChannels.PeerUpdateChl:
 
-			//aliveList = peerUpdate.Peers
+			SetAlviePeers(&elevatorSystem, peerUpdate.Peers)
 			debuggingHelpers.PrintPeerUpdate(peerUpdate)
 
 		case elevatorUpdate := <-elevatorUpdates:

@@ -28,6 +28,7 @@ func orderRutine(system *elevatorConfig.ElevatorSystem,
 
 }
 
+// test1
 func RunOrder(
 	id string,
 	elevatorOrderChannels elevatorConfig.ElevatorOrderChannelStruckt,
@@ -74,7 +75,7 @@ func RunOrder(
 		// etterhvert kan denne fjernes
 		case peers := <-synchronisationChannels.PeerUpdateChl:
 			alivePeers = peers.Peers
-		case UpdatedSystem := <-synchronisationChannels.UpdateElevatorSystem:
+		case UpdatedSystem = <-synchronisationChannels.UpdateElevatorSystem:
 			system = UpdatedSystem
 		case motorstop := <-hardwareChannel.MotorFailureChannel:
 			paused = motorstop

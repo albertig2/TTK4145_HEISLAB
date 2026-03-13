@@ -11,6 +11,10 @@ import (
 
 var HallDirections = [2]int{int(elevatorConfig.HallUp), int(elevatorConfig.HallDown)}
 
+func SetAlviePeers(system *elevatorConfig.ElevatorSystem, alivepeers []string) {
+	system.AlivePeers = alivepeers
+}
+
 func SetBehavior(system *elevatorConfig.ElevatorSystem, b elevatorConfig.Behavior) {
 	state := system.States[system.OwnId]
 	state.Behavior = b
@@ -39,6 +43,7 @@ func SetHallRequests(system *elevatorConfig.ElevatorSystem, f int, halldir int, 
 
 func InitializeElevatorSystem(system *elevatorConfig.ElevatorSystem, id string) {
 	// To decide floor can just do the get_floor_sensor_signal() and initialize to that floor, but for now hardcoded
+	system.AlivePeers = []string{id}
 	system.OwnId = id
 	system.HallRequests = [elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus{}
 	system.States = make(map[string]*elevatorConfig.ElevatorState)
@@ -86,7 +91,19 @@ func initializeCabRequests(system *elevatorConfig.ElevatorSystem) {
 
 // If only called from updatedElavatorSystemFromPeer, then I dont need the check for existence
 // Only called if not existing
+func contains(slice []string, value string) bool {
+	for _, item := range slice {
+		if item == value {
+			return true
+		}
+	}
+	return false
+}
+
 func addPeer(system *elevatorConfig.ElevatorSystem, peerSystem *elevatorConfig.ElevatorSystem) {
+	if !contains(system.AlivePeers, peerSystem.OwnId) {
+		system.AlivePeers = append(system.AlivePeers, peerSystem.OwnId)
+	}
 	CabRequests := peerSystem.States[peerSystem.OwnId].CabRequests
 	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
 		if CabRequests[floor] == elevatorConfig.Unknown {
