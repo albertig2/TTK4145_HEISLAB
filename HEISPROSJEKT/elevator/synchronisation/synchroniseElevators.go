@@ -9,6 +9,7 @@ import (
 	// "strconv"
 	"HEISPROSJEKT/debuggingHelpers"
 	"HEISPROSJEKT/elevatorConfig"
+
 	//"fmt"
 	"time"
 )
@@ -30,14 +31,14 @@ func SynchroniseElevators(elevatorUpdates chan elevatorConfig.Elevator, synchron
 
 		case incommingBroadcast := <-synchronisationChannels.BcastIncomingMessagesChannel:
 
-			UpdateElevatorSystemFromPeer(&elevatorSystem, &incommingBroadcast, hallRequestsForAllElevators, cabRequestsForAllElevators)
+			UpdateElevatorSystemWithPeer(&elevatorSystem, &incommingBroadcast, hallRequestsForAllElevators, cabRequestsForAllElevators)
 
 		case peerUpdate := <-synchronisationChannels.PeerUpdateChl:
 
 			//aliveList = peerUpdate.Peers
 			debuggingHelpers.PrintPeerUpdate(peerUpdate)
 
-		case elevatorUpdate := <- elevatorUpdates:
+		case elevatorUpdate := <-elevatorUpdates:
 
 			UpdateElevatorSystemFromELevator(elevatorUpdate, &elevatorSystem)
 
@@ -47,7 +48,7 @@ func SynchroniseElevators(elevatorUpdates chan elevatorConfig.Elevator, synchron
 			broadcastTicker.Reset(time.Second / 30)
 		}
 
-		select{
+		select {
 
 		case synchronisationChannels.UpdateElevatorSystem <- elevatorSystem:
 		default:
