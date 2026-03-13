@@ -68,7 +68,7 @@ func isBetweenFloors() bool {
 
 }
 
-func HandleOnFloorArrival(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, newFloor int, MotorDirectionChannel chan elevatorConfig.Direction, motorTimeoutTimer *time.Timer) {
+func HandleOnFloorArrival(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, newFloor int, ServicedOrderChannel chan elevatorConfig.ButtonEvent, motorTimeoutTimer *time.Timer) {
 	fmt.Println("Elevator arrived at:", newFloor)
 	debuggingHelpers.Elevator_print(*elevator)
 
@@ -112,7 +112,7 @@ func OpenDoor(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, timeOpen
 	}
 }
 
-func OnDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, motorTimeoutTimer *time.Timer) {
+func OnDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, ServicedOrderChannel chan elevatorConfig.ButtonEvent, motorTimeoutTimer *time.Timer) {
 	fmt.Println("Door timeout")
 	// debuggingHelpers.Elevator_print(*elevator)
 
@@ -141,7 +141,7 @@ func OnDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, mot
 	debuggingHelpers.Elevator_print(*elevator)
 }
 
-func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, btn_floor int, btn_type elevatorConfig.Button, MotorDirectionChannel chan elevatorConfig.Direction, motorTimeoutTimer *time.Timer) {
+func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, btn_floor int, btn_type elevatorConfig.Button, ServicedOrderChannel chan elevatorConfig.ButtonEvent , motorTimeoutTimer *time.Timer) {
 	fmt.Printf("\n\n%s(%d, %s)\n", "Recieved the following order:", btn_floor, elevatorConfig.ButtonToString(btn_type))
 	debuggingHelpers.Elevator_print(*elevator)
 
@@ -167,7 +167,7 @@ func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time
 		switch pair.behavior {
 
 		case elevatorConfig.DoorOpen:
-			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, ServicedOrderChannel )
+			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, ServicedOrderChannel)
 
 		case elevatorConfig.Moving:
 			ElevatorMotorDirection(elevator.Direction, motorTimeoutTimer)
@@ -183,7 +183,7 @@ func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time
 	debuggingHelpers.Elevator_print(*elevator)
 }
 
-func HandleStopButtonActivated(stopActivated bool, elevator *elevatorConfig.Elevator, doorTimer *time.Timer, MotorDirectionChannel chan elevatorConfig.Direction, motorTimeoutTimer *time.Timer) {
+func HandleStopButtonActivated(stopActivated bool, elevator *elevatorConfig.Elevator, doorTimer *time.Timer,ServicedOrderChannel chan elevatorConfig.ButtonEvent,  motorTimeoutTimer *time.Timer) {
 
 	if stopActivated {
 	

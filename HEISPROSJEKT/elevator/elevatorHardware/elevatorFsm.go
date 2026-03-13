@@ -3,11 +3,11 @@ package elevatorHardware
 import (
 	"HEISPROSJEKT/elevatorConfig"
 	"HEISPROSJEKT/synchronisation"
-	//"fmt"
+	"fmt"
 	"time"
 )
 
-func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels synchronisation.SynchronisationChannels) {
+func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels synchronisation.SynchronisationChannels, orderChannels elevatorConfig.ElevatorOrderChannelStruckt) {
 	doorTimer := time.NewTimer(elevatorConfig.DOOR_OPEN_DURATION_S)
 	doorTimer.Stop()
 
@@ -22,7 +22,7 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 		select {
 		case floor := <-hardwareChannels.FloorSensorChannel:
 
-			HandleOnFloorArrival(&elevatorObject, doorTimer, floor, hardwareChannels.MotorDirectionChannel, motorTimeoutTimer)
+			HandleOnFloorArrival(&elevatorObject, doorTimer, floor, orderChannels.ServicedOrderChannel,motorTimeoutTimer)
 
 		case recievedOrder := <-hardwareChannels.PollOrderButtonsChannel:
 
@@ -33,18 +33,18 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 
 		case assignedOrder := <- orderChannels.NewAssignedOrderChannel:
 
-			HandleRequestButtonPress(&elevatorObject, doorTimer, int(assignedOrder.Floor), elevatorConfig.Button(assignedOrder.Button),orderChannels.ServicedOrderChannel)
+			HandleRequestButtonPress(&elevatorObject, doorTimer, int(assignedOrder.Floor), elevatorConfig.Button(assignedOrder.Button),orderChannels.ServicedOrderChannel, motorTimeoutTimer)
 
 		case stopActivated := <-hardwareChannels.PollStopButtonChannel:
 
-			HandleStopButtonActivated( stopActivated, &elevatorObject, doorTimer, hardwareChannels.MotorDirectionChannel, motorTimeoutTimer)
+			HandleStopButtonActivated( stopActivated, &elevatorObject, doorTimer, orderChannels.ServicedOrderChannel,motorTimeoutTimer)
 
 		case obstructionActivated := <-hardwareChannels.PollObstructionChannel:
 	
 			HandleObstructionActivated(obstructionActivated, &elevatorObject, doorTimer, orderChannels.ServicedOrderChannel)
 
 		case <-doorTimer.C:
-			OnDoorTimeout(&elevatorObject, doorTimer, motorTimeoutTimer)
+			OnDoorTimeout(&elevatorObject, doorTimer, orderChannels.ServicedOrderChannel, motorTimeoutTimer)
 
 		
 

@@ -39,7 +39,7 @@ func main() {
 	go bcast.Transmitter(bcastPort, channels.BcastOutgoingMessagesChannel)
 	go bcast.Receiver(bcastPort, channels.BcastIncomingMessagesChannel)
 
-	go synchronisation.UpdatePeerList(SynchronisationChannels)
+	go synchronisation.UpdatePeerList(channels)
 
 	go elevio.PollButtons(hardwareChannels.PollOrderButtonsChannel)
 	go elevio.PollFloorSensor(hardwareChannels.FloorSensorChannel)
@@ -48,7 +48,7 @@ func main() {
 
 	go debuggingHelpers.MimicOrderAssignerAndSynch(orderChannels)
 
-	go elevatorHardware.RunElevatorFsm(strconv.Itoa(*id), hardwareChannels, orderChannels)
+	go elevatorHardware.RunElevatorFsm(strconv.Itoa(*id), hardwareChannels, channels, orderChannels)
 
 	go synchronisation.SynchroniseElevators(hardwareChannels.ElevatorObjectChannel, channels, strconv.Itoa(*id))
 
