@@ -66,10 +66,9 @@ type ElevatorHardwareChannelsStruckt struct {
 }
 
 type ElevatorOrderChannelStruckt struct {
-    NewRecievedOrderChannel chan elevio.ButtonEvent //all new orders detected by the fsm from button presses are put here
-    NewAssignedOrderChannel chan elevio.ButtonEvent //when a order is assigned to this elevator, the order is put here
-    ServicedOrderChannel chan elevio.ButtonEvent //when a order is serviced, it is put here
-    
+	NewRecievedOrderChannel chan ButtonEvent //all new orders detected by the fsm from button presses are put here
+	NewAssignedOrderChannel chan ButtonEvent //when a order is assigned to this elevator, the order is put here
+	ServicedOrderChannel chan ButtonEvent //when a order is serviced, it is put here
 }
 
 

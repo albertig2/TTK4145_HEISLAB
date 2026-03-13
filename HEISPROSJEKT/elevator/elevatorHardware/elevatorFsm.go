@@ -1,8 +1,6 @@
 package elevatorHardware
 
 import (
-	//"Driver-go/elevio"
-	//"HEISPROSJEKT/debuggingHelpers"
 	"HEISPROSJEKT/elevatorConfig"
 	"HEISPROSJEKT/synchronisation"
 	//"fmt"
@@ -20,19 +18,22 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 
 	InitElevatorHardware(&elevatorObject, motorTimeoutTimer)
 
-	//go updateMotorDirection(hardwareChannels.MotorDirectionChannel)
-
 	for {
 		select {
 		case floor := <-hardwareChannels.FloorSensorChannel:
-			//serviced order <- floor, order (elevatorsystem)
 
 			HandleOnFloorArrival(&elevatorObject, doorTimer, floor, hardwareChannels.MotorDirectionChannel, motorTimeoutTimer)
 
 		case recievedOrder := <-hardwareChannels.PollOrderButtonsChannel:
-			//neworder <- floor, buttontype (butten event)
 
-			HandleRequestButtonPress(&elevatorObject, doorTimer, int(recievedOrder.Floor), elevatorConfig.Button(recievedOrder.Button), hardwareChannels.MotorDirectionChannel, motorTimeoutTimer)
+			order:= elevatorConfig.ButtonEvent{Floor : recievedOrder.Floor, Button: elevatorConfig.Button(recievedOrder.Button)}
+			fmt.Println("New order from FSM", order)
+			orderChannels.NewRecievedOrderChannel <- order
+
+
+		case assignedOrder := <- orderChannels.NewAssignedOrderChannel:
+
+			HandleRequestButtonPress(&elevatorObject, doorTimer, int(assignedOrder.Floor), elevatorConfig.Button(assignedOrder.Button),orderChannels.ServicedOrderChannel)
 
 		case stopActivated := <-hardwareChannels.PollStopButtonChannel:
 
@@ -40,10 +41,8 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 
 		case obstructionActivated := <-hardwareChannels.PollObstructionChannel:
 	
-			HandleObstructionActivated(obstructionActivated, &elevatorObject, doorTimer, hardwareChannels.MotorDirectionChannel)
+			HandleObstructionActivated(obstructionActivated, &elevatorObject, doorTimer, orderChannels.ServicedOrderChannel)
 
-
-		// orderdque <- new order quqe (REq_matrix)
 		case <-doorTimer.C:
 			OnDoorTimeout(&elevatorObject, doorTimer, motorTimeoutTimer)
 
