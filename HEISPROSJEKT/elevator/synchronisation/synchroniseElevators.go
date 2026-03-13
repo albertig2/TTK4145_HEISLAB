@@ -4,20 +4,53 @@ import (
 	// "HEISPROSJEKT/debuggingHelpers"
 	// "HEISPROSJEKT/elevatorConfig"
 	// "Network-go/network/peers"
-	
+
 	// "fmt"
 	// "strconv"
-	// "time"
+	"HEISPROSJEKT/debuggingHelpers"
+	"HEISPROSJEKT/elevatorConfig"
+	"time"
 )
 
+// called as a go functions
+func SynchroniseElevators(elevatorUpdates chan elevatorConfig.Elevator, synchronisationChannels synchronisationChannels, ownId string) {
 
-//called as a go functions
-func synchroniseElevators(channels synchronisationChannels){
-	//initialise an elevatorsystem
+	elevatorSystem := ElevatorSystem{}
+	InitializeElevatorSystem(&elevatorSystem, ownId)
+
+	broadcastTicker := time.NewTicker(time.Second / 30)
+
+	//aliveList := []string{}
+	hallRequestsForAllElevators := map[string][elevatorConfig.N_FLOORS][2]OrderStatus{}
+	cabRequestsForAllElevators := map[string][elevatorConfig.N_FLOORS]OrderStatus{}
+
+	for {
+		select {
+
+		case incommingBroadcast := <-synchronisationChannels.BcastIncomingMessagesChannel:
+
+			UpdateElevatorSystemFromPeer(&elevatorSystem, &incommingBroadcast, hallRequestsForAllElevators, cabRequestsForAllElevators)
+
+		case peerUpdate := <-synchronisationChannels.PeerUpdateChl:
+
+			//aliveList = peerUpdate.Peers
+			debuggingHelpers.PrintPeerUpdate(peerUpdate)
+
+		case elevatorUpdate := <- elevatorUpdates:
+
+			UpdateElevatorSystemFromELevator(elevatorUpdate, &elevatorSystem)
+
+		case <-broadcastTicker.C:
+
+			synchronisationChannels.BcastOutgoingMessagesChannel <- elevatorSystem
+			broadcastTicker.Reset(time.Second / 30)
+		}
+
+	}
 
 	//run all synchronisation on events (like elevator fsm, run events on most sync channel?)
-		//recieve eleavtor from FSM
-		//recieve update from peerNetwork
-		//recieve broadcast form peer
+	//recieve eleavtor from FSM
+	//recieve update from peerNetwork
+	//recieve broadcast form peer
 
 }
