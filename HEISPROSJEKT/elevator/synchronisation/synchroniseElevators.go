@@ -23,8 +23,8 @@ func SynchroniseElevators(elevatorUpdates chan elevatorConfig.Elevator, synchron
 	broadcastTicker := time.NewTicker(time.Second / 30)
 
 	//aliveList := []string{}
-	hallRequestsForAllElevators := map[string][elevatorConfig.N_FLOORS][2]OrderStatus{}
-	cabRequestsForAllElevators := map[string][elevatorConfig.N_FLOORS]OrderStatus{}
+	hallRequestsForAllElevators := map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus{}
+	cabRequestsForAllElevators := map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus{}
 
 	for {
 		select {
@@ -41,7 +41,7 @@ func SynchroniseElevators(elevatorUpdates chan elevatorConfig.Elevator, synchron
 		case elevatorUpdate := <-elevatorUpdates:
 
 			UpdateElevatorSystemFromELevator(elevatorUpdate, &elevatorSystem)
-
+		
 		case <-broadcastTicker.C:
 
 			synchronisationChannels.BcastOutgoingMessagesChannel <- elevatorSystem

@@ -8,12 +8,8 @@ import (
 const N_FLOORS int = 4
 const N_BUTTONS int = 3
 
-<<<<<<< HEAD
-const DOOR_OPEN_DURATION_S = 3 * time.Second
-=======
 const DOOR_OPEN_DURATION_S = 3*time.Second
 const MOTOR_TIMEOUT_DURATION_S = 4*time.Second
->>>>>>> origin/master
 
 type Direction int
 

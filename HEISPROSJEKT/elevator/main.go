@@ -9,7 +9,9 @@ import (
 	// "HEISPROSJEKT/communication"
 	"HEISPROSJEKT/debuggingHelpers"
 	"HEISPROSJEKT/elevatorHardware"
+	"HEISPROSJEKT/orderProtocol"
 	"HEISPROSJEKT/synchronisation"
+
 	//"HEISPROSJEKT/elevatorHardware"
 	//"HEISPROSJEKT/hardware"
 	"Network-go/network/bcast"
@@ -46,11 +48,12 @@ func main() {
 	go elevio.PollObstructionSwitch(hardwareChannels.PollObstructionChannel)
 	go elevio.PollStopButton(hardwareChannels.PollStopButtonChannel)
 
-	go debuggingHelpers.MimicOrderAssignerAndSynch(orderChannels)
+	//go debuggingHelpers.MimicOrderAssignerAndSynch(orderChannels)
 
 	go elevatorHardware.RunElevatorFsm(strconv.Itoa(*id), hardwareChannels, channels, orderChannels)
 
 	go synchronisation.SynchroniseElevators(hardwareChannels.ElevatorObjectChannel, channels, strconv.Itoa(*id))
+	go orderProtocol.RunOrder(strconv.Itoa(*id), orderChannels, channels, hardwareChannels)
 
 	// go communication.BroadcastElevatorWorldView(strconv.Itoa(*id), channels.BcastOutgoingMessagesChannel, hardwareChannels.ElevatorObjectChannel)
 	// go communication.RecieveBroadcastfWorldViewfFromPeer(channels.BcastIncomingMessagesChannel)

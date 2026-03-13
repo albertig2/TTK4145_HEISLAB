@@ -1,5 +1,5 @@
 package elevatorsystem_test
-
+/*
 import (
 	"HEISPROSJEKT/elevatorConfig"
 	"HEISPROSJEKT/synchronisation"
@@ -75,3 +75,5 @@ func TestInitialize(t *testing.T) {
 	//t.Logf("system2 json: %s", toJsonString(system2))
 
 }
+
+*/

@@ -21,12 +21,12 @@ func orderRutine(system *synchronisation.ElevatorSystem,
 	TransitioningAllCabRequests(system, CabRequestTransitions, elevatorOrderChannels)
 }
 
-func runOrder(
+func RunOrder(
 	id string,
 	elevatorOrderChannels elevatorConfig.ElevatorOrderChannelStruckt,
-	peerChannel synchronisation.SynchronisationChannels,
+	synchronisationChannels synchronisation.SynchronisationChannels,
 	hardwareChannel elevatorConfig.ElevatorHardwareChannelsStruckt,
-	synchronisationChannel synchronisation.SynchronisationChannels) {
+) {
 
 	system := synchronisation.ElevatorSystem{}
 	synchronisation.InitializeElevatorSystem(&system, id)
@@ -43,10 +43,8 @@ func runOrder(
 	synchronisation.InitializeElevatorSystem(&UpdatedSystem, id)
 
 	paused := false
-	ticker := time.NewTicker(1 / 30 * time.Second)
-	tickerbroadcast := time.NewTicker(1 / 20 * time.Second)
+	ticker := time.NewTicker(1 * time.Second / 30)
 	defer ticker.Stop()
-	defer tickerbroadcast.Stop()
 	for {
 		select {
 		case <-ticker.C:
@@ -58,6 +56,7 @@ func runOrder(
 				servicedCabOrders = servicedCabOrders[:0]
 				newHallOrders = newHallOrders[:0]
 				newCabOrders = newCabOrders[:0]
+				synchronisationChannels.UpdateElevatorSystem <- system
 			}
 		case servicedorder := <-elevatorOrderChannels.ServicedOrderChannel:
 			if servicedorder.Button == elevatorConfig.HallUp || servicedorder.Button == elevatorConfig.HallDown {
@@ -71,11 +70,11 @@ func runOrder(
 			} else if newOrder.Button == elevatorConfig.Cab {
 				newCabOrders = append(newCabOrders, newOrder)
 			}
-		case peers := <-peerChannel.PeerUpdateChl:
+		case peers := <-synchronisationChannels.PeerUpdateChl:
 			alivePeers = peers.Peers
-		case peerSystem := <-synchronisationChannel.BcastIncomingMessagesChannel:
+		case peerSystem := <-synchronisationChannels.BcastIncomingMessagesChannel:
 			synchronisation.UpdateElevatorSystemWithPeer(&system, &peerSystem, HallRequestsForAllElevators, CabRequestsForAllElevators)
-		case UpdatedSystem = <-synchronisationChannel.UpdateElevatorSystem:
+		case UpdatedSystem = <-synchronisationChannels.UpdateElevatorSystem:
 			system = UpdatedSystem
 		case motorstop := <-hardwareChannel.MotorFailureChannel:
 			paused = motorstop
@@ -84,8 +83,6 @@ func runOrder(
 				HallRequestsForAllElevators = make(map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus)
 				CabRequestsForAllElevators = make(map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus)
 			}
-		case <-tickerbroadcast.C:
-			peerChannel.BcastOutgoingMessagesChannel <- system
 		}
 	}
 }
