@@ -26,7 +26,7 @@ func runOrder(
 	elevatorOrderChannels elevatorConfig.ElevatorOrderChannelStruckt,
 	peerChannel synchronisation.SynchronisationChannels,
 	hardwareChannel elevatorConfig.ElevatorHardwareChannelsStruckt,
-	receivedWorldview chan synchronisation.ElevatorSystem) {
+	synchronisationChannel synchronisation.SynchronisationChannels) {
 
 	system := synchronisation.ElevatorSystem{}
 	synchronisation.InitializeElevatorSystem(&system, id)
@@ -39,6 +39,8 @@ func runOrder(
 	newHallOrders := make([]elevatorConfig.ButtonEvent, 0)
 	newCabOrders := make([]elevatorConfig.ButtonEvent, 0)
 	alivePeers := make([]string, 0)
+	UpdatedSystem := synchronisation.ElevatorSystem{}
+	synchronisation.InitializeElevatorSystem(&UpdatedSystem, id)
 
 	paused := false
 	ticker := time.NewTicker(1 / 30 * time.Second)
@@ -71,12 +73,16 @@ func runOrder(
 			}
 		case peers := <-peerChannel.PeerUpdateChl:
 			alivePeers = peers.Peers
-		case peerSystem := <-receivedWorldview:
+		case peerSystem := <-synchronisationChannel.BcastIncomingMessagesChannel:
 			synchronisation.UpdateElevatorSystemWithPeer(&system, &peerSystem, HallRequestsForAllElevators, CabRequestsForAllElevators)
+		case UpdatedSystem = <-synchronisationChannel.UpdateElevatorSystem:
+			system = UpdatedSystem
 		case motorstop := <-hardwareChannel.MotorFailureChannel:
 			paused = motorstop
 			if motorstop {
 				synchronisation.InitializeElevatorSystem(&system, id)
+				HallRequestsForAllElevators = make(map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus)
+				CabRequestsForAllElevators = make(map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus)
 			}
 		case <-tickerbroadcast.C:
 			peerChannel.BcastOutgoingMessagesChannel <- system

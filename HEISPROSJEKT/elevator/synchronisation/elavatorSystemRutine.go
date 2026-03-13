@@ -1,9 +1,6 @@
 package synchronisation
 
-import (
-	"HEISPROSJEKT/elevatorConfig"
-)
-
+/*
 func elevatorSystemRutine(id string, elevatorOrderChannels elevatorConfig.ElevatorOrderChannelStruckt, receivedWorldview chan ElevatorSystem, hardwareChannels ElevatorHardwareChannelsStruckt) {
 	system := ElevatorSystem{}
 	InitializeElevatorSystem(&system, id)
@@ -23,7 +20,7 @@ func elevatorSystemRutine(id string, elevatorOrderChannels elevatorConfig.Elevat
 		}
 	}
 }
-
+*/
 /*
 	case newRecievedOrder := <-elevatorOrderChannels.NewRecievedOrderChannel:
 		if newRecievedOrder.Button == elevatorConfig.Cab {

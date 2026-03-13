@@ -41,6 +41,7 @@ func InitElevatorHardwareChannels() elevatorConfig.ElevatorHardwareChannelsStruc
 		DoorOpenChannel:         make(chan bool),
 		MotorDirectionChannel:   make(chan elevatorConfig.Direction),
 		ElevatorObjectChannel:   make(chan elevatorConfig.Elevator),
+		MotorFailureChannel:     make(chan bool),
 	}
 	return hardwareChannels
 }
@@ -125,7 +126,7 @@ func OnDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, Ser
 			// timer.Timer_start(elevator.Config.DoorOpenDuration_s)
 			// *elevator = RequestsClearAtCurrentFloor(*elevator)
 			// SetAllLights(*elevator)
-			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S,ServicedOrderChannel)
+			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, ServicedOrderChannel)
 
 		case elevatorConfig.Moving, elevatorConfig.Idle:
 			ElevatorDoorLight(false)
@@ -165,7 +166,7 @@ func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time
 		switch pair.behavior {
 
 		case elevatorConfig.DoorOpen:
-			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, ServicedOrderChannel )
+			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, ServicedOrderChannel)
 
 		case elevatorConfig.Moving:
 			ElevatorMotorDirection(elevator.Direction)
@@ -184,7 +185,7 @@ func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time
 func HandleStopButtonActivated(stopActivated bool, elevator *elevatorConfig.Elevator, doorTimer *time.Timer, ServicedOrderChannel chan elevatorConfig.ButtonEvent) {
 
 	if stopActivated {
-	
+
 		switch elevator.Behavior {
 
 		case elevatorConfig.DoorOpen:
@@ -221,12 +222,10 @@ func HandleStopButtonActivated(stopActivated bool, elevator *elevatorConfig.Elev
 
 }
 
-
 func HandleObstructionActivated(obstructionActivated bool, elevator *elevatorConfig.Elevator, doorTimer *time.Timer, ServicedOrderChannel chan elevatorConfig.ButtonEvent) {
 
 	if obstructionActivated {
 		fmt.Println("Obstruction was activated")
-
 
 		switch elevator.Behavior {
 
