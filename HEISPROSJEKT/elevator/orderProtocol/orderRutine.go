@@ -49,7 +49,16 @@ func RunOrder(
 		select {
 		case <-ticker.C:
 			if !paused {
-				orderRutine(&system, HallRequestsForAllElevators, CabRequestsForAllElevators, elevatorOrderChannels, newHallOrders, newCabOrders, servicedHallOrders[0], servicedCabOrders[0], alivePeers)
+				var sh, sc elevatorConfig.ButtonEvent
+				sh.Floor = -1
+				sc.Floor = -1
+				if len(servicedHallOrders) > 0 {
+					sh = servicedHallOrders[0]
+				}
+				if len(servicedCabOrders) > 0 {
+					sc = servicedCabOrders[0]
+				}
+				orderRutine(&system, HallRequestsForAllElevators, CabRequestsForAllElevators, elevatorOrderChannels, newHallOrders, newCabOrders, sh, sc, alivePeers)
 				HallRequestsForAllElevators[system.OwnId] = system.HallRequests
 				CabRequestsForAllElevators[system.OwnId] = system.States[system.OwnId].CabRequests
 				servicedHallOrders = servicedHallOrders[:0]

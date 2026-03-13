@@ -68,7 +68,7 @@ func HallRequestAssigner(system *synchronisation.ElevatorSystem, hallRequestTran
 		fmt.Println("json.Marshal error: ", err)
 		return nil
 	}
-	ret, err := exec.Command("../../cost_fns/hall_request_assigner/"+Executable, "-i", string(jsonBytes)).CombinedOutput()
+	ret, err := exec.Command("../cost_fns/hall_request_assigner/"+Executable, "-i", string(jsonBytes)).CombinedOutput()
 	if err != nil {
 		fmt.Println("exec.Command error: ", err)
 		fmt.Println(string(ret))
