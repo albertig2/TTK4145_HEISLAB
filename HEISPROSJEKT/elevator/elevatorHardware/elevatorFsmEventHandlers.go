@@ -301,7 +301,7 @@ func HandleMotorFailure(elevatorObject *elevatorConfig.Elevator, motorTimeoutTim
 
 	synchronisationChannels.PeerTxEnableCh <- false
 
-	//make it unable to take new orders?
+	//make it unable to take new orders? (maybe not nessecerry)
 
 	*elevatorObject = InitializeElevator(elevatorObject.OwnId)
 
