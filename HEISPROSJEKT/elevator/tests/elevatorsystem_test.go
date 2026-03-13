@@ -50,17 +50,18 @@ func TestInitialize(t *testing.T) {
 	servicedOrder := elevatorConfig.ButtonEvent{}
 
 	t.Logf("HallRequest for elevator 1: %v", HallRequestsForAllElevators["1"])
-	orderTransition := orderProtocol.CheckOrderTransitionStatusForHallRequests(&system1, HallRequestsForAllElevators, int(elevatorConfig.HallUp), 3, newOrders, servicedOrder, []string{"1", "2", "3"})
+	orderTransition := orderProtocol.CheckOrderTransitionStatusForHallRequests(&system1, HallRequestsForAllElevators, int(elevatorConfig.HallUp), 3, newOrders, servicedOrder)
 	t.Logf("orderTransition: %v", orderTransition)
 	synchronisation.SetHallRequests(&system1, 3, int(elevatorConfig.HallUp), elevatorConfig.Pending)
 	HallRequestsForAllElevators["1"] = system1.HallRequests // Remember to update
-	orderTransition2 := orderProtocol.CheckOrderTransitionStatusForHallRequests(&system1, HallRequestsForAllElevators, int(elevatorConfig.HallUp), 3, newOrders, servicedOrder, []string{"1", "2", "3"})
+	orderTransition2 := orderProtocol.CheckOrderTransitionStatusForHallRequests(&system1, HallRequestsForAllElevators, int(elevatorConfig.HallUp), 3, newOrders, servicedOrder)
 	t.Logf("orderTransition2: %v", orderTransition2)
 
-	hallRequestTransitions := orderProtocol.GetAllHallRequestTransitions(&system1, HallRequestsForAllElevators, newOrders, servicedOrder, []string{"1", "2", "3"})
-	orderProtocol.HallRequestAssigner(&system1, hallRequestTransitions, []string{"1", "2", "3"})
+	hallRequestTransitions := orderProtocol.GetAllHallRequestTransitions(&system1, HallRequestsForAllElevators, newOrders, servicedOrder)
+	synchronisation.SetAlivePeers(&system1, []string{"1", "2", "3"})
+	orderProtocol.HallRequestAssigner(&system1, hallRequestTransitions)
 	t.Logf("HallRequest for system1 before assigning: %v", system1.HallRequests[3][int(elevatorConfig.HallUp)])
-	orderProtocol.TransitioningAllHallRequests(&system1, hallRequestTransitions, []string{"1", "2", "3"}, elevatorConfig.ElevatorOrderChannelStruckt{
+	orderProtocol.TransitioningAllHallRequests(&system1, hallRequestTransitions, elevatorConfig.ElevatorOrderChannelStruckt{
 		NewRecievedOrderChannel: make(chan elevatorConfig.ButtonEvent, 10),
 		NewAssignedOrderChannel: make(chan elevatorConfig.ButtonEvent, 10),
 		ServicedOrderChannel:    make(chan elevatorConfig.ButtonEvent, 10),
@@ -68,7 +69,7 @@ func TestInitialize(t *testing.T) {
 	t.Logf("HallRequest for system1 after assigning: %v", system1.HallRequests[3][int(elevatorConfig.HallUp)])
 
 	t.Logf("system json: %s", synchronisation.EncodeElevatorSystem(&system1))
-	transition := orderProtocol.CheckOrderTransitionStatusForHallRequests(&system1, HallRequestsForAllElevators, int(elevatorConfig.HallUp), 2, newOrders, servicedOrder, []string{"1", "2", "3"})
+	transition := orderProtocol.CheckOrderTransitionStatusForHallRequests(&system1, HallRequestsForAllElevators, int(elevatorConfig.HallUp), 2, newOrders, servicedOrder)
 	t.Logf("transition: %v", transition)
 	t.Logf("HallRequests: %v", HallRequestsForAllElevators)
 	t.Logf("CabRequests: %v", CabRequestsForAllElevators)

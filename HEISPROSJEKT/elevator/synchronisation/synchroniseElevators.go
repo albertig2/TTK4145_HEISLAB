@@ -9,6 +9,7 @@ import (
 	// "strconv"
 	"HEISPROSJEKT/debuggingHelpers"
 	"HEISPROSJEKT/elevatorConfig"
+	"fmt"
 
 	//"fmt"
 	"time"
@@ -30,14 +31,18 @@ func SynchroniseElevators(elevatorUpdates chan elevatorConfig.Elevator, synchron
 		select {
 
 		case incommingBroadcast := <-synchronisationChannels.BcastIncomingMessagesChannel:
-
+			if incommingBroadcast.OwnId == ownId {
+				continue
+			}
 			UpdateElevatorSystemWithPeer(&elevatorSystem, &incommingBroadcast, hallRequestsForAllElevators, cabRequestsForAllElevators)
 			peerRequests := elevatorConfig.PeerRequestUpdate{
 				PeerID:   incommingBroadcast.OwnId,
 				HallReqs: hallRequestsForAllElevators[incommingBroadcast.OwnId],
 				CabReqs:  cabRequestsForAllElevators[incommingBroadcast.OwnId],
 			}
+			fmt.Println("Before sending the peer update on channel (matrices)")
 			synchronisationChannels.UpdatePeerRequests <- peerRequests
+			fmt.Println("after sending peer update on channel (matrices)")
 
 		case peerUpdate := <-synchronisationChannels.PeerUpdateChl:
 			filteredAlivePeers := []string{}
@@ -61,11 +66,12 @@ func SynchroniseElevators(elevatorUpdates chan elevatorConfig.Elevator, synchron
 			synchronisationChannels.BcastOutgoingMessagesChannel <- elevatorSystem
 			broadcastTicker.Reset(time.Second / 30)
 		}
-
+		fmt.Println("Before jevnlig update of the elevator system on channel")
 		select {
 		case synchronisationChannels.UpdateElevatorSystem <- elevatorSystem:
 		default:
 		}
+		fmt.Println("After jevnlig update of the elevator system on channel")
 	}
 
 	//run all synchronisation on events (like elevator fsm, run events on most sync channel?)
