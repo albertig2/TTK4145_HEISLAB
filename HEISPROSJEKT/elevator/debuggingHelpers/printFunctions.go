@@ -182,6 +182,31 @@ func PrintElevatorSystem(elevatorSystem ElevatorSystem1){
 	fmt.Println("---------End System update-------------------")
 
 }
+
+	// elevatorStatetest := debuggingHelpers.ElevatorState1 {
+	// 	Behavior: elevatorConfig.Idle,
+	// 	Direction: elevatorConfig.Stop,
+	// 	CabRequests: [elevatorConfig.N_FLOORS]debuggingHelpers.OrderStatus1 {debuggingHelpers.Pending, debuggingHelpers.Assigned, debuggingHelpers.NoOrder, debuggingHelpers.Completed},
+	// }
+	// elevatorStatetest2 := debuggingHelpers.ElevatorState1 {
+	// 	Behavior: elevatorConfig.Idle,
+	// 	Direction: elevatorConfig.Stop,
+	// 	CabRequests: [elevatorConfig.N_FLOORS]debuggingHelpers.OrderStatus1 {debuggingHelpers.Pending, debuggingHelpers.Assigned, debuggingHelpers.NoOrder, debuggingHelpers.Completed},
+	// }
+	// elevatorStatetest3 := debuggingHelpers.ElevatorState1 {
+	// 	Behavior: elevatorConfig.Idle,
+	// 	Direction: elevatorConfig.Stop,
+	// 	CabRequests: [elevatorConfig.N_FLOORS]debuggingHelpers.OrderStatus1 {debuggingHelpers.Pending, debuggingHelpers.Assigned, debuggingHelpers.NoOrder, debuggingHelpers.Completed},
+	// }
+	// elevatortest := debuggingHelpers.ElevatorSystem1{
+	// 	OwnId:        "1",
+	// 	HallRequests: [elevatorConfig.N_FLOORS][2]debuggingHelpers.OrderStatus1{{debuggingHelpers.Pending, debuggingHelpers.NoOrder}, {debuggingHelpers.Completed, debuggingHelpers.NoOrder}, {debuggingHelpers.Assigned, debuggingHelpers.NoOrder}, {debuggingHelpers.Assigned, debuggingHelpers.NoOrder}},
+	// 	States:       map[string]*debuggingHelpers.ElevatorState1{ "1":  &elevatorStatetest, "2":  &elevatorStatetest2,"3":  &elevatorStatetest3},
+	// }
+	// // debuggingHelpers.PrintCurrentWorkingElevators(elevatortest)
+	// // debuggingHelpers.PrintPeerElevators(elevatortest)
+	// debuggingHelpers.PrintElevatorSystem(elevatortest)
+
 /*
 
 System worldview
