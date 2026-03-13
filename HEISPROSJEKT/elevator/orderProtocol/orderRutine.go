@@ -33,6 +33,8 @@ func RunOrder(
 
 	HallRequestsForAllElevators := make(map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus)
 	CabRequestsForAllElevators := make(map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus)
+	HallRequestsForAllElevators[id] = system.HallRequests
+	CabRequestsForAllElevators[id] = system.States[id].CabRequests
 
 	servicedHallOrders := make([]elevatorConfig.ButtonEvent, 0)
 	servicedCabOrders := make([]elevatorConfig.ButtonEvent, 0)
@@ -41,6 +43,7 @@ func RunOrder(
 	alivePeers := make([]string, 0)
 	UpdatedSystem := synchronisation.ElevatorSystem{}
 	synchronisation.InitializeElevatorSystem(&UpdatedSystem, id)
+	alivePeers = []string{id}
 
 	paused := false
 	ticker := time.NewTicker(1 * time.Second / 30)
@@ -89,8 +92,8 @@ func RunOrder(
 			paused = motorstop
 			if motorstop {
 				synchronisation.InitializeElevatorSystem(&system, id)
-				HallRequestsForAllElevators = make(map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus)
-				CabRequestsForAllElevators = make(map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus)
+				HallRequestsForAllElevators[id] = system.HallRequests
+				CabRequestsForAllElevators[id] = system.States[id].CabRequests
 			}
 		}
 	}
