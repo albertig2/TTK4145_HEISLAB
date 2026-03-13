@@ -131,7 +131,8 @@ func PrintCurrentWorkingElevators(elevatorSystem ElevatorSystem1) {
 	fmt.Printf("| %-12s | %-12s|\n", "Direction", elevatorConfig.DirectionToString(workingNode.Direction))
 	fmt.Printf("| %-12s | %-12s|\n", "Behavior", elevatorConfig.BehaviorToString(workingNode.Behavior))
 	fmt.Println("+----------------------------+")
-	fmt.Printf("| %-12s | %-12s|\n", "Floor", "1  2  3  4" )
+	fmt.Printf("| %-12s | %-12s|\n", "Floor", "1  2  3  4")
+	fmt.Println("+----------------------------+")
 	fmt.Printf("| %-12s |", "Up")
 	printHallLine(hallOrders, 0)
 	fmt.Printf("| %-12s |", "Down")
@@ -144,17 +145,43 @@ func PrintCurrentWorkingElevators(elevatorSystem ElevatorSystem1) {
 	fmt.Printf("")
 
 }
-func printPeerElevators() {
+func PrintPeerElevators(elevatorSystem ElevatorSystem1) {
+	currentPeers := elevatorSystem.States
+
+	for id, state := range currentPeers {
+		if (id != elevatorSystem.OwnId){
+		cabOrders := state.CabRequests
+
+		fmt.Println("+----------------------------+")
+		fmt.Printf("|         ElevatorID: %v      |\n", id)
+		fmt.Println("+----------------------------+")
+		fmt.Printf("| %-12s | %-12d|\n", "Floor", state.Floor)
+		fmt.Printf("| %-12s | %-12s|\n", "Direction", elevatorConfig.DirectionToString(state.Direction))
+		fmt.Printf("| %-12s | %-12s|\n", "Behavior", elevatorConfig.BehaviorToString(state.Behavior))
+		fmt.Println("+----------------------------+")
+		fmt.Printf("| %-12s | %-12s|\n", "Floor", "1  2  3  4")
+		fmt.Println("+----------------------------+")
+		fmt.Printf("| %-12s |", "Cab")
+		printCabLine(cabOrders[:])
+		fmt.Println("+----------------------------+")
+		}
+		fmt.Printf("\n")
+
+	}
 
 }
 
-// func PrintElevatorSystem(elevatorSystem synchronisation.ElevatorSystem){
+func PrintElevatorSystem(elevatorSystem ElevatorSystem1){
 
-// 	fmt.Println("---------Start System update-----------------")
+	fmt.Println("---------Start System update-----------------")
 
-// 	fmt.Println("---------End System update-------------------")
+	PrintCurrentWorkingElevators(elevatorSystem)
+	fmt.Printf("\n")
+	PrintPeerElevators(elevatorSystem)
 
-// }
+	fmt.Println("---------End System update-------------------")
+
+}
 /*
 
 System worldview
