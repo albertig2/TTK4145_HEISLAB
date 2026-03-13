@@ -1,6 +1,7 @@
 package debuggingHelpers
 
 import (
+	//"Driver-go/elevio"
 	"HEISPROSJEKT/elevatorConfig"
 	"fmt"
 )
@@ -28,4 +29,36 @@ func Elevator_print(es elevatorConfig.Elevator) {
 		fmt.Println("|")
 	}
 	fmt.Println("  +--------------------+")
+}
+
+//these functions are just for testing of the fsm sync, delete when done
+
+func InitializeOrderChannels() elevatorConfig.ElevatorOrderChannelStruckt {
+
+	orderChannelse := elevatorConfig.ElevatorOrderChannelStruckt{
+
+		NewRecievedOrderChannel: make(chan elevatorConfig.ButtonEvent),
+		NewAssignedOrderChannel: make(chan elevatorConfig.ButtonEvent),
+		ServicedOrderChannel:    make(chan elevatorConfig.ButtonEvent),
+	}
+
+	return orderChannelse
+}
+
+func MimicOrderAssignerAndSynch(orderChannelse elevatorConfig.ElevatorOrderChannelStruckt) {
+
+	for {
+		select {
+		case newOrder := <-orderChannelse.NewRecievedOrderChannel:
+			fmt.Println("New order Recieved: " , newOrder)
+			orderChannelse.NewAssignedOrderChannel <- newOrder
+			
+
+		case servicedOrder := <-orderChannelse.ServicedOrderChannel:
+			fmt.Println("New order serviced: " , servicedOrder)
+
+		}
+
+	}
+
 }

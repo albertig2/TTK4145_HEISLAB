@@ -56,15 +56,6 @@ func InitElevatorHardware(elevator *elevatorConfig.Elevator) {
 
 }
 
-func updateMotorDirection(motorDirection chan elevatorConfig.Direction) {
-	for {
-		d := <-motorDirection
-
-		println("Motordirection:", d)
-
-		elevio.SetMotorDirection(elevio.MotorDirection(d))
-	}
-}
 func isBetweenFloors() bool {
 	currentFloor := elevio.GetFloor()
 	if currentFloor != -1 {
@@ -75,7 +66,7 @@ func isBetweenFloors() bool {
 
 }
 
-func HandleOnFloorArrival(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, newFloor int, MotorDirectionChannel chan elevatorConfig.Direction) {
+func HandleOnFloorArrival(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, newFloor int, ServicedOrderChannel chan elevatorConfig.ButtonEvent) {
 	fmt.Println("Elevator arrived at:", newFloor)
 	debuggingHelpers.Elevator_print(*elevator)
 
@@ -88,13 +79,7 @@ func HandleOnFloorArrival(elevator *elevatorConfig.Elevator, doorTimer *time.Tim
 
 			ElevatorMotorDirection(elevatorConfig.Stop)
 
-			//MotorDirectionChannel <- elevio.MD_Stop
-			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S)
-			//Elevator_doorLight(true)
-			//*elevator = RequestsClearAtCurrentFloor(*elevator)
-			//timer.Timer_start(elevatorConfig.DOOR_OPEN_DURATION_S)
-			//SetAllLights(*elevator)
-			//elevator.Behavior = elevatorConfig.DoorOpen
+			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, ServicedOrderChannel)
 		}
 	default:
 		// nothing
@@ -104,14 +89,14 @@ func HandleOnFloorArrival(elevator *elevatorConfig.Elevator, doorTimer *time.Tim
 	debuggingHelpers.Elevator_print(*elevator)
 }
 
-func OpenDoor(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, timeOpenSeconds time.Duration) {
+func OpenDoor(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, timeOpenSeconds time.Duration, ServicedOrderChannel chan elevatorConfig.ButtonEvent) {
 
 	if !isBetweenFloors() {
 
 		fmt.Println("Door Open")
 
 		elevio.SetDoorOpenLamp(true)
-		*elevator = RequestsClearAtCurrentFloor(*elevator)
+		*elevator = RequestsClearAtCurrentFloor(*elevator, ServicedOrderChannel)
 
 		doorTimer.Stop()
 		doorTimer.Reset(timeOpenSeconds)
@@ -125,7 +110,7 @@ func OpenDoor(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, timeOpen
 	}
 }
 
-func OnDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer) {
+func OnDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, ServicedOrderChannel chan elevatorConfig.ButtonEvent) {
 	fmt.Println("Door timeout")
 	// debuggingHelpers.Elevator_print(*elevator)
 
@@ -140,7 +125,7 @@ func OnDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer) {
 			// timer.Timer_start(elevator.Config.DoorOpenDuration_s)
 			// *elevator = RequestsClearAtCurrentFloor(*elevator)
 			// SetAllLights(*elevator)
-			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S)
+			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S,ServicedOrderChannel)
 
 		case elevatorConfig.Moving, elevatorConfig.Idle:
 			ElevatorDoorLight(false)
@@ -154,7 +139,7 @@ func OnDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer) {
 	debuggingHelpers.Elevator_print(*elevator)
 }
 
-func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, btn_floor int, btn_type elevatorConfig.Button, MotorDirectionChannel chan elevatorConfig.Direction) {
+func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, btn_floor int, btn_type elevatorConfig.Button, ServicedOrderChannel chan elevatorConfig.ButtonEvent) {
 	fmt.Printf("\n\n%s(%d, %s)\n", "Recieved the following order:", btn_floor, elevatorConfig.ButtonToString(btn_type))
 	debuggingHelpers.Elevator_print(*elevator)
 
@@ -180,10 +165,7 @@ func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time
 		switch pair.behavior {
 
 		case elevatorConfig.DoorOpen:
-			// ElevatorDoorLight(true)
-			// timer.Timer_start(elevatorConfig.DOOR_OPEN_DURATION_S)
-			// *elevator = RequestsClearAtCurrentFloor(*elevator)
-			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S)
+			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, ServicedOrderChannel )
 
 		case elevatorConfig.Moving:
 			ElevatorMotorDirection(elevator.Direction)
@@ -199,16 +181,14 @@ func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time
 	debuggingHelpers.Elevator_print(*elevator)
 }
 
-func HandleStopButtonActivated(stopActivated bool, elevator *elevatorConfig.Elevator, doorTimer *time.Timer, MotorDirectionChannel chan elevatorConfig.Direction) {
+func HandleStopButtonActivated(stopActivated bool, elevator *elevatorConfig.Elevator, doorTimer *time.Timer, ServicedOrderChannel chan elevatorConfig.ButtonEvent) {
 
 	if stopActivated {
-		//MotorDirectionChannel <- elevatorConfig.Stop
-
+	
 		switch elevator.Behavior {
 
 		case elevatorConfig.DoorOpen:
-			//If stop is triggerd while at a floor, the door is opend and keep open until stop is reset + 3 seconds more
-			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S)
+			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, ServicedOrderChannel)
 			doorTimer.Stop()
 
 		case elevatorConfig.Moving:
@@ -225,15 +205,13 @@ func HandleStopButtonActivated(stopActivated bool, elevator *elevatorConfig.Elev
 		fmt.Println("Stop was reset")
 		elevio.SetStopLamp(false)
 
-		//MotorDirectionChannel <- elevatorConfig.Stop
-
 		switch elevator.Behavior {
 
 		case elevatorConfig.Moving, elevatorConfig.Idle:
 			InitElevatorBetweenFloors(elevator)
 
 		case elevatorConfig.DoorOpen:
-			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S) // keep door open for 3 more sek
+			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, ServicedOrderChannel) // keep door open for 3 more sek
 
 		default:
 
@@ -243,30 +221,12 @@ func HandleStopButtonActivated(stopActivated bool, elevator *elevatorConfig.Elev
 
 }
 
-// func HandleStopButtonreset(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, MotorDirectionChannel chan elevatorConfig.Direction) {
-// 	fmt.Println("Stop was activated")
-// 	TurnOffAllOrderLights()
-// 	elevio.SetStopLamp(true)
 
-// 	//MotorDirectionChannel <- elevatorConfig.Stop
-
-// 	switch elevator.Behavior {
-
-// 	case elevatorConfig.Moving, elevatorConfig.Idle:
-// 		InitElevatorBetweenFloors(elevator)
-
-// 	default:
-
-// 	}
-
-// }
-
-func HandleObstructionActivated(obstructionActivated bool, elevator *elevatorConfig.Elevator, doorTimer *time.Timer, MotorDirectionChannel chan elevatorConfig.Direction) {
+func HandleObstructionActivated(obstructionActivated bool, elevator *elevatorConfig.Elevator, doorTimer *time.Timer, ServicedOrderChannel chan elevatorConfig.ButtonEvent) {
 
 	if obstructionActivated {
 		fmt.Println("Obstruction was activated")
-		//ElevatorMotorDirection(elevatorConfig.Stop)
-		//MotorDirectionChannel <- elevatorConfig.Stop
+
 
 		switch elevator.Behavior {
 
@@ -282,7 +242,7 @@ func HandleObstructionActivated(obstructionActivated bool, elevator *elevatorCon
 		switch elevator.Behavior {
 
 		case elevatorConfig.DoorOpen:
-			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S)
+			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, ServicedOrderChannel)
 
 		default:
 			//Do nothing if the door is not open
