@@ -19,9 +19,14 @@ type ElevatorState struct {
 }
 
 type ElevatorSystem struct {
+	alivePeers   []string                                               `json:"alivePeers"`
 	OwnId        string                                                 `json:"ownId"`
 	HallRequests [elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus `json:"hallRequests"`
 	States       map[string]*ElevatorState                              `json:"states"`
+}
+
+func SetAlviePeers(system *ElevatorSystem, alivepeers []string) {
+	system.alivePeers = alivepeers
 }
 
 func SetBehavior(system *ElevatorSystem, b elevatorConfig.Behavior) {
@@ -52,6 +57,7 @@ func SetHallRequests(system *ElevatorSystem, f int, halldir int, orderstatus ele
 
 func InitializeElevatorSystem(system *ElevatorSystem, id string) {
 	// To decide floor can just do the get_floor_sensor_signal() and initialize to that floor, but for now hardcoded
+	system.alivePeers = []string{id}
 	system.OwnId = id
 	system.HallRequests = [elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus{}
 	system.States = make(map[string]*ElevatorState)

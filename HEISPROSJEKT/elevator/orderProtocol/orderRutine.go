@@ -73,8 +73,6 @@ func RunOrder(
 			}
 		case peers := <-synchronisationChannels.PeerUpdateChl:
 			alivePeers = peers.Peers
-		case peerSystem := <-synchronisationChannels.BcastIncomingMessagesChannel:
-			synchronisation.UpdateElevatorSystemWithPeer(&system, &peerSystem, HallRequestsForAllElevators, CabRequestsForAllElevators)
 		case UpdatedSystem = <-synchronisationChannels.UpdateElevatorSystem:
 			system = UpdatedSystem
 		case motorstop := <-hardwareChannel.MotorFailureChannel:
