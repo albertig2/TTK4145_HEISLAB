@@ -4,7 +4,7 @@ import (
 	"HEISPROSJEKT/elevatorConfig"
 	"HEISPROSJEKT/synchronisation"
 
-	//"fmt"
+	"fmt"
 	"time"
 )
 
@@ -73,6 +73,7 @@ func RunOrder(
 		case UpdatedSystem = <-synchronisationChannels.UpdateElevatorSystem:
 			system = UpdatedSystem
 		case UpdatedPeerRequests := <-synchronisationChannels.UpdatePeerRequests:
+			fmt.Printf("Updating Peer after receiving on channel: %v", UpdatedPeerRequests)
 			HallRequestsForAllElevators[UpdatedPeerRequests.PeerID] = UpdatedPeerRequests.HallReqs
 			CabRequestsForAllElevators[UpdatedPeerRequests.PeerID] = UpdatedPeerRequests.CabReqs
 		case motorstop := <-hardwareChannel.MotorFailureChannel:

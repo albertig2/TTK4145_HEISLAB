@@ -9,7 +9,6 @@ import (
 	// "strconv"
 	"HEISPROSJEKT/debuggingHelpers"
 	"HEISPROSJEKT/elevatorConfig"
-	"fmt"
 
 	//"fmt"
 	"time"
@@ -31,16 +30,16 @@ func SynchroniseElevators(elevatorUpdates chan elevatorConfig.Elevator, synchron
 		select {
 
 		case incommingBroadcast := <-synchronisationChannels.BcastIncomingMessagesChannel:
-
+			if incommingBroadcast.OwnId == ownId {
+				continue
+			}
 			UpdateElevatorSystemWithPeer(&elevatorSystem, &incommingBroadcast, hallRequestsForAllElevators, cabRequestsForAllElevators)
 			peerRequests := elevatorConfig.PeerRequestUpdate{
 				PeerID:   incommingBroadcast.OwnId,
 				HallReqs: hallRequestsForAllElevators[incommingBroadcast.OwnId],
 				CabReqs:  cabRequestsForAllElevators[incommingBroadcast.OwnId],
 			}
-			fmt.Printf("Before sending PeerRequestUpdate: %v", peerRequests)
 			synchronisationChannels.UpdatePeerRequests <- peerRequests
-			fmt.Printf("After sending PeerRequestUpdate: %v", peerRequests)
 
 		case peerUpdate := <-synchronisationChannels.PeerUpdateChl:
 			filteredAlivePeers := []string{}
