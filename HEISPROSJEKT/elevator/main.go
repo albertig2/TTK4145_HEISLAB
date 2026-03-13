@@ -39,7 +39,7 @@ func main() {
 	go bcast.Transmitter(bcastPort, channels.BcastOutgoingMessagesChannel)
 	go bcast.Receiver(bcastPort, channels.BcastIncomingMessagesChannel)
 
-	// go communication.UpdatePeerList(channels)
+	go synchronisation.UpdatePeerList(SynchronisationChannels)
 
 	go elevio.PollButtons(hardwareChannels.PollOrderButtonsChannel)
 	go elevio.PollFloorSensor(hardwareChannels.FloorSensorChannel)

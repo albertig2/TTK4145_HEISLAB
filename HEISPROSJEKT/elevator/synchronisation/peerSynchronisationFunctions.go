@@ -11,7 +11,7 @@ import (
 )
 
 
-type synchronisationChannels struct {
+type SynchronisationChannels struct {
 	PeerUpdateChl                chan peers.PeerUpdate
 	PeerTxEnableCh               chan bool
 	BcastIncomingMessagesChannel chan ElevatorSystem
@@ -25,8 +25,8 @@ var (
 	deadPeersList  []string
 )
 
-func InitNetworkChannels () synchronisationChannels {
-	channels := synchronisationChannels{
+func InitNetworkChannels () SynchronisationChannels {
+	channels := SynchronisationChannels{
 		PeerUpdateChl:                make(chan peers.PeerUpdate),
 		PeerTxEnableCh:               make(chan bool),
 		BcastIncomingMessagesChannel: make(chan ElevatorSystem),
@@ -37,14 +37,14 @@ func InitNetworkChannels () synchronisationChannels {
 	return channels
 }
 
-func StartPeerNetworking(port int, id int, channels synchronisationChannels) {
+func StartPeerNetworking(port int, id int, channels SynchronisationChannels) {
 	fmt.Println("start")
 
 	go peers.Receiver(port, channels.PeerUpdateChl)
 	go peers.Transmitter(port, strconv.Itoa(id), channels.PeerTxEnableCh)
 }
 
-func UpdatePeerList(channels synchronisationChannels) {
+func UpdatePeerList(channels SynchronisationChannels) {
 	for {
 		peerUpdate := <-channels.PeerUpdateChl
 
