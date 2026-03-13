@@ -64,7 +64,7 @@ func RunOrder(
 			} else if servicedorder.Button == elevatorConfig.Cab {
 				servicedCabOrders = append(servicedCabOrders, servicedorder)
 			}
-		case newOrder := <-elevatorOrderChannels.NewAssignedOrderChannel:
+		case newOrder := <-elevatorOrderChannels.NewRecievedOrderChannel:
 			if newOrder.Button == elevatorConfig.HallUp || newOrder.Button == elevatorConfig.HallDown {
 				newHallOrders = append(newHallOrders, newOrder)
 			} else if newOrder.Button == elevatorConfig.Cab {
