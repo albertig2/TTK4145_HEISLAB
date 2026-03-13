@@ -4,14 +4,13 @@ import (
 	"HEISPROSJEKT/debuggingHelpers"
 	"HEISPROSJEKT/elevatorConfig"
 	"Network-go/network/peers"
-	
+
 	"fmt"
 	"strconv"
 	"time"
 )
 
-
-type synchronisationChannels struct {
+type SynchronisationChannels struct {
 	PeerUpdateChl                chan peers.PeerUpdate
 	PeerTxEnableCh               chan bool
 	BcastIncomingMessagesChannel chan ElevatorSystem
@@ -24,8 +23,8 @@ var (
 	deadPeersList  []string
 )
 
-func InitNetworkChannels () synchronisationChannels {
-	channels := synchronisationChannels{
+func InitNetworkChannels() SynchronisationChannels {
+	channels := SynchronisationChannels{
 		PeerUpdateChl:                make(chan peers.PeerUpdate),
 		PeerTxEnableCh:               make(chan bool),
 		BcastIncomingMessagesChannel: make(chan ElevatorSystem),
@@ -35,14 +34,14 @@ func InitNetworkChannels () synchronisationChannels {
 	return channels
 }
 
-func StartPeerNetworking(port int, id int, channels synchronisationChannels) {
+func StartPeerNetworking(port int, id int, channels SynchronisationChannels) {
 	fmt.Println("start")
 
 	go peers.Receiver(port, channels.PeerUpdateChl)
 	go peers.Transmitter(port, strconv.Itoa(id), channels.PeerTxEnableCh)
 }
 
-func UpdatePeerList(channels synchronisationChannels) {
+func UpdatePeerList(channels SynchronisationChannels) {
 	for {
 		peerUpdate := <-channels.PeerUpdateChl
 
@@ -76,8 +75,6 @@ func GetDeadPeersList() []string {
 	return deadPeersList
 }
 
-
-
 func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan ElevatorSystem, elevatorSystem ElevatorSystem, elevatorChannel chan elevatorConfig.Elevator) {
 	messageTimer := time.NewTimer(1 * time.Second) //should update slightly more often, maybe 30hz?
 	for {
@@ -86,9 +83,9 @@ func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan Ele
 
 		//parse elevator to elevatorsystem (this function might fit here, might not)'
 		//changed my mind, might have the parser run as its own event when recieveing elevators on the channel
-		//and send them on the message channel... or this might ruin the switchcase 
-		//or this function might have become kind of useless unless we want to space the 
-		//world view brodcasts out a little more 
+		//and send them on the message channel... or this might ruin the switchcase
+		//or this function might have become kind of useless unless we want to space the
+		//world view brodcasts out a little more
 
 		<-messageTimer.C
 
@@ -131,12 +128,12 @@ func UpdateElevatorSystemFromELevator(elevator elevatorConfig.Elevator, elevator
 	SetFloor(elevatorSystem, elevator.Floor)
 
 }
+
 /*
 TODO: right, the state machine only operates on true/false from the requestsMatrix
 There is a need for a function that transelates between the two OR the requestsMod
-might need to be rewritten entirely. This might be in the order protocol mod 
-
+might need to be rewritten entirely. This might be in the order protocol mod
 */
-func GetElevatorCabRequests(elevator elevatorConfig.Elevator){
+func GetElevatorCabRequests(elevator elevatorConfig.Elevator) {
 
 }

@@ -53,6 +53,17 @@ type Elevator struct {
 	Config    Config
 }
 
+type OrderStatus string
+
+// Cab order only needs to go from no order to Pending to Completed, while hall orders also need Assigned, since they are Assigned to an elevator by the assigner
+const (
+	Unknown   OrderStatus = "unknown"
+	NoOrder   OrderStatus = "no order"
+	Pending   OrderStatus = "pending"
+	Assigned  OrderStatus = "assigned"
+	Completed OrderStatus = "completed"
+)
+
 type ElevatorHardwareChannelsStruckt struct {
 	PollOrderButtonsChannel chan elevio.ButtonEvent
 	PollObstructionChannel  chan bool
@@ -63,10 +74,17 @@ type ElevatorHardwareChannelsStruckt struct {
 	ElevatorObjectChannel   chan Elevator
 }
 
+type PeerRequestUpdate struct {
+	PeerID   string
+	HallReqs [N_FLOORS][2]OrderStatus
+	CabReqs  [N_FLOORS]OrderStatus
+}
+
 type ElevatorOrderChannelStruckt struct {
-	NewRecievedOrderChannel chan ButtonEvent //all new orders detected by the fsm from button presses are put here
-	NewAssignedOrderChannel chan ButtonEvent //when a order is assigned to this elevator, the order is put here
-	ServicedOrderChannel    chan ButtonEvent //when a order is serviced, it is put here
+	NewRecievedOrderChannel      chan ButtonEvent //all new orders detected by the fsm from button presses are put here
+	NewAssignedOrderChannel      chan ButtonEvent //when a order is assigned to this elevator, the order is put here
+	ServicedOrderChannel         chan ButtonEvent //when a order is serviced, it is put here
+	UpdateOrderHallAndCabRequest chan PeerRequestUpdate
 }
 
 func DirectionToString(direction Direction) string {

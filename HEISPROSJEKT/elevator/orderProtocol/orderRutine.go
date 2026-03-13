@@ -3,13 +3,85 @@ package orderProtocol
 import (
 	"HEISPROSJEKT/elevatorConfig"
 	"HEISPROSJEKT/synchronisation"
+	"time"
 )
 
-func orderRutine(system *synchronisation.ElevatorSystem, HallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]synchronisation.OrderStatus, CabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]synchronisation.OrderStatus, elevatorOrderChannels elevatorConfig.ElevatorOrderChannelStruckt, receivedWorldview chan synchronisation.ElevatorSystem, alivePeers []string) {
-	HallRequestTransitions := GetAllHallRequestTransitions(system, HallRequestsForAllElevators, alivePeers)
-	CabRequestTransitions := GetAllCabRequestTransitions(system, CabRequestsForAllElevators, alivePeers)
+func orderRutine(system *synchronisation.ElevatorSystem,
+	HallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus,
+	CabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus,
+	elevatorOrderChannels elevatorConfig.ElevatorOrderChannelStruckt,
+	newHallOrders []elevatorConfig.ButtonEvent,
+	newCabOrders []elevatorConfig.ButtonEvent,
+	servicedHallOrder elevatorConfig.ButtonEvent,
+	servicedCabOrder elevatorConfig.ButtonEvent,
+	alivePeers []string) {
+	HallRequestTransitions := GetAllHallRequestTransitions(system, HallRequestsForAllElevators, newHallOrders, servicedHallOrder, alivePeers)
+	CabRequestTransitions := GetAllCabRequestTransitions(system, CabRequestsForAllElevators, newCabOrders, servicedCabOrder, alivePeers)
 	TransitioningAllHallRequests(system, HallRequestTransitions, alivePeers, elevatorOrderChannels)
 	TransitioningAllCabRequests(system, CabRequestTransitions, elevatorOrderChannels)
-	HallRequestsForAllElevators[system.OwnId] = system.HallRequests
-	CabRequestsForAllElevators[system.OwnId] = system.States[system.OwnId].CabRequests
 }
+
+func runOrder(
+	id string,
+	elevatorOrderChannels elevatorConfig.ElevatorOrderChannelStruckt,
+	peerChannel synchronisation.SynchronisationChannels,
+	hardwareChannel elevatorConfig.ElevatorHardwareChannelsStruckt,
+	receivedWorldview chan synchronisation.ElevatorSystem) {
+
+	system := synchronisation.ElevatorSystem{}
+	synchronisation.InitializeElevatorSystem(&system, id)
+
+	HallRequestsForAllElevators := make(map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus)
+	CabRequestsForAllElevators := make(map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus)
+
+	servicedHallOrders := make([]elevatorConfig.ButtonEvent, 0)
+	servicedCabOrders := make([]elevatorConfig.ButtonEvent, 0)
+	newHallOrders := make([]elevatorConfig.ButtonEvent, 0)
+	newCabOrders := make([]elevatorConfig.ButtonEvent, 0)
+	alivePeers := make([]string, 0)
+
+	paused := false
+	ticker := time.NewTicker(1 / 30 * time.Second)
+	tickerbroadcast := time.NewTicker(1 / 20 * time.Second)
+	defer ticker.Stop()
+	defer tickerbroadcast.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			if !paused {
+				orderRutine(&system, HallRequestsForAllElevators, CabRequestsForAllElevators, elevatorOrderChannels, newHallOrders, newCabOrders, servicedHallOrders[0], servicedCabOrders[0], alivePeers)
+				HallRequestsForAllElevators[system.OwnId] = system.HallRequests
+				CabRequestsForAllElevators[system.OwnId] = system.States[system.OwnId].CabRequests
+				servicedHallOrders = servicedHallOrders[:0]
+				servicedCabOrders = servicedCabOrders[:0]
+				newHallOrders = newHallOrders[:0]
+				newCabOrders = newCabOrders[:0]
+			}
+		case servicedorder := <-elevatorOrderChannels.ServicedOrderChannel:
+			if servicedorder.Button == elevatorConfig.HallUp || servicedorder.Button == elevatorConfig.HallDown {
+				servicedHallOrders = append(servicedHallOrders, servicedorder)
+			} else if servicedorder.Button == elevatorConfig.Cab {
+				servicedCabOrders = append(servicedCabOrders, servicedorder)
+			}
+		case newOrder := <-elevatorOrderChannels.NewAssignedOrderChannel:
+			if newOrder.Button == elevatorConfig.HallUp || newOrder.Button == elevatorConfig.HallDown {
+				newHallOrders = append(newHallOrders, newOrder)
+			} else if newOrder.Button == elevatorConfig.Cab {
+				newCabOrders = append(newCabOrders, newOrder)
+			}
+		case peers := <-peerChannel.PeerUpdateChl:
+			alivePeers = peers.Peers
+		case peerSystem := <-receivedWorldview:
+			synchronisation.UpdateElevatorSystemWithPeer(&system, &peerSystem, HallRequestsForAllElevators, CabRequestsForAllElevators)
+		case motorstop := <-hardwareChannel.MotorFailureChannel:
+			paused = motorstop
+			if motorstop {
+				synchronisation.InitializeElevatorSystem(&system, id)
+			}
+		case <-tickerbroadcast.C:
+			peerChannel.BcastOutgoingMessagesChannel <- system
+		}
+	}
+}
+
+// Race conditions for HallRequests matriser og cabrequests og ElevatorSystem struct.....
