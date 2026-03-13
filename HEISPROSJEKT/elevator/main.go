@@ -9,10 +9,11 @@ import (
 	// "HEISPROSJEKT/communication"
 	"HEISPROSJEKT/debuggingHelpers"
 	"HEISPROSJEKT/elevatorHardware"
+	"HEISPROSJEKT/synchronisation"
 	//"HEISPROSJEKT/elevatorHardware"
 	//"HEISPROSJEKT/hardware"
-	// "Network-go/network/bcast"
-	// "Network-go/network/peers"
+	"Network-go/network/bcast"
+	"Network-go/network/peers"
 )
 
 func main() {
@@ -22,23 +23,23 @@ func main() {
 	flag.Parse()
 
 	numFloors := 4
-	// peerPort := 30004
-	// bcastPort := 30400
+	peerPort := 30004
+	bcastPort := 30400
 
 	//init functions
 	elevio.Init("localhost:"+strconv.Itoa(*port), numFloors)
 	hardwareChannels := elevatorHardware.InitElevatorHardwareChannels()
 	orderChannels := debuggingHelpers.InitializeOrderChannels()
-	//channels := communication.InitNetworkChannels()
+	channels := synchronisation.InitNetworkChannels()
 	//elevatorObject := elevatorHardware.InitializeElevatorObject(strconv.Itoa(*id))
 
-	// go peers.Receiver(peerPort, channels.PeerUpdateChl)
-	// go peers.Transmitter(peerPort, strconv.Itoa(*id), channels.PeerTxEnableCh)
+	go peers.Receiver(peerPort, channels.PeerUpdateChl)
+	go peers.Transmitter(peerPort, strconv.Itoa(*id), channels.PeerTxEnableCh)
 
-	// go bcast.Transmitter(bcastPort, channels.BcastOutgoingMessagesChannel)
-	// go bcast.Receiver(bcastPort, channels.BcastIncomingMessagesChannel)
+	go bcast.Transmitter(bcastPort, channels.BcastOutgoingMessagesChannel)
+	go bcast.Receiver(bcastPort, channels.BcastIncomingMessagesChannel)
 
-	// go communication.UpdatePeerList(channels)
+	go synchronisation.UpdatePeerList(channels)
 
 	go elevio.PollButtons(hardwareChannels.PollOrderButtonsChannel)
 	go elevio.PollFloorSensor(hardwareChannels.FloorSensorChannel)
@@ -47,7 +48,9 @@ func main() {
 
 	go debuggingHelpers.MimicOrderAssignerAndSynch(orderChannels)
 
-	go elevatorHardware.RunElevatorFsm(strconv.Itoa(*id), hardwareChannels, orderChannels)
+	go elevatorHardware.RunElevatorFsm(strconv.Itoa(*id), hardwareChannels, channels, orderChannels)
+
+	go synchronisation.SynchroniseElevators(hardwareChannels.ElevatorObjectChannel, channels, strconv.Itoa(*id))
 
 	// go communication.BroadcastElevatorWorldView(strconv.Itoa(*id), channels.BcastOutgoingMessagesChannel, hardwareChannels.ElevatorObjectChannel)
 	// go communication.RecieveBroadcastfWorldViewfFromPeer(channels.BcastIncomingMessagesChannel)
