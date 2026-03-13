@@ -3,6 +3,7 @@ package orderProtocol
 import (
 	"HEISPROSJEKT/elevatorConfig"
 	"HEISPROSJEKT/synchronisation"
+	"fmt"
 	"time"
 )
 
@@ -15,10 +16,15 @@ func orderRutine(system *synchronisation.ElevatorSystem,
 	servicedHallOrder elevatorConfig.ButtonEvent,
 	servicedCabOrder elevatorConfig.ButtonEvent,
 	alivePeers []string) {
+	fmt.Println("Start hallrequestTransitions")
 	HallRequestTransitions := GetAllHallRequestTransitions(system, HallRequestsForAllElevators, newHallOrders, servicedHallOrder, alivePeers)
+	fmt.Println("Start CabrequestTransitions")
 	CabRequestTransitions := GetAllCabRequestTransitions(system, CabRequestsForAllElevators, newCabOrders, servicedCabOrder, alivePeers)
+	fmt.Println("Start Transition all hall requests")
 	TransitioningAllHallRequests(system, HallRequestTransitions, alivePeers, elevatorOrderChannels)
+	fmt.Println("Start Transition all Cab requests")
 	TransitioningAllCabRequests(system, CabRequestTransitions, elevatorOrderChannels)
+	fmt.Println("End Transition all Cab requests")
 }
 
 func RunOrder(
@@ -46,31 +52,13 @@ func RunOrder(
 	alivePeers = []string{id}
 
 	paused := false
-	ticker := time.NewTicker(1 * time.Second / 30)
+	ticker := time.NewTicker(1 * time.Second)
+	//ticker.Stop()
 	defer ticker.Stop()
 	for {
 		select {
-		case <-ticker.C:
-			if !paused {
-				var sh, sc elevatorConfig.ButtonEvent
-				sh.Floor = -1
-				sc.Floor = -1
-				if len(servicedHallOrders) > 0 {
-					sh = servicedHallOrders[0]
-				}
-				if len(servicedCabOrders) > 0 {
-					sc = servicedCabOrders[0]
-				}
-				orderRutine(&system, HallRequestsForAllElevators, CabRequestsForAllElevators, elevatorOrderChannels, newHallOrders, newCabOrders, sh, sc, alivePeers)
-				HallRequestsForAllElevators[system.OwnId] = system.HallRequests
-				CabRequestsForAllElevators[system.OwnId] = system.States[system.OwnId].CabRequests
-				servicedHallOrders = servicedHallOrders[:0]
-				servicedCabOrders = servicedCabOrders[:0]
-				newHallOrders = newHallOrders[:0]
-				newCabOrders = newCabOrders[:0]
-				synchronisationChannels.UpdateElevatorSystem <- system
-			}
 		case servicedorder := <-elevatorOrderChannels.ServicedOrderChannel:
+			fmt.Println("Recieved order", servicedorder, "In orderroutine")
 			if servicedorder.Button == elevatorConfig.HallUp || servicedorder.Button == elevatorConfig.HallDown {
 				servicedHallOrders = append(servicedHallOrders, servicedorder)
 			} else if servicedorder.Button == elevatorConfig.Cab {
@@ -95,6 +83,31 @@ func RunOrder(
 				HallRequestsForAllElevators[id] = system.HallRequests
 				CabRequestsForAllElevators[id] = system.States[id].CabRequests
 			}
+		case <-ticker.C:
+			fmt.Println("Ticker kicked in")
+			if !paused {
+				var sh, sc elevatorConfig.ButtonEvent
+				sh.Floor = -1
+				sc.Floor = -1
+				if len(servicedHallOrders) > 0 {
+					sh = servicedHallOrders[0]
+				}
+				if len(servicedCabOrders) > 0 {
+					sc = servicedCabOrders[0]
+				}
+				fmt.Println("Ticker print 2")
+				orderRutine(&system, HallRequestsForAllElevators, CabRequestsForAllElevators, elevatorOrderChannels, newHallOrders, newCabOrders, sh, sc, alivePeers)
+				HallRequestsForAllElevators[system.OwnId] = system.HallRequests
+				CabRequestsForAllElevators[system.OwnId] = system.States[system.OwnId].CabRequests
+				servicedHallOrders = servicedHallOrders[:0]
+				servicedCabOrders = servicedCabOrders[:0]
+				newHallOrders = newHallOrders[:0]
+				newCabOrders = newCabOrders[:0]
+				
+				synchronisationChannels.UpdateElevatorSystem <- system
+				fmt.Println("Ticker end")
+			}
+			
 		}
 	}
 }

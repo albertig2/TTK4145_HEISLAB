@@ -2,6 +2,7 @@ package synchronisation
 
 import (
 	"HEISPROSJEKT/elevatorConfig"
+	"fmt"
 )
 
 //"flag"
@@ -172,3 +173,109 @@ func updateElevatorSystem(system *ElevatorSystem, hallRequestsForAllElevators ma
 // Må på et tidspunkt oppdatere HallRequest med egen id sin hallrequests også og cabRequests.
 
 // SHoul maybe chnage hallup and halldown inputs to be button type instead of ints and then change inside the functions instead
+
+func printHallLine(orders [elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, orderTypeIndex int) {
+
+	for index := 0; index < len(orders); index++ {
+		orderstatus := orders[index][orderTypeIndex]
+		switch orderstatus {
+		case elevatorConfig.NoOrder:
+			fmt.Printf(" - ")
+		case elevatorConfig.Pending:
+			fmt.Printf(" ! ")
+		case elevatorConfig.Assigned:
+			fmt.Printf(" * ")
+		case elevatorConfig.Completed:
+			fmt.Printf(" ^ ")
+		}
+
+	}
+	fmt.Printf(" |\n")
+}
+func printCabLine(orders []elevatorConfig.OrderStatus) {
+
+	for index := 0; index < len(orders); index++ {
+		orderstatus := orders[index]
+		switch orderstatus {
+		case elevatorConfig.NoOrder:
+			fmt.Printf(" - ")
+		case elevatorConfig.Pending:
+			fmt.Printf(" ! ")
+		case elevatorConfig.Assigned:
+			fmt.Printf(" * ")
+		case elevatorConfig.Completed:
+			fmt.Printf(" ^ ")
+		}
+
+	}
+	fmt.Printf(" |\n")
+}
+func PrintCurrentWorkingElevators(elevatorSystem ElevatorSystem) {
+	workingNode := elevatorSystem.States[elevatorSystem.OwnId]
+	hallOrders := elevatorSystem.HallRequests
+	cabOrders := workingNode.CabRequests
+
+	// const boxWidth = 28
+	// leftCol := 12
+	// rightCol := boxWidth - leftCol - 4
+
+	//divider := "+----------------------------+"
+	fmt.Println("+----------------------------+")
+	//fmt.Printf("| %-26s |\n", fmt.Sprintf("ElevatorID: %v", elevatorSystem.OwnId))
+	fmt.Printf("|         ElevatorID: %v      |\n", elevatorSystem.OwnId)
+	fmt.Println("+----------------------------+")
+	fmt.Printf("| %-12s | %-12d|\n", "Floor", workingNode.Floor)
+	fmt.Printf("| %-12s | %-12s|\n", "Direction", elevatorConfig.DirectionToString(workingNode.Direction))
+	fmt.Printf("| %-12s | %-12s|\n", "Behavior", elevatorConfig.BehaviorToString(workingNode.Behavior))
+	fmt.Println("+----------------------------+")
+	fmt.Printf("| %-12s | %-12s|\n", "Floor", "1  2  3  4")
+	fmt.Println("+----------------------------+")
+	fmt.Printf("| %-12s |", "Up")
+	printHallLine(hallOrders, 0)
+	fmt.Printf("| %-12s |", "Down")
+	printHallLine(hallOrders, 1)
+	fmt.Printf("| %-12s |", "Cab")
+	printCabLine(cabOrders[:])
+	fmt.Println("+----------------------------+")
+	//fmt.Println(divider)
+
+	fmt.Printf("")
+
+}
+func PrintPeerElevators(elevatorSystem ElevatorSystem) {
+	currentPeers := elevatorSystem.States
+
+	for id, state := range currentPeers {
+		if id != elevatorSystem.OwnId {
+			cabOrders := state.CabRequests
+
+			fmt.Println("+----------------------------+")
+			fmt.Printf("|         ElevatorID: %v      |\n", id)
+			fmt.Println("+----------------------------+")
+			fmt.Printf("| %-12s | %-12d|\n", "Floor", state.Floor)
+			fmt.Printf("| %-12s | %-12s|\n", "Direction", elevatorConfig.DirectionToString(state.Direction))
+			fmt.Printf("| %-12s | %-12s|\n", "Behavior", elevatorConfig.BehaviorToString(state.Behavior))
+			fmt.Println("+----------------------------+")
+			fmt.Printf("| %-12s | %-12s|\n", "Floor", "1  2  3  4")
+			fmt.Println("+----------------------------+")
+			fmt.Printf("| %-12s |", "Cab")
+			printCabLine(cabOrders[:])
+			fmt.Println("+----------------------------+")
+		}
+		fmt.Printf("\n")
+
+	}
+
+}
+
+func PrintElevatorSystem(elevatorSystem ElevatorSystem) {
+
+	fmt.Println("---------Start System update-----------------")
+
+	PrintCurrentWorkingElevators(elevatorSystem)
+	fmt.Printf("\n")
+	PrintPeerElevators(elevatorSystem)
+
+	fmt.Println("---------End System update-------------------")
+
+}

@@ -41,6 +41,9 @@ func SynchroniseElevators(elevatorUpdates chan elevatorConfig.Elevator, synchron
 		case elevatorUpdate := <-elevatorUpdates:
 
 			UpdateElevatorSystemFromELevator(elevatorUpdate, &elevatorSystem)
+
+		case systemUpdate := <- synchronisationChannels.UpdateElevatorSystem:
+			elevatorSystem = systemUpdate
 		
 		case <-broadcastTicker.C:
 

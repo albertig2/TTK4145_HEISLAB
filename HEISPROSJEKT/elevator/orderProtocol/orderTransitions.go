@@ -2,6 +2,7 @@ package orderProtocol
 
 import (
 	"HEISPROSJEKT/elevatorConfig"
+	"fmt"
 	//"HEISPROSJEKT/elevatorHardware"
 	"HEISPROSJEKT/synchronisation"
 )
@@ -236,7 +237,7 @@ func TransitioningAllHallRequests(system *synchronisation.ElevatorSystem, hallRe
 				status = elevatorConfig.NoOrder
 			case AssignedToComplete:
 				status = elevatorConfig.Completed
-				elevatorOrderChannels.ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Button(hallDir)}
+				//elevatorOrderChannels.ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Button(hallDir)}
 				// Turn off lights and stuff here
 			case CompleteToNoOrder:
 				status = elevatorConfig.NoOrder
@@ -272,15 +273,21 @@ func TransitioningAllCabRequests(system *synchronisation.ElevatorSystem, cabRequ
 		case PendingToAssigned, UnknownToAssigned:
 			status = elevatorConfig.Assigned
 			// Turn on lights and stuff here
+			fmt.Println("1:Start send on new order assined")
 			elevatorOrderChannels.NewAssignedOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Cab}
+			fmt.Println(" 1:end send on new order assined")
 		case AssignedToNoOrder, UnknownToNoOrder:
 			status = elevatorConfig.NoOrder
-			elevatorOrderChannels.ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Cab}
+			fmt.Println("2:Start send on serviced order assined")
+			//elevatorOrderChannels.ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Cab}
 			// Turn off lights and stuff here
+			fmt.Println("2:end send on serviced order assined")
 		default:
 			status = system.States[system.OwnId].CabRequests[floor]
+			fmt.Println("default")
 		}
 		synchronisation.SetCabRequests(system, floor, status)
+		fmt.Println("set cab in tarsnsition all")
 	}
 }
 

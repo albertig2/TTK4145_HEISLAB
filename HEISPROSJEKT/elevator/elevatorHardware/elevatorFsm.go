@@ -32,6 +32,7 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 			order:= elevatorConfig.ButtonEvent{Floor : recievedOrder.Floor, Button: elevatorConfig.Button(recievedOrder.Button)}
 			fmt.Println("New order from FSM", order)
 			orderChannels.NewRecievedOrderChannel <- order
+			fmt.Println("Passed neworderchannel")
 
 		case assignedOrder := <- orderChannels.NewAssignedOrderChannel:
 
