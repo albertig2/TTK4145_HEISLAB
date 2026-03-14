@@ -9,6 +9,7 @@ import (
 	// "strconv"
 	"HEISPROSJEKT/debuggingHelpers"
 	"HEISPROSJEKT/elevatorConfig"
+
 	"fmt"
 
 	//"fmt"
@@ -23,55 +24,40 @@ func SynchroniseElevators(elevatorUpdates chan elevatorConfig.Elevator, synchron
 
 	broadcastTicker := time.NewTicker(time.Second / 30)
 
-	//aliveList := []string{}
-	hallRequestsForAllElevators := map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus{}
-	cabRequestsForAllElevators := map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus{}
-
 	for {
-		select {
+		fmt.Println("Before select in synchroniseElevators")
 
+		select {
 		case incommingBroadcast := <-synchronisationChannels.BcastIncomingMessagesChannel:
-			if incommingBroadcast.OwnId == ownId {
-				continue
+			fmt.Println("Received broadcast in synchroniseElevators")
+			if incommingBroadcast.OwnId != ownId {
+				synchronisationChannels.UpdateElevatorSystemWithPeerChannel <- incommingBroadcast
 			}
-			UpdateElevatorSystemWithPeer(&elevatorSystem, &incommingBroadcast, hallRequestsForAllElevators, cabRequestsForAllElevators)
-			peerRequests := elevatorConfig.PeerRequestUpdate{
-				PeerID:   incommingBroadcast.OwnId,
-				HallReqs: hallRequestsForAllElevators[incommingBroadcast.OwnId],
-				CabReqs:  cabRequestsForAllElevators[incommingBroadcast.OwnId],
-			}
-			fmt.Println("Before sending the peer update on channel (matrices)")
-			synchronisationChannels.UpdatePeerRequests <- peerRequests
-			fmt.Println("after sending peer update on channel (matrices)")
 
 		case peerUpdate := <-synchronisationChannels.PeerUpdateChl:
-			filteredAlivePeers := []string{}
-			for _, peerID := range peerUpdate.Peers {
-				if _, ok := elevatorSystem.States[peerID]; ok {
-					filteredAlivePeers = append(filteredAlivePeers, peerID)
-				}
-			}
-			SetAlivePeers(&elevatorSystem, filteredAlivePeers)
+			fmt.Println("Recieved peer list")
+			synchronisationChannels.AlivePeersChannel <- peerUpdate.Peers
+			fmt.Println("Sent alive peers to orders")
 			debuggingHelpers.PrintPeerUpdate(peerUpdate)
 
 		case elevatorUpdate := <-elevatorUpdates:
+			fmt.Println("Received elevator struct from elevator fsm")
+			synchronisationChannels.UpdateElevatorSystemWithElevator <- elevatorUpdate
+			fmt.Println("Sent elevator struct to orders")
 			// Maybe I should use this too in orders(?)
-			UpdateElevatorSystemFromELevator(elevatorUpdate, &elevatorSystem)
 
-		case systemUpdate := <-synchronisationChannels.UpdateElevatorSystem:
+		case systemUpdate := <-synchronisationChannels.UpdateElevatorSystemWithElevatorSystem:
 			elevatorSystem = systemUpdate
+			fmt.Println("Received system update in synchroniseElevators")
 
 		case <-broadcastTicker.C:
-
+			fmt.Println("Sending broadcast in synchroniseElevators")
 			synchronisationChannels.BcastOutgoingMessagesChannel <- elevatorSystem
+			fmt.Println("Sent broadcast in synchroniseElevators")
 			broadcastTicker.Reset(time.Second / 30)
 		}
-		fmt.Println("Before jevnlig update of the elevator system on channel")
-		select {
-		case synchronisationChannels.UpdateElevatorSystem <- elevatorSystem:
-		default:
-		}
-		fmt.Println("After jevnlig update of the elevator system on channel")
+		fmt.Println("After select in synchroniseElevators")
+
 	}
 
 	//run all synchronisation on events (like elevator fsm, run events on most sync channel?)

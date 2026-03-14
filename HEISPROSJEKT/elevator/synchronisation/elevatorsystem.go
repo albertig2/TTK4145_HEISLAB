@@ -47,10 +47,10 @@ func InitializeElevatorSystem(system *elevatorConfig.ElevatorSystem, id string) 
 	system.OwnId = id
 	system.HallRequests = [elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus{}
 	system.States = make(map[string]*elevatorConfig.ElevatorState)
-	currentFloor := 1 // Get floor sensor. (men helst ikke -1? så siste faktisk floor)
+	unknownFloor := -1
 	system.States[id] = &elevatorConfig.ElevatorState{
 		Behavior:    elevatorConfig.Idle,
-		Floor:       currentFloor,
+		Floor:       unknownFloor, //Just initializing to this, will be updated by the elevator fsm if not correct
 		Direction:   elevatorConfig.Stop,
 		CabRequests: [elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus{},
 	}
@@ -91,7 +91,7 @@ func initializeCabRequests(system *elevatorConfig.ElevatorSystem) {
 
 // If only called from updatedElavatorSystemFromPeer, then I dont need the check for existence
 // Only called if not existing
-func contains(slice []string, value string) bool {
+func Contains(slice []string, value string) bool {
 	for _, item := range slice {
 		if item == value {
 			return true
@@ -101,7 +101,7 @@ func contains(slice []string, value string) bool {
 }
 
 func addPeer(system *elevatorConfig.ElevatorSystem, peerSystem *elevatorConfig.ElevatorSystem) {
-	if !contains(system.AlivePeers, peerSystem.OwnId) {
+	if !Contains(system.AlivePeers, peerSystem.OwnId) {
 		system.AlivePeers = append(system.AlivePeers, peerSystem.OwnId)
 	}
 	CabRequests := peerSystem.States[peerSystem.OwnId].CabRequests
@@ -158,6 +158,7 @@ func UpdateElevatorSystemWithSelf(system *elevatorConfig.ElevatorSystem, HallReq
 	CabRequestsForAllElevators[system.OwnId] = system.States[system.OwnId].CabRequests
 }
 
+// Not used:
 func updateElevatorSystem(system *elevatorConfig.ElevatorSystem, hallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, cabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus, receivedWorldView chan string) {
 	peerSystem := DecodeElevatorSystem(<-receivedWorldView)
 	addPeer(system, &peerSystem)

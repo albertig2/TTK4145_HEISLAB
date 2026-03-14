@@ -81,12 +81,14 @@ const (
 )
 
 type SynchronisationChannels struct {
-	PeerUpdateChl                chan peers.PeerUpdate
-	PeerTxEnableCh               chan bool
-	BcastIncomingMessagesChannel chan ElevatorSystem
-	BcastOutgoingMessagesChannel chan ElevatorSystem
-	UpdateElevatorSystem         chan ElevatorSystem
-	UpdatePeerRequests           chan PeerRequestUpdate
+	PeerUpdateChl                          chan peers.PeerUpdate
+	PeerTxEnableCh                         chan bool
+	BcastIncomingMessagesChannel           chan ElevatorSystem
+	BcastOutgoingMessagesChannel           chan ElevatorSystem
+	UpdateElevatorSystemWithElevator       chan Elevator
+	UpdateElevatorSystemWithElevatorSystem chan ElevatorSystem
+	UpdateElevatorSystemWithPeerChannel    chan ElevatorSystem
+	AlivePeersChannel                      chan []string
 	//new order channel?
 }
 
@@ -101,12 +103,13 @@ type ElevatorHardwareChannelsStruckt struct {
 	MotorFailureChannel     chan bool
 }
 
-type PeerRequestUpdate struct {
-	PeerID   string
-	HallReqs [N_FLOORS][2]OrderStatus
-	CabReqs  [N_FLOORS]OrderStatus
-}
-
+/*
+	type PeerRequestUpdate struct {
+		PeerID   string
+		HallReqs [N_FLOORS][2]OrderStatus
+		CabReqs  [N_FLOORS]OrderStatus
+	}
+*/
 type ElevatorOrderChannelStruckt struct {
 	NewRecievedOrderChannel chan ButtonEvent //all new orders detected by the fsm from button presses are put here
 	NewAssignedOrderChannel chan ButtonEvent //when a order is assigned to this elevator, the order is put here

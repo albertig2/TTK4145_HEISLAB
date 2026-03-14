@@ -16,11 +16,14 @@ var (
 
 func InitNetworkChannels() elevatorConfig.SynchronisationChannels {
 	channels := elevatorConfig.SynchronisationChannels{
-		PeerUpdateChl:                make(chan peers.PeerUpdate),
-		PeerTxEnableCh:               make(chan bool),
-		BcastIncomingMessagesChannel: make(chan elevatorConfig.ElevatorSystem),
-		BcastOutgoingMessagesChannel: make(chan elevatorConfig.ElevatorSystem),
-		UpdateElevatorSystem:         make(chan elevatorConfig.ElevatorSystem),
+		PeerUpdateChl:                          make(chan peers.PeerUpdate),
+		PeerTxEnableCh:                         make(chan bool),
+		BcastIncomingMessagesChannel:           make(chan elevatorConfig.ElevatorSystem),
+		BcastOutgoingMessagesChannel:           make(chan elevatorConfig.ElevatorSystem),
+		UpdateElevatorSystemWithElevator:       make(chan elevatorConfig.Elevator),
+		UpdateElevatorSystemWithElevatorSystem: make(chan elevatorConfig.ElevatorSystem),
+		UpdateElevatorSystemWithPeerChannel:    make(chan elevatorConfig.ElevatorSystem),
+		AlivePeersChannel:                      make(chan []string),
 	}
 
 	return channels
@@ -114,12 +117,13 @@ func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan eleva
 	}
 }
 
-func UpdateElevatorSystemFromELevator(elevator elevatorConfig.Elevator, elevatorSystem *elevatorConfig.ElevatorSystem) {
-
-	SetBehavior(elevatorSystem, elevatorConfig.Behavior(elevator.Direction))
+func UpdateElevatorSystemFromElevator(elevator elevatorConfig.Elevator, elevatorSystem *elevatorConfig.ElevatorSystem) {
+	SetBehavior(elevatorSystem, elevatorConfig.Behavior(elevator.Behavior))
 	SetDirection(elevatorSystem, elevator.Direction)
-	SetFloor(elevatorSystem, elevator.Floor)
-
+	fmt.Printf("Updating elevator system from elevator struct. Elevator floor: %d\n", elevator.Floor)
+	if elevator.Floor >= 0 && elevator.Floor < elevatorConfig.N_FLOORS {
+		SetFloor(elevatorSystem, elevator.Floor)
+	}
 }
 
 /*
