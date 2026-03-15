@@ -135,8 +135,8 @@ func RunOrder(
 		}
 		fmt.Println("After select in orderrutine")
 		select {
-		case synchronisationChannels.UpdateElevatorSystemWithElevatorSystemChannel <- system:
-			fmt.Println("Sent system update to synchroniseElevators")
+		case synchronisationChannels.UpdateElevatorSystemWithElevatorSystemChannel <- *synchronisation.CopyElevatorSystem(&system):
+			fmt.Println("Sent system update to synchroniseElevators (deep copy)")
 		default:
 			fmt.Println("Channel full, system update dropped")
 		}

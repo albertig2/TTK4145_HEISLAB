@@ -166,6 +166,27 @@ func updateElevatorSystem(system *elevatorConfig.ElevatorSystem, hallRequestsFor
 	UpdateElevatorSystemWithSelf(system, hallRequestsForAllElevators, cabRequestsForAllElevators)
 }
 
+func CopyElevatorSystem(src *elevatorConfig.ElevatorSystem) *elevatorConfig.ElevatorSystem {
+	dst := *src // shallow copy
+
+	// Deep copy AlivePeers slice
+	dst.AlivePeers = make([]string, len(src.AlivePeers))
+	copy(dst.AlivePeers, src.AlivePeers)
+
+	// Deep copy HallRequests (array, so direct copy is fine)
+	dst.HallRequests = src.HallRequests
+
+	// Deep copy States map
+	dst.States = make(map[string]*elevatorConfig.ElevatorState, len(src.States))
+	for k, v := range src.States {
+		// Deep copy ElevatorState struct
+		stateCopy := *v
+		dst.States[k] = &stateCopy
+	}
+
+	return &dst
+}
+
 // I utgangspunktet har jeg en annen funksjon som fikser andre transisjoner ...., kanskje nok å sette HallRequest listen to the appropriate, og så finne derfifra hva man skal sette
 // Hvor ofte skal man sjekke transisjoner? med en gang etter man har updated
 
@@ -178,4 +199,3 @@ func updateElevatorSystem(system *elevatorConfig.ElevatorSystem, hallRequestsFor
 // Må på et tidspunkt oppdatere HallRequest med egen id sin hallrequests også og cabRequests.
 
 // SHoul maybe chnage hallup and halldown inputs to be button type instead of ints and then change inside the functions instead
-
