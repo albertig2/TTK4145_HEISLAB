@@ -3,8 +3,9 @@ package orderProtocol
 import (
 	"HEISPROSJEKT/elevatorConfig"
 	"HEISPROSJEKT/synchronisation"
-
 	"fmt"
+
+	//"fmt"
 	"time"
 )
 
@@ -55,7 +56,7 @@ func RunOrder(
 	//ticker.Stop()
 	defer ticker.Stop()
 	for {
-		fmt.Println("Before select in order routine")
+		//fmt.Println("Before select in order routine")
 		select {
 		case servicedorder := <-elevatorOrderChannels.ServicedOrderChannel:
 			fmt.Println("Before servidec order")
@@ -66,13 +67,13 @@ func RunOrder(
 			}
 			fmt.Println("After serviced order")
 		case newOrder := <-elevatorOrderChannels.NewRecievedOrderChannel:
-			fmt.Println("Before new order")
+			//fmt.Println("Before new order")
 			if newOrder.Button == elevatorConfig.HallUp || newOrder.Button == elevatorConfig.HallDown {
 				newHallOrders = append(newHallOrders, newOrder)
 			} else if newOrder.Button == elevatorConfig.Cab {
 				newCabOrders = append(newCabOrders, newOrder)
 			}
-			fmt.Println("After new order")
+			//fmt.Println("After new order")
 		// etterhvert kan denne fjernes
 		case elevatorUpdate := <-synchronisationChannels.UpdateElevatorSystemWithElevatorChannel:
 			synchronisation.UpdateElevatorSystemFromElevator(elevatorUpdate, &system)
@@ -90,14 +91,14 @@ func RunOrder(
 			}
 			synchronisation.SetAlivePeers(&system, filteredAlivePeers)
 		case motorstop := <-hardwareChannel.MotorFailureChannel:
-			fmt.Printf("Received motor failure status: %v", motorstop)
+			//fmt.Printf("Received motor failure status: %v", motorstop)
 			paused = motorstop
 			if motorstop {
 				synchronisation.InitializeElevatorSystem(&system, id)
 				HallRequestsForAllElevators[id] = system.HallRequests
 				CabRequestsForAllElevators[id] = system.States[id].CabRequests
 			}
-			fmt.Printf("Paused status: %v", paused)
+			//fmt.Printf("Paused status: %v", paused)
 		case <-ticker.C:
 
 			if !paused {
@@ -105,30 +106,40 @@ func RunOrder(
 				allFloorsValid := true
 				for _, peerID := range system.AlivePeers {
 					if system.States[peerID].Floor == -1 {
-						fmt.Printf("Skipping ordering: elevator %s has invalid floor (-1)\n", peerID)
+						//fmt.Printf("Skipping ordering: elevator %s has invalid floor (-1)\n", peerID)
 						allFloorsValid = false
 						break
 					}
 				}
 				if allFloorsValid {
-					fmt.Println("Before ordering")
-					orderRutine(&system, HallRequestsForAllElevators, CabRequestsForAllElevators, elevatorOrderChannels, newHallOrders, newCabOrders, servicedHallOrders, servicedCabOrders)
+					//fmt.Println("Before ordering")
+					var sh, sc elevatorConfig.ButtonEvent
+					sh.Floor = -1
+					sc.Floor = -1
+					if len(servicedHallOrders) > 0 {
+						sh = servicedHallOrders[0]
+					}
+					if len(servicedCabOrders) > 0 {
+						sc = servicedCabOrders[0]
+					}
+
+					orderRutine(&system, HallRequestsForAllElevators, CabRequestsForAllElevators, elevatorOrderChannels, newHallOrders, newCabOrders, sh, sc)
 					HallRequestsForAllElevators[system.OwnId] = system.HallRequests
 					CabRequestsForAllElevators[system.OwnId] = system.States[system.OwnId].CabRequests
 					servicedHallOrders = servicedHallOrders[:0]
 					servicedCabOrders = servicedCabOrders[:0]
 					newHallOrders = newHallOrders[:0]
 					newCabOrders = newCabOrders[:0]
-					fmt.Println("After ordering")
+					//fmt.Println("After ordering")
 				}
 			}
 		}
-		fmt.Println("After select in orderrutine")
+		//fmt.Println("After select in orderrutine")
 		select {
 		case synchronisationChannels.UpdateElevatorSystemWithElevatorSystemChannel <- *synchronisation.CopyElevatorSystem(&system):
-			fmt.Println("Sent system update to synchroniseElevators (deep copy)")
+			//fmt.Println("Sent system update to synchroniseElevators (deep copy)")
 		default:
-			fmt.Println("Channel full, system update dropped")
+			//fmt.Println("Channel full, system update dropped")
 		}
 	}
 }

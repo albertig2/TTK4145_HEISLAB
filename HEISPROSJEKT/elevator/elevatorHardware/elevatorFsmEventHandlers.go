@@ -263,11 +263,12 @@ func HandleMotorFailure(elevatorObject *elevatorConfig.Elevator, motorTimeoutTim
 
 	*elevatorObject = InitializeElevator(elevatorObject.OwnId)
 
+	hardwareChannels.MotorFailureChannel <- true
 	<-simMotorFailureTimer.C
 
 	InitElevatorHardware(elevatorObject, motorTimeoutTimer)
 
-	//hardwareChannels.MotorFailureChannel <- true
+	hardwareChannels.MotorFailureChannel <- false
 
 	synchronisationChannels.PeerTxEnableChannel <- true
 
