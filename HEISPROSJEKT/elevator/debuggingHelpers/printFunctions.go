@@ -55,28 +55,6 @@ func PrintPeerUpdate(peerUpdate peers.PeerUpdate) {
 	fmt.Println("---------------------End of peer update------------------------------ ")
 }
 
-type OrderStatus string
-
-const (
-	NoOrder   OrderStatus = "no order"
-	Pending   OrderStatus = "pending"
-	Assigned  OrderStatus = "assigned"
-	Completed OrderStatus = "completed"
-)
-
-type ElevatorState struct {
-	Behavior    elevatorConfig.Behavior              `json:"behavior"`
-	Floor       int                                  `json:"floor"`
-	Direction   elevatorConfig.Direction             `json:"direction"`
-	CabRequests [elevatorConfig.N_FLOORS]OrderStatus `json:"cabRequests"`
-}
-
-type ElevatorSystem struct {
-	OwnId        string                                  `json:"ownId"`
-	HallRequests [elevatorConfig.N_FLOORS][2]OrderStatus `json:"hallRequests"`
-	States       map[string]*ElevatorState               `json:"states"`
-}
-
 // switch orderstatus {
 // case elevatorConfig.NoOrder:
 // 	fmt.Printf(" - ")
@@ -362,18 +340,6 @@ ElevatorID: 3
 */
 
 //these functions are just for testing of the fsm sync, delete when done
-
-func InitializeOrderChannels() elevatorConfig.ElevatorOrderChannelStruckt {
-
-	orderChannelse := elevatorConfig.ElevatorOrderChannelStruckt{
-
-		NewRecievedOrderChannel: make(chan elevatorConfig.ButtonEvent),
-		NewAssignedOrderChannel: make(chan elevatorConfig.ButtonEvent),
-		ServicedOrderChannel:    make(chan elevatorConfig.ButtonEvent, 10),
-	}
-
-	return orderChannelse
-}
 
 func MimicOrderAssignerAndSynch(orderChannelse elevatorConfig.ElevatorOrderChannelStruckt) {
 
