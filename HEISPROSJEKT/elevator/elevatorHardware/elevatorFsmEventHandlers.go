@@ -257,7 +257,7 @@ func HandleMotorFailure(elevatorObject *elevatorConfig.Elevator, motorTimeoutTim
 
 	ElevatorMotorDirection(elevatorConfig.Stop, motorTimeoutTimer)
 
-	synchronisationChannels.PeerTxEnableCh <- false
+	synchronisationChannels.PeerTxEnableChannel <- false
 
 	//make it unable to take new orders? (maybe not nessecerry)
 
@@ -269,7 +269,7 @@ func HandleMotorFailure(elevatorObject *elevatorConfig.Elevator, motorTimeoutTim
 
 	//hardwareChannels.MotorFailureChannel <- true
 
-	synchronisationChannels.PeerTxEnableCh <- true
+	synchronisationChannels.PeerTxEnableChannel <- true
 
 	fmt.Printf("\nNew state after motor failure detected:\n")
 	debuggingHelpers.Elevator_print(*elevatorObject)

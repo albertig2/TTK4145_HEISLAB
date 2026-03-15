@@ -16,14 +16,14 @@ var (
 
 func InitNetworkChannels() elevatorConfig.SynchronisationChannels {
 	channels := elevatorConfig.SynchronisationChannels{
-		PeerUpdateChl:                          make(chan peers.PeerUpdate),
-		PeerTxEnableCh:                         make(chan bool),
-		BcastIncomingMessagesChannel:           make(chan elevatorConfig.ElevatorSystem),
-		BcastOutgoingMessagesChannel:           make(chan elevatorConfig.ElevatorSystem),
-		UpdateElevatorSystemWithElevator:       make(chan elevatorConfig.Elevator),
-		UpdateElevatorSystemWithElevatorSystem: make(chan elevatorConfig.ElevatorSystem),
-		UpdateElevatorSystemWithPeerChannel:    make(chan elevatorConfig.ElevatorSystem),
-		AlivePeersChannel:                      make(chan []string),
+		PeerUpdateChannel:                             make(chan peers.PeerUpdate),
+		PeerTxEnableChannel:                           make(chan bool),
+		BcastIncomingMessagesChannel:                  make(chan elevatorConfig.ElevatorSystem),
+		BcastOutgoingMessagesChannel:                  make(chan elevatorConfig.ElevatorSystem),
+		UpdateElevatorSystemWithElevatorChannel:       make(chan elevatorConfig.Elevator),
+		UpdateElevatorSystemWithElevatorSystemChannel: make(chan elevatorConfig.ElevatorSystem),
+		UpdateElevatorSystemWithPeerChannel:           make(chan elevatorConfig.ElevatorSystem),
+		AlivePeersChannel:                             make(chan []string),
 	}
 
 	return channels
@@ -32,13 +32,13 @@ func InitNetworkChannels() elevatorConfig.SynchronisationChannels {
 func StartPeerNetworking(port int, id int, channels elevatorConfig.SynchronisationChannels) {
 	fmt.Println("start")
 
-	go peers.Receiver(port, channels.PeerUpdateChl)
-	go peers.Transmitter(port, strconv.Itoa(id), channels.PeerTxEnableCh)
+	go peers.Receiver(port, channels.PeerUpdateChannel)
+	go peers.Transmitter(port, strconv.Itoa(id), channels.PeerTxEnableChannel)
 }
 
 func UpdatePeerList(channels elevatorConfig.SynchronisationChannels) {
 	for {
-		peerUpdate := <-channels.PeerUpdateChl
+		peerUpdate := <-channels.PeerUpdateChannel
 
 		alivePeersList = peerUpdate.Peers
 

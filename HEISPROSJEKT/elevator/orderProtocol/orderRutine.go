@@ -74,7 +74,7 @@ func RunOrder(
 			}
 			fmt.Println("After new order")
 		// etterhvert kan denne fjernes
-		case elevatorUpdate := <-synchronisationChannels.UpdateElevatorSystemWithElevator:
+		case elevatorUpdate := <-synchronisationChannels.UpdateElevatorSystemWithElevatorChannel:
 			synchronisation.UpdateElevatorSystemFromElevator(elevatorUpdate, &system)
 		case PeerSystem := <-synchronisationChannels.UpdateElevatorSystemWithPeerChannel:
 			synchronisation.UpdateElevatorSystemWithPeer(&system, &PeerSystem, HallRequestsForAllElevators, CabRequestsForAllElevators)
@@ -135,7 +135,7 @@ func RunOrder(
 		}
 		fmt.Println("After select in orderrutine")
 		select {
-		case synchronisationChannels.UpdateElevatorSystemWithElevatorSystem <- system:
+		case synchronisationChannels.UpdateElevatorSystemWithElevatorSystemChannel <- system:
 			fmt.Println("Sent system update to synchroniseElevators")
 		default:
 			fmt.Println("Channel full, system update dropped")

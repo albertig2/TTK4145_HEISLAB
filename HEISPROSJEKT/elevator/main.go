@@ -38,8 +38,8 @@ func main() {
 	channels := synchronisation.InitNetworkChannels()
 	//elevatorObject := elevatorHardware.InitializeElevatorObject(strconv.Itoa(*id))
 
-	go peers.Receiver(peerPort, channels.PeerUpdateChl)
-	go peers.Transmitter(peerPort, strconv.Itoa(*id), channels.PeerTxEnableCh)
+	go peers.Receiver(peerPort, channels.PeerUpdateChannel)
+	go peers.Transmitter(peerPort, strconv.Itoa(*id), channels.PeerTxEnableChannel)
 
 	go bcast.Transmitter(bcastPort, channels.BcastOutgoingMessagesChannel)
 	go bcast.Receiver(bcastPort, channels.BcastIncomingMessagesChannel)
@@ -56,7 +56,7 @@ func main() {
 	go elevatorHardware.RunElevatorFsm(strconv.Itoa(*id), hardwareChannels, channels, orderChannels)
 
 	go synchronisation.SynchroniseElevators(hardwareChannels.ElevatorObjectChannel, channels, strconv.Itoa(*id))
-	
+
 	go orderProtocol.RunOrder(strconv.Itoa(*id), orderChannels, channels, hardwareChannels)
 
 	// go communication.BroadcastElevatorWorldView(strconv.Itoa(*id), channels.BcastOutgoingMessagesChannel, hardwareChannels.ElevatorObjectChannel)
