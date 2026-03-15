@@ -3,7 +3,7 @@ package orderProtocol
 import (
 	"HEISPROSJEKT/elevatorConfig"
 	"HEISPROSJEKT/synchronisation"
-	"fmt"
+	//"fmt"
 
 	//"fmt"
 	"time"
@@ -59,13 +59,13 @@ func RunOrder(
 		//fmt.Println("Before select in order routine")
 		select {
 		case servicedorder := <-elevatorOrderChannels.ServicedOrderChannel:
-			fmt.Println("Before servidec order")
+			//fmt.Println("Before servidec order")
 			if servicedorder.Button == elevatorConfig.HallUp || servicedorder.Button == elevatorConfig.HallDown {
 				servicedHallOrders = append(servicedHallOrders, servicedorder)
 			} else if servicedorder.Button == elevatorConfig.Cab {
 				servicedCabOrders = append(servicedCabOrders, servicedorder)
 			}
-			fmt.Println("After serviced order")
+			//fmt.Println("After serviced order")
 		case newOrder := <-elevatorOrderChannels.NewRecievedOrderChannel:
 			//fmt.Println("Before new order")
 			if newOrder.Button == elevatorConfig.HallUp || newOrder.Button == elevatorConfig.HallDown {

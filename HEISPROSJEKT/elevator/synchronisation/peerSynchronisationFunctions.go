@@ -120,7 +120,7 @@ func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan eleva
 func UpdateElevatorSystemFromElevator(elevator elevatorConfig.Elevator, elevatorSystem *elevatorConfig.ElevatorSystem) {
 	SetBehavior(elevatorSystem, elevatorConfig.Behavior(elevator.Behavior))
 	SetDirection(elevatorSystem, elevator.Direction)
-	fmt.Printf("Updating elevator system from elevator struct. Elevator floor: %d\n", elevator.Floor)
+	//fmt.Printf("Updating elevator system from elevator struct. Elevator floor: %d\n", elevator.Floor)
 	if elevator.Floor >= 0 && elevator.Floor < elevatorConfig.N_FLOORS {
 		SetFloor(elevatorSystem, elevator.Floor)
 	}
