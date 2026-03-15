@@ -14,7 +14,7 @@ func InitializeOrderChannels() elevatorConfig.ElevatorOrderChannelStruckt {
 
 		NewRecievedOrderChannel:     make(chan elevatorConfig.ButtonEvent),
 		NewAssignedOrderChannel:     make(chan elevatorConfig.ButtonEvent),
-		NewAssignedPeerOrderChannel: make(chan elevatorConfig.ButtonEvent),
+		NewAssignedPeerOrderChannel: make(chan elevatorConfig.ButtonEvent, 10),
 		ServicedOrderChannel:        make(chan elevatorConfig.ButtonEvent, 10),
 		ServicedPeerOrderChannel:    make(chan elevatorConfig.ButtonEvent, 10),
 	}
