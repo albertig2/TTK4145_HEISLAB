@@ -12,28 +12,17 @@ func CheckOrderTransitionStatusForHallRequests2(
 	newOrders []elevatorConfig.ButtonEvent,
 	servicedOrder elevatorConfig.ButtonEvent) OrderTransition {
 
-	var otherAlivePeers []string
-	for _, peerId := range system.AlivePeers {
-		if peerId != system.OwnId {
-			otherAlivePeers = append(otherAlivePeers, peerId)
-		}
-	}
+	noordertopending := false
+	pendingtonoorder := false
+	pendingtoassigned := true
+	assignedtocomplete := false
+	completetonoorder := true
 
 	ownHallStatus := HallRequestsForAllElevators[system.OwnId][floor][halldir]
 
-	switch ownHallStatus {
-	case elevatorConfig.NoOrder:
-		noordertopending := false
-		// If any of the elevators are in completed, the new order will not be set, but then the person just have to press the button again I guess.
-		for _, order := range newOrders {
-			if order.Floor == floor && int(order.Button) == halldir {
-				noordertopending = true
-				break
-			}
-		}
-
-		for _, peerID := range otherAlivePeers {
-			peerHallStatus := HallRequestsForAllElevators[peerID][floor][halldir]
+	if ownHallStatus == elevatorConfig.NoOrder {
+		for _, peerId := range system.AlivePeers {
+			peerHallStatus := HallRequestsForAllElevators[peerId][floor][halldir]
 			if peerHallStatus == elevatorConfig.Completed {
 				noordertopending = false
 				break
@@ -41,46 +30,48 @@ func CheckOrderTransitionStatusForHallRequests2(
 				noordertopending = true
 			}
 		}
+	}
 
-		if noordertopending {
-			return NoOrderToPending
+	for _, peerId := range system.AlivePeers {
+		peerHallStatus := HallRequestsForAllElevators[peerId][floor][halldir]
+		if peerHallStatus != elevatorConfig.Pending {
+			pendingtoassigned = false
 		}
-	case elevatorConfig.Pending:
-		for _, peerID := range otherAlivePeers {
-			peerHallStatus := HallRequestsForAllElevators[peerID][floor][halldir]
-			if peerHallStatus == elevatorConfig.Completed {
-				return PendingToNoOrder
-			}
+		if peerHallStatus == elevatorConfig.Completed && peerId != system.OwnId {
+			pendingtonoorder = true
 		}
+		if peerHallStatus != elevatorConfig.NoOrder && peerId != system.OwnId {
+			completetonoorder = false
+		}
+	}
 
-		pendingtoassigned := true
-		for _, peerID := range otherAlivePeers {
-			peerHallStatus := HallRequestsForAllElevators[peerID][floor][halldir]
-			if peerHallStatus != elevatorConfig.Pending {
-				pendingtoassigned = false
-			}
-		}
+	if ownHallStatus != elevatorConfig.Completed && completetonoorder {
+		completetonoorder = false
+	}
 
-		if pendingtoassigned {
-			return PendingToAssigned
-		}
+	if ownHallStatus == elevatorConfig.Assigned && servicedOrder.Floor == floor {
+		assignedtocomplete = true
+	}
 
-	case elevatorConfig.Assigned:
-		if servicedOrder.Floor == floor {
-			return AssignedToComplete
-		}
-	case elevatorConfig.Completed:
-		completetonoorder := true
-		for _, peerID := range otherAlivePeers {
-			peerHallStatus := HallRequestsForAllElevators[peerID][floor][halldir]
-			if peerHallStatus != elevatorConfig.NoOrder {
-				completetonoorder = false
+	if ownHallStatus == elevatorConfig.NoOrder {
+		for _, order := range newOrders {
+			if order.Floor == floor && int(order.Button) == halldir {
+				noordertopending = true
 				break
 			}
 		}
-		if completetonoorder {
-			return CompleteToNoOrder
-		}
+	}
+
+	if noordertopending {
+		return NoOrderToPending
+	} else if pendingtoassigned {
+		return PendingToAssigned
+	} else if pendingtonoorder {
+		return PendingToNoOrder
+	} else if assignedtocomplete {
+		return AssignedToComplete
+	} else if completetonoorder {
+		return CompleteToNoOrder
 	}
 	return NoTransition
 }
@@ -98,71 +89,81 @@ func CheckOrderTransitionStatusForCabRequests2(
 	newOrders []elevatorConfig.ButtonEvent,
 	servicedOrder elevatorConfig.ButtonEvent) OrderTransition {
 
-	var otherAlivePeers []string
-	for _, peerId := range system.AlivePeers {
-		if peerId != system.OwnId {
-			otherAlivePeers = append(otherAlivePeers, peerId)
-		}
-	}
+	noordertopending := false
+	pendingtoassigned := true
+	assignedtonoorder := false
+	unknowntonoorder := false
+	unknowntopending := false
+	unknowntoassigned := false
 
-	ownCabStatus := CabRequestsForAllElevators[system.OwnId][floor]
-
-	switch ownCabStatus {
-	case elevatorConfig.Unknown:
+	if CabRequestsForAllElevators[system.OwnId][floor] == elevatorConfig.Unknown {
 		allNoOrder := true
-		anyPending := false
 		allAssignedOrPending := true
+		anyPending := false
 
-		for _, peerID := range otherAlivePeers {
-			peerCabStatus := CabRequestsForAllElevators[peerID][floor]
-			if peerCabStatus != elevatorConfig.NoOrder {
-				allNoOrder = false
-			}
-			if peerCabStatus == elevatorConfig.Pending {
-				anyPending = true
-			}
-			if peerCabStatus != elevatorConfig.Assigned && peerCabStatus != elevatorConfig.Pending {
-				allAssignedOrPending = false
-			}
-		}
-
-		for _, order := range newOrders {
-			if order.Floor == floor && order.Button == elevatorConfig.Cab {
-				return UnknownToPending
+		for _, peerId := range system.AlivePeers {
+			if peerId != system.OwnId {
+				peerCabStatus := CabRequestsForAllElevators[peerId][floor]
+				if peerCabStatus == elevatorConfig.Pending {
+					anyPending = true
+				}
+				if peerCabStatus != elevatorConfig.NoOrder {
+					allNoOrder = false
+				}
+				if peerCabStatus != elevatorConfig.Assigned && peerCabStatus != elevatorConfig.Pending {
+					allAssignedOrPending = false
+				}
 			}
 		}
 
 		if allNoOrder {
-			return UnknownToNoOrder
+			unknowntonoorder = true
 		} else if allAssignedOrPending {
-			return UnknownToAssigned
+			unknowntoassigned = true
 		} else if anyPending {
-			return UnknownToPending
+			unknowntopending = true
 		}
-	case elevatorConfig.NoOrder:
 		for _, order := range newOrders {
-			if order.Floor == floor {
-				return NoOrderToPending
+			if order.Floor == floor && order.Button == elevatorConfig.Cab {
+				unknowntopending = true
+				break
 			}
-		}
 
-	case elevatorConfig.Pending:
-		pendingtoassigned := true
-		for _, peerID := range otherAlivePeers {
-			peerCabStatus := CabRequestsForAllElevators[peerID][floor]
-			if peerCabStatus != elevatorConfig.Pending {
-				pendingtoassigned = false
-			}
-		}
-		if pendingtoassigned {
-			return PendingToAssigned
-		}
-
-	case elevatorConfig.Assigned:
-		if servicedOrder.Floor == floor {
-			return AssignedToNoOrder
 		}
 	}
 
+	for _, order := range newOrders {
+		if order.Floor == floor && order.Button == elevatorConfig.Cab {
+			noordertopending = true
+			break
+		}
+
+	}
+
+	for _, peerId := range system.AlivePeers {
+		peerCabStatus := CabRequestsForAllElevators[peerId][floor]
+		if peerCabStatus != elevatorConfig.Pending {
+			pendingtoassigned = false
+		}
+	}
+
+	ownCabStatus := CabRequestsForAllElevators[system.OwnId][floor]
+	if ownCabStatus == elevatorConfig.Assigned && servicedOrder.Floor == floor {
+		assignedtonoorder = true
+	}
+
+	if noordertopending {
+		return NoOrderToPending
+	} else if pendingtoassigned {
+		return PendingToAssigned
+	} else if assignedtonoorder {
+		return AssignedToNoOrder
+	} else if unknowntonoorder {
+		return UnknownToNoOrder
+	} else if unknowntopending {
+		return UnknownToPending
+	} else if unknowntoassigned {
+		return UnknownToAssigned
+	}
 	return NoTransition
 }

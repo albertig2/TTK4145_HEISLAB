@@ -77,7 +77,6 @@ type ElevatorSystem struct {
 	States       map[string]*ElevatorState               `json:"states"`
 }
 
-
 // switch orderstatus {
 // case elevatorConfig.NoOrder:
 // 	fmt.Printf(" - ")
@@ -370,7 +369,7 @@ func InitializeOrderChannels() elevatorConfig.ElevatorOrderChannelStruckt {
 
 		NewRecievedOrderChannel: make(chan elevatorConfig.ButtonEvent),
 		NewAssignedOrderChannel: make(chan elevatorConfig.ButtonEvent),
-		ServicedOrderChannel:    make(chan elevatorConfig.ButtonEvent),
+		ServicedOrderChannel:    make(chan elevatorConfig.ButtonEvent, 10),
 	}
 
 	return orderChannelse

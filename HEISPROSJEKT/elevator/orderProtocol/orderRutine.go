@@ -14,12 +14,12 @@ func orderRutine(system *elevatorConfig.ElevatorSystem,
 	elevatorOrderChannels elevatorConfig.ElevatorOrderChannelStruckt,
 	newHallOrders []elevatorConfig.ButtonEvent,
 	newCabOrders []elevatorConfig.ButtonEvent,
-	servicedHallOrder elevatorConfig.ButtonEvent,
-	servicedCabOrder elevatorConfig.ButtonEvent) {
+	servicedHallOrders []elevatorConfig.ButtonEvent,
+	servicedCabOrders []elevatorConfig.ButtonEvent) {
 
-	HallRequestTransitions := GetAllHallRequestTransitions(system, HallRequestsForAllElevators, newHallOrders, servicedHallOrder)
+	HallRequestTransitions := GetAllHallRequestTransitions(system, HallRequestsForAllElevators, newHallOrders, servicedHallOrders)
 
-	CabRequestTransitions := GetAllCabRequestTransitions(system, CabRequestsForAllElevators, newCabOrders, servicedCabOrder)
+	CabRequestTransitions := GetAllCabRequestTransitions(system, CabRequestsForAllElevators, newCabOrders, servicedCabOrders)
 
 	TransitioningAllHallRequests(system, HallRequestTransitions, elevatorOrderChannels)
 
@@ -112,17 +112,7 @@ func RunOrder(
 				}
 				if allFloorsValid {
 					fmt.Println("Before ordering")
-					var sh, sc elevatorConfig.ButtonEvent
-					sh.Floor = -1
-					sc.Floor = -1
-					if len(servicedHallOrders) > 0 {
-						sh = servicedHallOrders[0]
-					}
-					if len(servicedCabOrders) > 0 {
-						sc = servicedCabOrders[0]
-					}
-
-					orderRutine(&system, HallRequestsForAllElevators, CabRequestsForAllElevators, elevatorOrderChannels, newHallOrders, newCabOrders, sh, sc)
+					orderRutine(&system, HallRequestsForAllElevators, CabRequestsForAllElevators, elevatorOrderChannels, newHallOrders, newCabOrders, servicedHallOrders, servicedCabOrders)
 					HallRequestsForAllElevators[system.OwnId] = system.HallRequests
 					CabRequestsForAllElevators[system.OwnId] = system.States[system.OwnId].CabRequests
 					servicedHallOrders = servicedHallOrders[:0]
