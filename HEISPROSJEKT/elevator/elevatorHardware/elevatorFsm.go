@@ -2,16 +2,15 @@ package elevatorHardware
 
 import (
 	"HEISPROSJEKT/elevatorConfig"
-	"HEISPROSJEKT/synchronisation"
 	"fmt"
 	"time"
 )
 
-func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels synchronisation.SynchronisationChannels, orderChannels elevatorConfig.ElevatorOrderChannelStruckt) {
+func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels elevatorConfig.SynchronisationChannels, orderChannels elevatorConfig.ElevatorOrderChannelStruckt) {
 	doorTimer := time.NewTimer(elevatorConfig.DOOR_OPEN_DURATION_S)
 	doorTimer.Stop()
 
-	motorTimeoutTimer :=  time.NewTimer(elevatorConfig.MOTOR_TIMEOUT_DURATION_S)
+	motorTimeoutTimer := time.NewTimer(elevatorConfig.MOTOR_TIMEOUT_DURATION_S)
 	motorTimeoutTimer.Stop()
 
 	elevatorObject := InitializeElevator(elevatorID)
@@ -21,45 +20,50 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 	for {
 		select {
 		case floor := <-hardwareChannels.FloorSensorChannel:
-
+			// Should wait for assignment before opening the door
 			motorTimeoutTimer.Stop()
 			motorTimeoutTimer.Reset(elevatorConfig.MOTOR_TIMEOUT_DURATION_S)
 
-			HandleOnFloorArrival(&elevatorObject, doorTimer, floor, orderChannels.ServicedOrderChannel,motorTimeoutTimer)
+			HandleOnFloorArrival(&elevatorObject, doorTimer, floor, orderChannels.ServicedOrderChannel, motorTimeoutTimer)
 
 		case recievedOrder := <-hardwareChannels.PollOrderButtonsChannel:
 
-			order:= elevatorConfig.ButtonEvent{Floor : recievedOrder.Floor, Button: elevatorConfig.Button(recievedOrder.Button)}
+			order := elevatorConfig.ButtonEvent{Floor: recievedOrder.Floor, Button: elevatorConfig.Button(recievedOrder.Button)}
 			fmt.Println("New order from FSM", order)
 			orderChannels.NewRecievedOrderChannel <- order
+			fmt.Println("Passed neworderchannel")
 
+		case assignedOrder := <-orderChannels.NewAssignedOrderChannel:
 
-		case assignedOrder := <- orderChannels.NewAssignedOrderChannel:
+			HandleRequestButtonPress(&elevatorObject, doorTimer, int(assignedOrder.Floor), elevatorConfig.Button(assignedOrder.Button), orderChannels.ServicedOrderChannel, motorTimeoutTimer)
 
-			HandleRequestButtonPress(&elevatorObject, doorTimer, int(assignedOrder.Floor), elevatorConfig.Button(assignedOrder.Button),orderChannels.ServicedOrderChannel, motorTimeoutTimer)
+		case assignedPeerOrder := <-orderChannels.NewAssignedPeerOrderChannel:
+			HandlelightSettingForPeerOrders(assignedPeerOrder.Floor, assignedPeerOrder.Button, true)
+			//HandlePeerAssignedOrder(&elevatorObject, doorTimer, int(assignedPeerOrder.Floor), elevatorConfig.Button(assignedPeerOrder.Button), orderChannels.ServicedOrderChannel, motorTimeoutTimer)
+
+		case servicedPeerOrder := <-orderChannels.ServicedPeerOrderChannel:
+			HandlelightSettingForPeerOrders(servicedPeerOrder.Floor, servicedPeerOrder.Button, false)
+			//HandlePeerServicedOrder(&elevatorObject, doorTimer, int(servicedPeerOrder.Floor), elevatorConfig.Button(servicedPeerOrder.Button), orderChannels.ServicedOrderChannel, motorTimeoutTimer)
 
 		case stopActivated := <-hardwareChannels.PollStopButtonChannel:
 
-			HandleStopButtonActivated( stopActivated, &elevatorObject, doorTimer, orderChannels.ServicedOrderChannel,motorTimeoutTimer)
+			HandleStopButtonActivated(stopActivated, &elevatorObject, doorTimer, orderChannels.ServicedOrderChannel, motorTimeoutTimer)
 
 		case obstructionActivated := <-hardwareChannels.PollObstructionChannel:
-	
+
 			HandleObstructionActivated(obstructionActivated, &elevatorObject, doorTimer, orderChannels.ServicedOrderChannel)
 
 		case <-doorTimer.C:
 			OnDoorTimeout(&elevatorObject, doorTimer, orderChannels.ServicedOrderChannel, motorTimeoutTimer)
 
-		
-
 		case <-motorTimeoutTimer.C:
 			HandleMotorFailure(&elevatorObject, motorTimeoutTimer, hardwareChannels, synchronisationChannels)
-			
+
 		}
 
-		
 		select {
 		case hardwareChannels.ElevatorObjectChannel <- elevatorObject:
-		
+
 		default:
 		}
 	}

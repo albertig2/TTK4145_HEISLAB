@@ -1,52 +1,44 @@
 package synchronisation
 
 import (
-	"HEISPROSJEKT/debuggingHelpers"
 	"HEISPROSJEKT/elevatorConfig"
 	"Network-go/network/peers"
-	
+
 	"fmt"
 	"strconv"
 	"time"
 )
-
-
-type SynchronisationChannels struct {
-	PeerUpdateChl                chan peers.PeerUpdate
-	PeerTxEnableCh               chan bool
-	BcastIncomingMessagesChannel chan ElevatorSystem
-	BcastOutgoingMessagesChannel chan ElevatorSystem
-	UpdateElevatorSystem chan ElevatorSystem
-	//new order channel?
-}
 
 var (
 	alivePeersList []string
 	deadPeersList  []string
 )
 
-func InitNetworkChannels () SynchronisationChannels {
-	channels := SynchronisationChannels{
-		PeerUpdateChl:                make(chan peers.PeerUpdate),
-		PeerTxEnableCh:               make(chan bool),
-		BcastIncomingMessagesChannel: make(chan ElevatorSystem),
-		BcastOutgoingMessagesChannel: make(chan ElevatorSystem),
-		UpdateElevatorSystem: make(chan ElevatorSystem),
+func InitNetworkChannels() elevatorConfig.SynchronisationChannels {
+	channels := elevatorConfig.SynchronisationChannels{
+		PeerUpdateChannel:                             make(chan peers.PeerUpdate),
+		PeerTxEnableChannel:                           make(chan bool),
+		BcastIncomingMessagesChannel:                  make(chan elevatorConfig.ElevatorSystem),
+		BcastOutgoingMessagesChannel:                  make(chan elevatorConfig.ElevatorSystem),
+		UpdateElevatorSystemWithElevatorChannel:       make(chan elevatorConfig.Elevator),
+		UpdateElevatorSystemWithElevatorSystemChannel: make(chan elevatorConfig.ElevatorSystem),
+		UpdateElevatorSystemWithPeerChannel:           make(chan elevatorConfig.ElevatorSystem),
+		AlivePeersChannel:                             make(chan []string),
 	}
 
 	return channels
 }
 
-func StartPeerNetworking(port int, id int, channels SynchronisationChannels) {
+func StartPeerNetworking(port int, id int, channels elevatorConfig.SynchronisationChannels) {
 	fmt.Println("start")
 
-	go peers.Receiver(port, channels.PeerUpdateChl)
-	go peers.Transmitter(port, strconv.Itoa(id), channels.PeerTxEnableCh)
+	go peers.Receiver(port, channels.PeerUpdateChannel)
+	go peers.Transmitter(port, strconv.Itoa(id), channels.PeerTxEnableChannel)
 }
 
-func UpdatePeerList(channels SynchronisationChannels) {
+func UpdatePeerList(channels elevatorConfig.SynchronisationChannels) {
 	for {
-		peerUpdate := <-channels.PeerUpdateChl
+		peerUpdate := <-channels.PeerUpdateChannel
 
 		alivePeersList = peerUpdate.Peers
 
@@ -78,9 +70,7 @@ func GetDeadPeersList() []string {
 	return deadPeersList
 }
 
-
-
-func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan ElevatorSystem, elevatorSystem ElevatorSystem, elevatorChannel chan elevatorConfig.Elevator) {
+func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan elevatorConfig.ElevatorSystem, elevatorSystem elevatorConfig.ElevatorSystem, elevatorChannel chan elevatorConfig.Elevator) {
 	messageTimer := time.NewTimer(1 * time.Second) //should update slightly more often, maybe 30hz?
 	for {
 
@@ -88,9 +78,9 @@ func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan Ele
 
 		//parse elevator to elevatorsystem (this function might fit here, might not)'
 		//changed my mind, might have the parser run as its own event when recieveing elevators on the channel
-		//and send them on the message channel... or this might ruin the switchcase 
-		//or this function might have become kind of useless unless we want to space the 
-		//world view brodcasts out a little more 
+		//and send them on the message channel... or this might ruin the switchcase
+		//or this function might have become kind of useless unless we want to space the
+		//world view brodcasts out a little more
 
 		<-messageTimer.C
 
@@ -108,7 +98,7 @@ func BroadcastElevatorWorldView(id string, BcastOutgoingMessagesChannel chan Ele
 //HandleOutgoing Broadcast
 //HandleIncommingOrderUpdate (should ths be in the state machine or mighgt be ein order protocol)
 
-func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan elevatorConfig.Elevator) {
+func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan elevatorConfig.ElevatorSystem) {
 
 	for {
 		incomingMessage := <-BcastIncomingMessagesChannel
@@ -121,24 +111,26 @@ func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan eleva
 		*/
 
 		fmt.Println("Sender ID:", senderID)
-		debuggingHelpers.Elevator_print(incomingMessage)
+		// Not elevatorsystem?
+		//debuggingHelpers.Elevator_print(incomingMessage)
 
 	}
 }
 
-func UpdateElevatorSystemFromELevator(elevator elevatorConfig.Elevator, elevatorSystem *ElevatorSystem) {
-
-	SetBehavior(elevatorSystem, elevatorConfig.Behavior(elevator.Direction))
+func UpdateElevatorSystemFromElevator(elevator elevatorConfig.Elevator, elevatorSystem *elevatorConfig.ElevatorSystem) {
+	SetBehavior(elevatorSystem, elevatorConfig.Behavior(elevator.Behavior))
 	SetDirection(elevatorSystem, elevator.Direction)
-	SetFloor(elevatorSystem, elevator.Floor)
-
+	//fmt.Printf("Updating elevator system from elevator struct. Elevator floor: %d\n", elevator.Floor)
+	if elevator.Floor >= 0 && elevator.Floor < elevatorConfig.N_FLOORS {
+		SetFloor(elevatorSystem, elevator.Floor)
+	}
 }
+
 /*
 TODO: right, the state machine only operates on true/false from the requestsMatrix
 There is a need for a function that transelates between the two OR the requestsMod
-might need to be rewritten entirely. This might be in the order protocol mod 
-
+might need to be rewritten entirely. This might be in the order protocol mod
 */
-func GetElevatorCabRequests(elevator elevatorConfig.Elevator){
+func GetElevatorCabRequests(elevator elevatorConfig.Elevator) {
 
 }

@@ -23,13 +23,13 @@ type BoolElevatorSystem struct {
 }
 
 // Converts ElevatorSystem and order status to a boolean-based system for assignment logic
-func BuildBoolElevatorSystem(system synchronisation.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, alivePeers []string) BoolElevatorSystem {
+func BuildBoolElevatorSystem(system elevatorConfig.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition) BoolElevatorSystem {
 	boolSystem := BoolElevatorSystem{
 		HallRequests: [elevatorConfig.N_FLOORS][2]bool{},
 		States:       make(map[string]*BoolElevatorState),
 	}
 
-	for _, peerId := range alivePeers {
+	for _, peerId := range system.AlivePeers {
 		idState := system.States[peerId]
 
 		boolSystem.States[peerId] = &BoolElevatorState{
@@ -50,7 +50,7 @@ func BuildBoolElevatorSystem(system synchronisation.ElevatorSystem, hallRequestT
 	return boolSystem
 }
 
-func HallRequestAssigner(system *synchronisation.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, alivePeers []string) map[string][][2]bool {
+func HallRequestAssigner(system *elevatorConfig.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition) map[string][][2]bool {
 	Executable := ""
 	switch runtime.GOOS {
 	case "linux":
@@ -61,14 +61,14 @@ func HallRequestAssigner(system *synchronisation.ElevatorSystem, hallRequestTran
 		panic("OS not supported")
 	}
 
-	input := BuildBoolElevatorSystem(*system, hallRequestTransitions, alivePeers)
+	input := BuildBoolElevatorSystem(*system, hallRequestTransitions)
 
 	jsonBytes, err := json.Marshal(input)
 	if err != nil {
 		fmt.Println("json.Marshal error: ", err)
 		return nil
 	}
-	ret, err := exec.Command("../../cost_fns/hall_request_assigner/"+Executable, "-i", string(jsonBytes)).CombinedOutput()
+	ret, err := exec.Command("../cost_fns/hall_request_assigner/"+Executable, "-i", string(jsonBytes)).CombinedOutput()
 	if err != nil {
 		fmt.Println("exec.Command error: ", err)
 		fmt.Println(string(ret))
@@ -82,10 +82,10 @@ func HallRequestAssigner(system *synchronisation.ElevatorSystem, hallRequestTran
 		return nil
 	}
 
-	fmt.Printf("output: \n")
-	for id, hallRequests := range *output {
-		fmt.Printf("%6v :  %+v\n", id, hallRequests)
-	}
+	//fmt.Printf("output: \n")
+	//for id, hallRequests := range *output {
+		//fmt.Printf("%6v :  %+v\n", id, hallRequests)
+	//}
 
 	return *output
 }
