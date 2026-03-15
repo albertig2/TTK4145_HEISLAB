@@ -81,14 +81,14 @@ const (
 )
 
 type SynchronisationChannels struct {
-	PeerUpdateChl                          chan peers.PeerUpdate
-	PeerTxEnableCh                         chan bool
-	BcastIncomingMessagesChannel           chan ElevatorSystem
-	BcastOutgoingMessagesChannel           chan ElevatorSystem
-	UpdateElevatorSystemWithElevator       chan Elevator
-	UpdateElevatorSystemWithElevatorSystem chan ElevatorSystem
-	UpdateElevatorSystemWithPeerChannel    chan ElevatorSystem
-	AlivePeersChannel                      chan []string
+	PeerUpdateChannel                             chan peers.PeerUpdate
+	PeerTxEnableChannel                           chan bool
+	BcastIncomingMessagesChannel                  chan ElevatorSystem
+	BcastOutgoingMessagesChannel                  chan ElevatorSystem
+	UpdateElevatorSystemWithElevatorChannel       chan Elevator
+	UpdateElevatorSystemWithElevatorSystemChannel chan ElevatorSystem
+	UpdateElevatorSystemWithPeerChannel           chan ElevatorSystem
+	AlivePeersChannel                             chan []string
 	//new order channel?
 }
 

@@ -34,7 +34,7 @@ func SynchroniseElevators(elevatorUpdates chan elevatorConfig.Elevator, synchron
 				synchronisationChannels.UpdateElevatorSystemWithPeerChannel <- incommingBroadcast
 			}
 
-		case peerUpdate := <-synchronisationChannels.PeerUpdateChl:
+		case peerUpdate := <-synchronisationChannels.PeerUpdateChannel:
 			fmt.Println("Recieved peer list")
 			synchronisationChannels.AlivePeersChannel <- peerUpdate.Peers
 			fmt.Println("Sent alive peers to orders")
@@ -42,11 +42,11 @@ func SynchroniseElevators(elevatorUpdates chan elevatorConfig.Elevator, synchron
 
 		case elevatorUpdate := <-elevatorUpdates:
 			fmt.Println("Received elevator struct from elevator fsm")
-			synchronisationChannels.UpdateElevatorSystemWithElevator <- elevatorUpdate
+			synchronisationChannels.UpdateElevatorSystemWithElevatorChannel <- elevatorUpdate
 			fmt.Println("Sent elevator struct to orders")
 			// Maybe I should use this too in orders(?)
 
-		case systemUpdate := <-synchronisationChannels.UpdateElevatorSystemWithElevatorSystem:
+		case systemUpdate := <-synchronisationChannels.UpdateElevatorSystemWithElevatorSystemChannel:
 			elevatorSystem = systemUpdate
 			fmt.Println("Received system update in synchroniseElevators")
 
