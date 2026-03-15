@@ -86,9 +86,11 @@ func RunOrder(
 					filteredAlivePeers = append(filteredAlivePeers, peerID)
 				}
 			}
-			if !synchronisation.Contains(filteredAlivePeers, system.OwnId) {
-				filteredAlivePeers = append(filteredAlivePeers, system.OwnId)
-			}
+			/*
+
+				if !synchronisation.Contains(filteredAlivePeers, system.OwnId) {
+					filteredAlivePeers = append(filteredAlivePeers, system.OwnId)
+				}*/
 			synchronisation.SetAlivePeers(&system, filteredAlivePeers)
 		case motorstop := <-hardwareChannel.MotorFailureChannel:
 			//fmt.Printf("Received motor failure status: %v", motorstop)
@@ -101,7 +103,7 @@ func RunOrder(
 			//fmt.Printf("Paused status: %v", paused)
 		case <-ticker.C:
 
-			if !paused {
+			if !paused && len(system.AlivePeers) != 0 {
 				// Check that all elevators have a valid floor before ordering
 				allFloorsValid := true
 				for _, peerID := range system.AlivePeers {
