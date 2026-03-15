@@ -208,7 +208,7 @@ func GetAllHallRequestTransitions(system *elevatorConfig.ElevatorSystem, HallReq
 	var transitions [elevatorConfig.N_FLOORS][2]OrderTransition
 	for floor := range elevatorConfig.N_FLOORS {
 		for _, halldir := range synchronisation.HallDirections {
-			transition := CheckOrderTransitionStatusForHallRequests(system, HallRequestsForAllElevators, halldir, floor, newOrders, servicedOrder)
+			transition := CheckOrderTransitionStatusForHallRequests2(system, HallRequestsForAllElevators, halldir, floor, newOrders, servicedOrder)
 			transitions[floor][halldir] = transition
 		}
 	}
@@ -218,7 +218,7 @@ func GetAllHallRequestTransitions(system *elevatorConfig.ElevatorSystem, HallReq
 func GetAllCabRequestTransitions(system *elevatorConfig.ElevatorSystem, CabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus, newOrders []elevatorConfig.ButtonEvent, servicedOrder elevatorConfig.ButtonEvent) [elevatorConfig.N_FLOORS]OrderTransition {
 	var transitions [elevatorConfig.N_FLOORS]OrderTransition
 	for floor := range elevatorConfig.N_FLOORS {
-		transition := CheckOrderTransitionStatusForCabRequests(system, CabRequestsForAllElevators, floor, newOrders, servicedOrder)
+		transition := CheckOrderTransitionStatusForCabRequests2(system, CabRequestsForAllElevators, floor, newOrders, servicedOrder)
 		transitions[floor] = transition
 	}
 	return transitions

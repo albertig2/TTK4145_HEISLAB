@@ -20,7 +20,7 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 	for {
 		select {
 		case floor := <-hardwareChannels.FloorSensorChannel:
-
+			// Should wait for assignment before opening the door
 			motorTimeoutTimer.Stop()
 			motorTimeoutTimer.Reset(elevatorConfig.MOTOR_TIMEOUT_DURATION_S)
 
