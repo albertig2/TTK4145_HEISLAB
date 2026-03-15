@@ -2,7 +2,7 @@ package orderProtocol
 
 import (
 	"HEISPROSJEKT/elevatorConfig"
-	//"fmt"
+	"fmt"
 	//"HEISPROSJEKT/elevatorHardware"
 	"HEISPROSJEKT/synchronisation"
 )
@@ -284,11 +284,11 @@ func TransitioningAllCabRequests(system *elevatorConfig.ElevatorSystem, cabReque
 		case NoOrderToPending, UnknownToPending:
 			status = elevatorConfig.Pending
 		case PendingToAssigned, UnknownToAssigned:
-			status = elevatorConfig.Assigned
 			// Turn on lights and stuff here
+			status = elevatorConfig.Assigned
 
 			elevatorOrderChannels.NewAssignedOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Cab}
-
+			fmt.Println("New cab order assigned on floor ", floor)
 		case AssignedToNoOrder, UnknownToNoOrder:
 			status = elevatorConfig.NoOrder
 
@@ -297,7 +297,6 @@ func TransitioningAllCabRequests(system *elevatorConfig.ElevatorSystem, cabReque
 
 		default:
 			status = system.States[system.OwnId].CabRequests[floor]
-
 		}
 		synchronisation.SetCabRequests(system, floor, status)
 

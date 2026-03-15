@@ -141,20 +141,16 @@ func OnDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, Ser
 	debuggingHelpers.Elevator_print(*elevator)
 }
 
-func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, btn_floor int, btn_type elevatorConfig.Button, ServicedOrderChannel chan elevatorConfig.ButtonEvent, motorTimeoutTimer *time.Timer, servicedOrderChannel chan elevatorConfig.ButtonEvent) {
+func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, btn_floor int, btn_type elevatorConfig.Button, ServicedOrderChannel chan elevatorConfig.ButtonEvent, motorTimeoutTimer *time.Timer) {
 	fmt.Printf("\n\n%s(%d, %s)\n", "Recieved the following order:", btn_floor, elevatorConfig.ButtonToString(btn_type))
 	debuggingHelpers.Elevator_print(*elevator)
 
 	switch elevator.Behavior {
 	case elevatorConfig.DoorOpen:
+
 		if RequestsShouldClearImmediately(*elevator, btn_floor, btn_type) {
 
 			elevator.Requests[btn_floor][btn_type] = true
-			// doorTimer.Stop()
-			// doorTimer.Reset(elevatorConfig.DOOR_OPEN_DURATION_S)
-			// servicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: }
-
-
 			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, ServicedOrderChannel)
 
 			//timer.Timer_start(elevatorConfig.DOOR_OPEN_DURATION_S)
@@ -174,7 +170,9 @@ func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time
 		switch pair.behavior {
 
 		case elevatorConfig.DoorOpen:
+			elevator.Requests[btn_floor][btn_type] = true
 			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, ServicedOrderChannel)
+
 
 		case elevatorConfig.Moving:
 			ElevatorMotorDirection(elevator.Direction, motorTimeoutTimer)

@@ -2,6 +2,7 @@ package debuggingHelpers
 
 import (
 	"HEISPROSJEKT/elevatorConfig"
+
 	//"HEISPROSJEKT/synchronisation"
 	"Network-go/network/peers"
 	"fmt"
@@ -79,7 +80,8 @@ func OrderstatusToSymbol(orderstatus elevatorConfig.OrderStatus) string {
 	case elevatorConfig.Unknown:
 		return " ? "
 	default:
-		return "Invalid order staus"
+		
+		return "Invalid order staus, recieved: " + string(orderstatus)
 	}
 
 }
@@ -92,7 +94,7 @@ func printHallLine(orders [elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus
 	}
 	fmt.Printf(" |\n")
 }
-func printCabLine(orders []elevatorConfig.OrderStatus) {
+func printCabLine(orders [elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus) {
 
 	for index := 0; index < len(orders); index++ {
 		orderstatus := orders[index]
@@ -126,7 +128,7 @@ func PrintCurrentWorkingElevators(elevatorSystem elevatorConfig.ElevatorSystem) 
 	fmt.Printf("| %-12s |", "Down")
 	printHallLine(hallOrders, 1)
 	fmt.Printf("| %-12s |", "Cab")
-	printCabLine(cabOrders[:])
+	printCabLine(cabOrders)
 	fmt.Println("+----------------------------+")
 	//fmt.Println(divider)
 
@@ -150,7 +152,7 @@ func PrintPeerElevators(elevatorSystem elevatorConfig.ElevatorSystem) {
 			fmt.Printf("| %-12s | %-12s|\n", "Floor", "1  2  3  4")
 			fmt.Println("+----------------------------+")
 			fmt.Printf("| %-12s |", "Cab")
-			printCabLine(cabOrders[:])
+			printCabLine(cabOrders)
 			fmt.Println("+----------------------------+")
 		}
 		fmt.Printf("\n")
@@ -340,7 +342,7 @@ ElevatorID: 3
 */
 
 //these functions are just for testing of the fsm sync, delete when done
-
+/*
 func MimicOrderAssignerAndSynch(orderChannelse elevatorConfig.ElevatorOrderChannelStruckt) {
 
 	for {
@@ -357,3 +359,4 @@ func MimicOrderAssignerAndSynch(orderChannelse elevatorConfig.ElevatorOrderChann
 	}
 
 }
+	*/
