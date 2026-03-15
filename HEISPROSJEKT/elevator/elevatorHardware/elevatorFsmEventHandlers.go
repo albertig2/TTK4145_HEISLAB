@@ -148,8 +148,10 @@ func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time
 	switch elevator.Behavior {
 	case elevatorConfig.DoorOpen:
 		if RequestsShouldClearImmediately(*elevator, btn_floor, btn_type) {
-			doorTimer.Stop()
-			doorTimer.Reset(elevatorConfig.DOOR_OPEN_DURATION_S)
+			// doorTimer.Stop()
+			// doorTimer.Reset(elevatorConfig.DOOR_OPEN_DURATION_S)
+			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, ServicedOrderChannel)
+
 			//timer.Timer_start(elevatorConfig.DOOR_OPEN_DURATION_S)
 		} else {
 			elevator.Requests[btn_floor][btn_type] = true
