@@ -18,6 +18,9 @@ import (
 	"Network-go/network/peers"
 )
 
+//note to slef: DET ER TO FUNSKJONER SOM LYTTER PÅ PEERUPDATE CHL (eller kanskje dte ble skrevet om nå i kveld(fredag)
+//dette er grunnen til at peerUpdat oppfører seg rart, og at den ikke printes fra sync elevators
+
 func main() {
 	fmt.Println("Jeg nekter å kommentere ut fmt hver gang jeg skal debugge")
 	id := flag.Int("id", 1, "Input id")
