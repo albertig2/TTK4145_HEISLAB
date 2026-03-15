@@ -3,6 +3,7 @@ package orderProtocol
 import (
 	"HEISPROSJEKT/elevatorConfig"
 	"fmt"
+
 	//"HEISPROSJEKT/elevatorHardware"
 	"HEISPROSJEKT/synchronisation"
 )
@@ -11,9 +12,11 @@ func InitializeOrderChannels() elevatorConfig.ElevatorOrderChannelStruckt {
 
 	orderChannelse := elevatorConfig.ElevatorOrderChannelStruckt{
 
-		NewRecievedOrderChannel: make(chan elevatorConfig.ButtonEvent),
-		NewAssignedOrderChannel: make(chan elevatorConfig.ButtonEvent),
-		ServicedOrderChannel:    make(chan elevatorConfig.ButtonEvent, 10),
+		NewRecievedOrderChannel:     make(chan elevatorConfig.ButtonEvent),
+		NewAssignedOrderChannel:     make(chan elevatorConfig.ButtonEvent),
+		NewAssignedPeerOrderChannel: make(chan elevatorConfig.ButtonEvent),
+		ServicedOrderChannel:        make(chan elevatorConfig.ButtonEvent, 10),
+		ServicedPeerOrderChannel:    make(chan elevatorConfig.ButtonEvent, 10),
 	}
 
 	return orderChannelse
@@ -248,6 +251,7 @@ func TransitioningAllHallRequests(system *elevatorConfig.ElevatorSystem, hallReq
 				status = elevatorConfig.Pending
 			case PendingToNoOrder:
 				status = elevatorConfig.NoOrder
+				elevatorOrderChannels.ServicedPeerOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Button(hallDir)}
 			case AssignedToComplete:
 				status = elevatorConfig.Completed
 				//elevatorOrderChannels.ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Button(hallDir)}
@@ -272,6 +276,8 @@ func transitionFromPendingToAssignedForHallRequests(system *elevatorConfig.Eleva
 				synchronisation.SetHallRequests(system, floor, hallDir, elevatorConfig.Assigned)
 				elevatorOrderChannels.NewAssignedOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Button(hallDir)}
 				// Set lights and stuff here
+			} else {
+				elevatorOrderChannels.NewAssignedPeerOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Button(hallDir)}
 			}
 		}
 	}
