@@ -277,7 +277,16 @@ func transitionFromPendingToAssignedForHallRequests(system *elevatorConfig.Eleva
 				elevatorOrderChannels.NewAssignedOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Button(hallDir)}
 				// Set lights and stuff here
 			} else {
-				elevatorOrderChannels.NewAssignedPeerOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Button(hallDir)}
+				assignedToOther := false
+				for _, peerId := range system.AlivePeers {
+					if peerId != system.OwnId && output[peerId][floor][hallDir] {
+						assignedToOther = true
+						break
+					}
+				}
+				if assignedToOther {
+					elevatorOrderChannels.NewAssignedPeerOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Button(hallDir)}
+				}
 			}
 		}
 	}
