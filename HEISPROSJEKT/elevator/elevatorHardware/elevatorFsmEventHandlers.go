@@ -280,3 +280,8 @@ func HandleMotorFailure(elevatorObject *elevatorConfig.Elevator, motorTimeoutTim
 	fmt.Printf("\nNew state after motor failure detected:\n")
 	debuggingHelpers.Elevator_print(*elevatorObject)
 }
+func HandlelightSettingForPeerOrders( floor int, buttonType elevatorConfig.Button, lightValue bool){
+	
+	elevio.SetButtonLamp(elevio.ButtonType(int(buttonType)), floor, lightValue)
+
+}

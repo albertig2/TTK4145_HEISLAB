@@ -38,10 +38,12 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 			HandleRequestButtonPress(&elevatorObject, doorTimer, int(assignedOrder.Floor), elevatorConfig.Button(assignedOrder.Button), orderChannels.ServicedOrderChannel, motorTimeoutTimer)
 
 		case assignedPeerOrder := <-orderChannels.NewAssignedPeerOrderChannel:
-			HandlePeerAssignedOrder(&elevatorObject, doorTimer, int(assignedPeerOrder.Floor), elevatorConfig.Button(assignedPeerOrder.Button), orderChannels.ServicedOrderChannel, motorTimeoutTimer)
+			HandlelightSettingForPeerOrders(assignedPeerOrder.Floor, assignedPeerOrder.Button, true)
+			//HandlePeerAssignedOrder(&elevatorObject, doorTimer, int(assignedPeerOrder.Floor), elevatorConfig.Button(assignedPeerOrder.Button), orderChannels.ServicedOrderChannel, motorTimeoutTimer)
 
 		case servicedPeerOrder := <-orderChannels.ServicedPeerOrderChannel:
-			HandlePeerServicedOrder(&elevatorObject, doorTimer, int(servicedPeerOrder.Floor), elevatorConfig.Button(servicedPeerOrder.Button), orderChannels.ServicedOrderChannel, motorTimeoutTimer)
+			HandlelightSettingForPeerOrders(servicedPeerOrder.Floor, servicedPeerOrder.Button, false)
+			//HandlePeerServicedOrder(&elevatorObject, doorTimer, int(servicedPeerOrder.Floor), elevatorConfig.Button(servicedPeerOrder.Button), orderChannels.ServicedOrderChannel, motorTimeoutTimer)
 
 		case stopActivated := <-hardwareChannels.PollStopButtonChannel:
 
