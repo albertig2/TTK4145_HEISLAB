@@ -90,7 +90,7 @@ func CheckOrderTransitionStatusForHallRequests(
 
 		for _, peerID := range otherAlivePeers {
 			peerHallStatus := HallRequestsForAllElevators[peerID][floor][halldir]
-			if peerHallStatus == elevatorConfig.Completed || peerHallStatus == elevatorConfig.Waiting {
+			if peerHallStatus == elevatorConfig.Completed || peerHallStatus == elevatorConfig.Waiting || peerHallStatus == elevatorConfig.Assigned {
 				noordertopending = false
 				break
 			} else if peerHallStatus != elevatorConfig.NoOrder {
