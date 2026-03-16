@@ -256,8 +256,8 @@ func HandleObstructionActivated(obstructionActivated bool, elevator *elevatorCon
 		switch elevator.Behavior {
 
 		case elevatorConfig.DoorOpen:
-			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, ServicedOrderChannel)
 			HandleRestartElevator(elevator, motorTimeoutTimer, hardwareChannels, synchronisationChannels)
+			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, ServicedOrderChannel)
 		default:
 			//Do nothing if the door is not open
 		}
