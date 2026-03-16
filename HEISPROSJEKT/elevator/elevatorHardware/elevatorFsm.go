@@ -40,9 +40,10 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 		case assignedPeerOrder := <-orderChannels.NewAssignedPeerOrderChannel:
 			HandlelightSettingForPeerOrders(assignedPeerOrder.Floor, assignedPeerOrder.Button, true)
 			//HandlePeerAssignedOrder(&elevatorObject, doorTimer, int(assignedPeerOrder.Floor), elevatorConfig.Button(assignedPeerOrder.Button), orderChannels.ServicedOrderChannel, motorTimeoutTimer)
-
+			fmt.Printf("Turned on the light for %v at floor %v \n", elevatorConfig.ButtonToString(assignedPeerOrder.Button), assignedPeerOrder.Floor)
 		case servicedPeerOrder := <-orderChannels.ServicedPeerOrderChannel:
 			HandlelightSettingForPeerOrders(servicedPeerOrder.Floor, servicedPeerOrder.Button, false)
+			fmt.Printf("Turned of the light for %v at floor %v \n", elevatorConfig.ButtonToString(servicedPeerOrder.Button), servicedPeerOrder.Floor)
 			//HandlePeerServicedOrder(&elevatorObject, doorTimer, int(servicedPeerOrder.Floor), elevatorConfig.Button(servicedPeerOrder.Button), orderChannels.ServicedOrderChannel, motorTimeoutTimer)
 
 		case stopActivated := <-hardwareChannels.PollStopButtonChannel:
