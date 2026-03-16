@@ -28,6 +28,7 @@ func InitializeElevator(id string) elevatorConfig.Elevator {
 		Behavior:  elevatorConfig.Idle,
 		Config:    config,
 	}
+	
 	return elevator
 }
 
@@ -41,7 +42,7 @@ func InitElevatorHardwareChannels() elevatorConfig.ElevatorHardwareChannelsStruc
 		DoorOpenChannel:         make(chan bool),
 		MotorDirectionChannel:   make(chan elevatorConfig.Direction),
 		ElevatorObjectChannel:   make(chan elevatorConfig.Elevator),
-		MotorFailureChannel:     make(chan bool),
+		RestartElevatorChannel:     make(chan bool),
 	}
 	return hardwareChannels
 }
@@ -228,27 +229,32 @@ func HandleStopButtonActivated(stopActivated bool, elevator *elevatorConfig.Elev
 
 }
 
-func HandleObstructionActivated(obstructionActivated bool, elevator *elevatorConfig.Elevator, doorTimer *time.Timer, ServicedOrderChannel chan elevatorConfig.ButtonEvent) {
+func HandleObstructionActivated(obstructionActivated bool, elevator *elevatorConfig.Elevator, doorTimer *time.Timer, ServicedOrderChannel chan elevatorConfig.ButtonEvent, motorTimeoutTimer *time.Timer, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels elevatorConfig.SynchronisationChannels) {
 
 	if obstructionActivated {
 		fmt.Println("Obstruction was activated")
-
+		
+		
 		switch elevator.Behavior {
 
 		case elevatorConfig.DoorOpen:
 			doorTimer.Stop()
+			synchronisationChannels.PeerTxEnableChannel <- false
 
 		default:
 			//Do nothing if the door is not open
 		}
+			
 
 	} else {
 		fmt.Println("Obstruction was reset")
+	
+
 		switch elevator.Behavior {
 
 		case elevatorConfig.DoorOpen:
 			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, ServicedOrderChannel)
-
+			RestartElevator(elevator, motorTimeoutTimer, hardwareChannels, synchronisationChannels)
 		default:
 			//Do nothing if the door is not open
 		}
@@ -257,8 +263,7 @@ func HandleObstructionActivated(obstructionActivated bool, elevator *elevatorCon
 
 }
 
-func HandleMotorFailure(elevatorObject *elevatorConfig.Elevator, motorTimeoutTimer *time.Timer, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels elevatorConfig.SynchronisationChannels) {
-	simMotorFailureTimer := time.NewTimer(2 * time.Second)
+func RestartElevator(elevatorObject *elevatorConfig.Elevator, motorTimeoutTimer *time.Timer, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels elevatorConfig.SynchronisationChannels) {
 
 	ElevatorMotorDirection(elevatorConfig.Stop, motorTimeoutTimer)
 
@@ -268,12 +273,12 @@ func HandleMotorFailure(elevatorObject *elevatorConfig.Elevator, motorTimeoutTim
 
 	*elevatorObject = InitializeElevator(elevatorObject.OwnId)
 
-	hardwareChannels.MotorFailureChannel <- true
-	<-simMotorFailureTimer.C
+	hardwareChannels.RestartElevatorChannel <- true
+	
 
 	InitElevatorHardware(elevatorObject, motorTimeoutTimer)
 
-	hardwareChannels.MotorFailureChannel <- false
+	hardwareChannels.RestartElevatorChannel <- false
 
 	synchronisationChannels.PeerTxEnableChannel <- true
 

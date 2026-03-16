@@ -13,7 +13,11 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 	motorTimeoutTimer := time.NewTimer(elevatorConfig.MOTOR_TIMEOUT_DURATION_S)
 	motorTimeoutTimer.Stop()
 
+	
+
 	elevatorObject := InitializeElevator(elevatorID)
+
+
 
 	InitElevatorHardware(&elevatorObject, motorTimeoutTimer)
 
@@ -51,13 +55,13 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 
 		case obstructionActivated := <-hardwareChannels.PollObstructionChannel:
 
-			HandleObstructionActivated(obstructionActivated, &elevatorObject, doorTimer, orderChannels.ServicedOrderChannel)
+			HandleObstructionActivated(obstructionActivated, &elevatorObject, doorTimer, orderChannels.ServicedOrderChannel, motorTimeoutTimer, hardwareChannels, synchronisationChannels)
 
 		case <-doorTimer.C:
 			OnDoorTimeout(&elevatorObject, doorTimer, orderChannels.ServicedOrderChannel, motorTimeoutTimer)
 
 		case <-motorTimeoutTimer.C:
-			HandleMotorFailure(&elevatorObject, motorTimeoutTimer, hardwareChannels, synchronisationChannels)
+			RestartElevator(&elevatorObject, motorTimeoutTimer, hardwareChannels, synchronisationChannels)
 
 		}
 
