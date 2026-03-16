@@ -100,7 +100,7 @@ type ElevatorHardwareChannelsStruckt struct {
 	DoorOpenChannel         chan bool
 	MotorDirectionChannel   chan Direction
 	ElevatorObjectChannel   chan Elevator
-	RestartElevatorChannel     chan bool
+	RestartElevatorChannel  chan bool
 }
 
 /*
