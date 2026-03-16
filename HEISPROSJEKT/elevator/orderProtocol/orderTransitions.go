@@ -28,7 +28,10 @@ const (
 	NoTransition OrderTransition = iota
 	NoOrderToPending
 	PendingToAssigned
-	PendingToNoOrder
+	//PendingToNoOrder
+	PendingToWaiting
+	WaitingToAssigned
+	WaitingToNoOrder
 	AssignedToComplete
 	AssignedToNoOrder
 	CompleteToNoOrder
@@ -50,7 +53,9 @@ var cabTransitions = []OrderTransition{
 var hallTransitions = []OrderTransition{
 	NoOrderToPending,
 	PendingToAssigned,
-	PendingToNoOrder,
+	PendingToWaiting,
+	WaitingToNoOrder,
+	WaitingToAssigned,
 	AssignedToComplete,
 	CompleteToNoOrder,
 }
@@ -97,17 +102,11 @@ func CheckOrderTransitionStatusForHallRequests(
 			return NoOrderToPending
 		}
 	case elevatorConfig.Pending:
-		for _, peerID := range otherAlivePeers {
-			peerHallStatus := HallRequestsForAllElevators[peerID][floor][halldir]
-			if peerHallStatus == elevatorConfig.Completed {
-				return PendingToNoOrder
-			}
-		}
 
 		pendingtoassigned := true
 		for _, peerID := range otherAlivePeers {
 			peerHallStatus := HallRequestsForAllElevators[peerID][floor][halldir]
-			if peerHallStatus != elevatorConfig.Pending {
+			if peerHallStatus != elevatorConfig.Pending && peerHallStatus != elevatorConfig.Waiting {
 				pendingtoassigned = false
 			}
 		}
@@ -116,6 +115,25 @@ func CheckOrderTransitionStatusForHallRequests(
 			return PendingToAssigned
 		}
 
+	case elevatorConfig.Waiting:
+		for _, peerID := range otherAlivePeers {
+			peerHallStatus := HallRequestsForAllElevators[peerID][floor][halldir]
+			if peerHallStatus == elevatorConfig.Completed {
+				return WaitingToNoOrder
+			}
+		}
+
+		waitingtoassigned := true
+		for _, peerID := range otherAlivePeers {
+			peerHallStatus := HallRequestsForAllElevators[peerID][floor][halldir]
+			if peerHallStatus != elevatorConfig.Pending && peerHallStatus != elevatorConfig.Waiting {
+				waitingtoassigned = false
+			}
+		}
+
+		if waitingtoassigned {
+			return WaitingToAssigned
+		}
 	case elevatorConfig.Assigned:
 		for _, order := range servicedOrders {
 			if order.Floor == floor && int(order.Button) == halldir {
@@ -249,7 +267,7 @@ func TransitioningAllHallRequests(system *elevatorConfig.ElevatorSystem, hallReq
 			switch hallRequestTransitions[floor][hallDir] {
 			case NoOrderToPending:
 				status = elevatorConfig.Pending
-			case PendingToNoOrder:
+			case WaitingToNoOrder:
 				status = elevatorConfig.NoOrder
 				elevatorOrderChannels.ServicedPeerOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Button(hallDir)}
 			case AssignedToComplete:
@@ -264,11 +282,12 @@ func TransitioningAllHallRequests(system *elevatorConfig.ElevatorSystem, hallReq
 			synchronisation.SetHallRequests(system, floor, hallDir, status)
 		}
 	}
-	transitionFromPendingToAssignedForHallRequests(system, hallRequestTransitions, elevatorOrderChannels)
+	// For all PendingToAssigned and WaitingToAssigned
+	transitionFromPendingOrWaitingToAssignedForHallRequests(system, hallRequestTransitions, elevatorOrderChannels)
 }
 
 // Called from within the TransitionForHallRequestsByType. Setting to private to avoid it being called directly
-func transitionFromPendingToAssignedForHallRequests(system *elevatorConfig.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, elevatorOrderChannels elevatorConfig.ElevatorOrderChannelStruckt) {
+func transitionFromPendingOrWaitingToAssignedForHallRequests(system *elevatorConfig.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, elevatorOrderChannels elevatorConfig.ElevatorOrderChannelStruckt) {
 	output := HallRequestAssigner(system, hallRequestTransitions)
 	for floor := range elevatorConfig.N_FLOORS {
 		for _, hallDir := range synchronisation.HallDirections {
@@ -286,6 +305,8 @@ func transitionFromPendingToAssignedForHallRequests(system *elevatorConfig.Eleva
 				}
 				if assignedToOther {
 					elevatorOrderChannels.NewAssignedPeerOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Button(hallDir)}
+					// PendingToWaiting has to happen here...
+					synchronisation.SetHallRequests(system, floor, hallDir, elevatorConfig.Waiting)
 				}
 			}
 		}

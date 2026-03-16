@@ -76,6 +76,7 @@ const (
 	Unknown   OrderStatus = "unknown"
 	NoOrder   OrderStatus = "no order"
 	Pending   OrderStatus = "pending"
+	Waiting   OrderStatus = "waiting" // Only used for hall orders, when the order is pending but not yet assigned to an elevator, so that the assigner can distinguish between new pending orders and pending orders that have been pending for a while and should be assigned to an elevator
 	Assigned  OrderStatus = "assigned"
 	Completed OrderStatus = "completed"
 )

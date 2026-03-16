@@ -42,7 +42,7 @@ func BuildBoolElevatorSystem(system elevatorConfig.ElevatorSystem, hallRequestTr
 
 	for floor := range elevatorConfig.N_FLOORS {
 		for _, hallDir := range synchronisation.HallDirections {
-			if hallRequestTransitions[floor][hallDir] == PendingToAssigned {
+			if hallRequestTransitions[floor][hallDir] == PendingToAssigned || hallRequestTransitions[floor][hallDir] == WaitingToAssigned {
 				boolSystem.HallRequests[floor][hallDir] = true
 			}
 		}
@@ -84,7 +84,7 @@ func HallRequestAssigner(system *elevatorConfig.ElevatorSystem, hallRequestTrans
 
 	//fmt.Printf("output: \n")
 	//for id, hallRequests := range *output {
-		//fmt.Printf("%6v :  %+v\n", id, hallRequests)
+	//fmt.Printf("%6v :  %+v\n", id, hallRequests)
 	//}
 
 	return *output

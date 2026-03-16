@@ -67,7 +67,7 @@ func CheckOrderTransitionStatusForHallRequests2(
 	} else if pendingtoassigned {
 		return PendingToAssigned
 	} else if pendingtonoorder {
-		return PendingToNoOrder
+		return WaitingToNoOrder
 	} else if assignedtocomplete {
 		return AssignedToComplete
 	} else if completetonoorder {
