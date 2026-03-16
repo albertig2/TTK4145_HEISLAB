@@ -93,7 +93,7 @@ func CheckOrderTransitionStatusForHallRequests(
 			if peerHallStatus == elevatorConfig.Completed {
 				noordertopending = false
 				break
-			} else if peerHallStatus != elevatorConfig.NoOrder {
+			} else if peerHallStatus != elevatorConfig.NoOrder && peerHallStatus != elevatorConfig.Waiting {
 				noordertopending = true
 			}
 		}
