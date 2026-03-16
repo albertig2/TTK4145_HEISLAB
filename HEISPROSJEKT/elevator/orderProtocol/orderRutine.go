@@ -86,13 +86,13 @@ func RunOrder(
 					filteredAlivePeers = append(filteredAlivePeers, peerID)
 				}
 			}
-			/*
+			
 
 				if !synchronisation.Contains(filteredAlivePeers, system.OwnId) {
 					filteredAlivePeers = append(filteredAlivePeers, system.OwnId)
-				}*/
+				}
 			synchronisation.SetAlivePeers(&system, filteredAlivePeers)
-		case motorstop := <-hardwareChannel.MotorFailureChannel:
+		case motorstop := <-hardwareChannel.RestartElevatorChannel:
 			//fmt.Printf("Received motor failure status: %v", motorstop)
 			paused = motorstop
 			if motorstop {
