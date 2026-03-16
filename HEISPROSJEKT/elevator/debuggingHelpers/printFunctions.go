@@ -73,6 +73,8 @@ func OrderstatusToSymbol(orderstatus elevatorConfig.OrderStatus) string {
 		return " - "
 	case elevatorConfig.Pending:
 		return " ! "
+	case elevatorConfig.Waiting:
+		return "..."
 	case elevatorConfig.Assigned:
 		return " * "
 	case elevatorConfig.Completed:
@@ -80,7 +82,7 @@ func OrderstatusToSymbol(orderstatus elevatorConfig.OrderStatus) string {
 	case elevatorConfig.Unknown:
 		return " ? "
 	default:
-		
+
 		return "Invalid order staus, recieved: " + string(orderstatus)
 	}
 
@@ -359,4 +361,4 @@ func MimicOrderAssignerAndSynch(orderChannelse elevatorConfig.ElevatorOrderChann
 	}
 
 }
-	*/
+*/
