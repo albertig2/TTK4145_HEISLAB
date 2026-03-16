@@ -118,33 +118,41 @@ func RequestsShouldClearImmediately(elevator elevatorConfig.Elevator, btn_Floor 
 func RequestsClearAtCurrentFloor(e elevatorConfig.Elevator, ServicedOrderChannel chan elevatorConfig.ButtonEvent) elevatorConfig.Elevator {
 
 	e.Requests[e.Floor][elevatorConfig.Cab] = false
-	ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor : e.Floor, Button: elevatorConfig.Cab}
+	ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor : e.Floor, Button: elevatorConfig.Cab} //clear light after the order after network is pinged
+	ElevatorRequestButtonLight(e.Floor, elevatorConfig.Cab, false)
 
 	switch e.Direction {
 	case elevatorConfig.Up:
 		if !RequestsAbove(e) && !e.Requests[e.Floor][elevatorConfig.HallUp] {
 			e.Requests[e.Floor][elevatorConfig.HallDown] = false
 			ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor : e.Floor, Button: elevatorConfig.HallDown}
+			ElevatorRequestButtonLight(e.Floor, elevatorConfig.HallDown, false)
 		}
 		e.Requests[e.Floor][elevatorConfig.HallUp] = false
 		ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor : e.Floor, Button: elevatorConfig.HallUp}
+		ElevatorRequestButtonLight(e.Floor, elevatorConfig.HallUp, false)
 
 	case elevatorConfig.Down:
 		if !RequestsBelow(e) && !e.Requests[e.Floor][elevatorConfig.HallDown] {
 			e.Requests[e.Floor][elevatorConfig.HallUp] = false
 			ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor : e.Floor, Button: elevatorConfig.HallUp}
+			ElevatorRequestButtonLight(e.Floor, elevatorConfig.HallUp, false)
+			
 			
 		}
 		e.Requests[e.Floor][elevatorConfig.HallDown] = false
 		ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor : e.Floor, Button: elevatorConfig.HallDown}
+		ElevatorRequestButtonLight(e.Floor, elevatorConfig.HallDown, false)
 
 	case elevatorConfig.Stop:
 		fallthrough
 	default:
 		e.Requests[e.Floor][elevatorConfig.HallUp] = false
 		ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor : e.Floor, Button: elevatorConfig.HallUp}
+		ElevatorRequestButtonLight(e.Floor, elevatorConfig.HallUp, false)
 		e.Requests[e.Floor][elevatorConfig.HallDown] = false
 		ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor : e.Floor, Button: elevatorConfig.HallDown}
+		ElevatorRequestButtonLight(e.Floor, elevatorConfig.HallDown, false)
 	}
 
 
