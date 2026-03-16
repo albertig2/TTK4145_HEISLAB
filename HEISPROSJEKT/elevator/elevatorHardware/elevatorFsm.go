@@ -61,8 +61,7 @@ func RunElevatorFsm(elevatorID string, hardwareChannels elevatorConfig.ElevatorH
 			OnDoorTimeout(&elevatorObject, doorTimer, orderChannels.ServicedOrderChannel, motorTimeoutTimer)
 
 		case <-motorTimeoutTimer.C:
-			RestartElevator(&elevatorObject, motorTimeoutTimer, hardwareChannels, synchronisationChannels)
-
+			HandleMotorTimeout(&elevatorObject, motorTimeoutTimer, hardwareChannels, synchronisationChannels)
 		}
 
 		select {

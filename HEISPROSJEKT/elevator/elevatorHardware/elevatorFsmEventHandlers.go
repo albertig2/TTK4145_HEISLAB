@@ -254,7 +254,7 @@ func HandleObstructionActivated(obstructionActivated bool, elevator *elevatorCon
 
 		case elevatorConfig.DoorOpen:
 			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, ServicedOrderChannel)
-			RestartElevator(elevator, motorTimeoutTimer, hardwareChannels, synchronisationChannels)
+			HandleRestartElevator(elevator, motorTimeoutTimer, hardwareChannels, synchronisationChannels)
 		default:
 			//Do nothing if the door is not open
 		}
@@ -263,7 +263,7 @@ func HandleObstructionActivated(obstructionActivated bool, elevator *elevatorCon
 
 }
 
-func RestartElevator(elevatorObject *elevatorConfig.Elevator, motorTimeoutTimer *time.Timer, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels elevatorConfig.SynchronisationChannels) {
+func HandleRestartElevator(elevatorObject *elevatorConfig.Elevator, motorTimeoutTimer *time.Timer, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels elevatorConfig.SynchronisationChannels) {
 
 	ElevatorMotorDirection(elevatorConfig.Stop, motorTimeoutTimer)
 
@@ -289,4 +289,11 @@ func HandlelightSettingForPeerOrders( floor int, buttonType elevatorConfig.Butto
 	
 	elevio.SetButtonLamp(elevio.ButtonType(int(buttonType)), floor, lightValue)
 
+}
+
+func HandleMotorTimeout(elevatorObject *elevatorConfig.Elevator, motorTimeoutTimer *time.Timer, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels elevatorConfig.SynchronisationChannels) {
+	ElevatorMotorDirection(elevatorConfig.Stop, motorTimeoutTimer)
+	simulateMotorFailureTimer := time.NewTimer(2*time.Second)
+	<- simulateMotorFailureTimer.C
+	HandleRestartElevator(elevatorObject, motorTimeoutTimer, hardwareChannels, synchronisationChannels)
 }
