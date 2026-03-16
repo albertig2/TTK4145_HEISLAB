@@ -54,7 +54,10 @@ func InitElevatorHardware(elevator *elevatorConfig.Elevator, motorTimeoutTimer *
 	TurnOffAllOrderLights()
 	elevio.SetDoorOpenLamp(false)
 	elevio.SetStopLamp(false)
+	
+	if (elevio.GetFloor() == -1){
 	InitElevatorBetweenFloors(elevator, motorTimeoutTimer)
+	}
 
 }
 
