@@ -6,16 +6,16 @@ import (
 	"time"
 )
 
-func RunElevatorFsm(ownId string, controllerChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels elevatorConfig.SynchronizationChannels, orderChannels elevatorConfig.OrderChannels) {
+func RunElevatorFsm(ownId string, controllerChannels elevatorConfig.ElevatorControllerChannels, synchronisationChannels elevatorConfig.SynchronizationChannels, orderChannels elevatorConfig.OrderChannels) {
 	openDoorTimer := time.NewTimer(elevatorConfig.DOOR_OPEN_DURATION_S)
 	openDoorTimer.Stop()
 
 	detectMotorFailureTimer := time.NewTimer(elevatorConfig.MOTOR_TIMEOUT_DURATION_S)
 	detectMotorFailureTimer.Stop()
 
-	elevatorObject := initializeElevator(ownId)
+	elevator := initializeEmptyElevator(ownId)
 
-	initializeElevatorHardware(&elevatorObject, detectMotorFailureTimer)
+	initializeElevatorHardware(&elevator, detectMotorFailureTimer)
 
 	for {
 		select {
@@ -24,7 +24,7 @@ func RunElevatorFsm(ownId string, controllerChannels elevatorConfig.ElevatorHard
 			detectMotorFailureTimer.Stop()
 			detectMotorFailureTimer.Reset(elevatorConfig.MOTOR_TIMEOUT_DURATION_S)
 
-			handleOnFloorArrival(&elevatorObject, openDoorTimer, floor, orderChannels.ServicedOrderChannel, detectMotorFailureTimer)
+			handleOnFloorArrival(&elevator, openDoorTimer, floor, orderChannels.ServicedOrderChannel, detectMotorFailureTimer)
 
 		case recievedOrder := <-controllerChannels.PollOrderButtonsChannel:
 
@@ -33,7 +33,7 @@ func RunElevatorFsm(ownId string, controllerChannels elevatorConfig.ElevatorHard
 
 		case assignedOrder := <-orderChannels.NewAssignedOrderChannel:
 
-			handleRequestButtonPressd(&elevatorObject, openDoorTimer, int(assignedOrder.Floor), elevatorConfig.Button(assignedOrder.Button), orderChannels.ServicedOrderChannel, detectMotorFailureTimer)
+			handleRequestButtonPressd(&elevator, openDoorTimer, int(assignedOrder.Floor), elevatorConfig.Button(assignedOrder.Button), orderChannels.ServicedOrderChannel, detectMotorFailureTimer)
 
 		case assignedPeerOrder := <-orderChannels.NewAssignedPeerOrderChannel:
 
@@ -47,20 +47,20 @@ func RunElevatorFsm(ownId string, controllerChannels elevatorConfig.ElevatorHard
 			fmt.Printf("Turned of the light for %v at floor %v \n", elevatorConfig.ButtonToString(servicedPeerOrder.Button), servicedPeerOrder.Floor)
 		case stopActivated := <-controllerChannels.PollStopButtonChannel:
 
-			handleStopButton(stopActivated, &elevatorObject, openDoorTimer, orderChannels.ServicedOrderChannel, detectMotorFailureTimer)
+			handleStopButton(stopActivated, &elevator, openDoorTimer, orderChannels.ServicedOrderChannel, detectMotorFailureTimer)
 
 		case obstructionActivated := <-controllerChannels.PollObstructionChannel:
 
-			handleObstruction(obstructionActivated, &elevatorObject, openDoorTimer, orderChannels.ServicedOrderChannel, detectMotorFailureTimer, controllerChannels, synchronisationChannels)
+			handleObstruction(obstructionActivated, &elevator, openDoorTimer, orderChannels.ServicedOrderChannel, detectMotorFailureTimer, controllerChannels, synchronisationChannels)
 
 		case <-openDoorTimer.C:
-			handleDoorTimeout(&elevatorObject, openDoorTimer, orderChannels.ServicedOrderChannel, detectMotorFailureTimer)
+			handleDoorTimeout(&elevator, openDoorTimer, orderChannels.ServicedOrderChannel, detectMotorFailureTimer)
 
 		case <-detectMotorFailureTimer.C:
-			handleDetectedMotorFailure(&elevatorObject, detectMotorFailureTimer, controllerChannels, synchronisationChannels)
+			handleDetectedMotorFailure(&elevator, detectMotorFailureTimer, controllerChannels, synchronisationChannels)
 		}
 		select {
-		case controllerChannels.ElevatorObjectChannel <- elevatorObject:
+		case controllerChannels.LocalElevatorChannel <- elevator:
 
 		default:
 		}

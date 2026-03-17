@@ -60,9 +60,9 @@ func stopButtonLight(lightValue bool) {
 func setAllOrderLights(elevator elevatorConfig.Elevator) {
 	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
 		for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
-			if elevator.Requests[floor][btn] { //only set light if true, (clearing here will also mess withthe network order lights)
+			if elevator.LocalOrderQueue[floor][btn] { //only set light if true, (clearing here will also mess withthe network order lights)
 
-				orderButtonLight(floor, elevatorConfig.Button(btn), elevator.Requests[floor][btn])
+				orderButtonLight(floor, elevatorConfig.Button(btn), elevator.LocalOrderQueue[floor][btn])
 			}
 		}
 	}

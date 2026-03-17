@@ -12,7 +12,7 @@ type directionBehaviorPair struct {
 func ordersAboveCurrentFloor(elevator elevatorConfig.Elevator) bool {
 	for floor := elevator.Floor + 1; floor < elevatorConfig.N_FLOORS; floor++ {
 		for button := 0; button < elevatorConfig.N_BUTTONS; button++ {
-			if elevator.Requests[floor][button] {
+			if elevator.LocalOrderQueue[floor][button] {
 				return true
 			}
 		}
@@ -23,7 +23,7 @@ func ordersAboveCurrentFloor(elevator elevatorConfig.Elevator) bool {
 func ordersBelowCurrentFloor(elevator elevatorConfig.Elevator) bool {
 	for floor := 0; floor < elevator.Floor; floor++ {
 		for button := 0; button < elevatorConfig.N_BUTTONS; button++ {
-			if elevator.Requests[floor][button] {
+			if elevator.LocalOrderQueue[floor][button] {
 				return true
 			}
 		}
@@ -33,7 +33,7 @@ func ordersBelowCurrentFloor(elevator elevatorConfig.Elevator) bool {
 
 func ordersAtCurrentFloor(elevator elevatorConfig.Elevator) bool {
 	for button := 0; button < elevatorConfig.N_BUTTONS; button++ {
-		if elevator.Requests[elevator.Floor][button] {
+		if elevator.LocalOrderQueue[elevator.Floor][button] {
 			return true
 		}
 	}
@@ -86,13 +86,13 @@ func chooseDirectionBasedOnOrders(elevator elevatorConfig.Elevator) directionBeh
 func shouldStopAtCurrentFloor(elevator elevatorConfig.Elevator) bool {
 	switch elevator.Direction {
 	case elevatorConfig.Down:
-		return elevator.Requests[elevator.Floor][elevatorConfig.HallDown] ||
-			elevator.Requests[elevator.Floor][elevatorConfig.Cab] ||
+		return elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallDown] ||
+			elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.Cab] ||
 			!ordersBelowCurrentFloor(elevator)
 
 	case elevatorConfig.Up:
-		return elevator.Requests[elevator.Floor][elevatorConfig.HallUp] ||
-			elevator.Requests[elevator.Floor][elevatorConfig.Cab] ||
+		return elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallUp] ||
+			elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.Cab] ||
 			!ordersAboveCurrentFloor(elevator)
 
 	case elevatorConfig.Stop:
@@ -112,39 +112,39 @@ func shouldClearOrderImmediately(elevator elevatorConfig.Elevator, buttonFloor i
 
 func clearOrdersAtCurrentFloor(elevator elevatorConfig.Elevator, ServicedOrderChannel chan elevatorConfig.ButtonEvent) elevatorConfig.Elevator {
 
-	elevator.Requests[elevator.Floor][elevatorConfig.Cab] = false
+	elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.Cab] = false
 	ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.Cab} //clear light after the order after network is pinged
 	orderButtonLight(elevator.Floor, elevatorConfig.Cab, false)
 
 	switch elevator.Direction {
 	case elevatorConfig.Up:
-		if !ordersAboveCurrentFloor(elevator) && !elevator.Requests[elevator.Floor][elevatorConfig.HallUp] {
-			elevator.Requests[elevator.Floor][elevatorConfig.HallDown] = false
+		if !ordersAboveCurrentFloor(elevator) && !elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallUp] {
+			elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallDown] = false
 			ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallDown}
 			orderButtonLight(elevator.Floor, elevatorConfig.HallDown, false)
 		}
-		elevator.Requests[elevator.Floor][elevatorConfig.HallUp] = false
+		elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallUp] = false
 		ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallUp}
 		orderButtonLight(elevator.Floor, elevatorConfig.HallUp, false)
 
 	case elevatorConfig.Down:
-		if !ordersBelowCurrentFloor(elevator) && !elevator.Requests[elevator.Floor][elevatorConfig.HallDown] {
-			elevator.Requests[elevator.Floor][elevatorConfig.HallUp] = false
+		if !ordersBelowCurrentFloor(elevator) && !elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallDown] {
+			elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallUp] = false
 			ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallUp}
 			orderButtonLight(elevator.Floor, elevatorConfig.HallUp, false)
 
 		}
-		elevator.Requests[elevator.Floor][elevatorConfig.HallDown] = false
+		elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallDown] = false
 		ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallDown}
 		orderButtonLight(elevator.Floor, elevatorConfig.HallDown, false)
 
 	case elevatorConfig.Stop:
 		fallthrough
 	default:
-		elevator.Requests[elevator.Floor][elevatorConfig.HallUp] = false
+		elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallUp] = false
 		ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallUp}
 		orderButtonLight(elevator.Floor, elevatorConfig.HallUp, false)
-		elevator.Requests[elevator.Floor][elevatorConfig.HallDown] = false
+		elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallDown] = false
 		ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallDown}
 		orderButtonLight(elevator.Floor, elevatorConfig.HallDown, false)
 	}
