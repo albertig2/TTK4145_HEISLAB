@@ -9,7 +9,7 @@ import (
 )
 
 func initializeElevatorBetweenFloors(elevator *elevatorConfig.Elevator, detectMotorFailureTimer *time.Timer) {
-	ElevatorMotorDirection(elevatorConfig.Down, detectMotorFailureTimer)
+	motorDirection(elevatorConfig.Down, detectMotorFailureTimer)
 	elevator.Direction = elevatorConfig.Down
 	elevator.Behavior = elevatorConfig.Moving
 }
@@ -51,7 +51,7 @@ func InitializeControllerChannels() elevatorConfig.ElevatorHardwareChannelsStruc
 // small initialisation sequence to put elevator in a known state
 func initializeElevatorHardware(elevator *elevatorConfig.Elevator, detectMotorFailureTimer *time.Timer) {
 
-	TurnOffAllOrderLights()
+	turnOffAllOrderLights()
 	elevio.SetDoorOpenLamp(false)
 	elevio.SetStopLamp(false)
 
@@ -76,13 +76,13 @@ func handleOnFloorArrival(elevator *elevatorConfig.Elevator, doorTimer *time.Tim
 	debuggingHelpers.Elevator_print(*elevator)
 
 	elevator.Floor = newFloor
-	ElevatorFloorIndicatorLight(elevator.Floor)
+	floorIndicatorLight(elevator.Floor)
 
 	switch elevator.Behavior {
 	case elevatorConfig.Moving:
 		if shouldStopAtCurrentFloor(*elevator) {
 
-			ElevatorMotorDirection(elevatorConfig.Stop, detectMotorFailureTimer)
+			motorDirection(elevatorConfig.Stop, detectMotorFailureTimer)
 
 			handleOpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, servicedOrderChannel)
 		}
@@ -106,7 +106,7 @@ func handleOpenDoor(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, ti
 		doorTimer.Stop()
 		doorTimer.Reset(timeOpenSeconds)
 
-		SetAllLights(*elevator)
+		setAllOrderLights(*elevator)
 		elevator.Behavior = elevatorConfig.DoorOpen
 		fmt.Println("Door Open end of if")
 
@@ -134,8 +134,8 @@ func handleDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer,
 			handleOpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, servicedOrderChannel)
 
 		case elevatorConfig.Moving, elevatorConfig.Idle:
-			ElevatorDoorLight(false)
-			ElevatorMotorDirection(elevator.Direction, detectMotorFailureTimer)
+			doorLight(false)
+			motorDirection(elevator.Direction, detectMotorFailureTimer)
 		}
 	default:
 		// nothing
@@ -178,14 +178,14 @@ func handleRequestButtonPressd(elevator *elevatorConfig.Elevator, doorTimer *tim
 			handleOpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, servicedOrderChannel)
 
 		case elevatorConfig.Moving:
-			ElevatorMotorDirection(elevator.Direction, detectMotorFailureTimer)
+			motorDirection(elevator.Direction, detectMotorFailureTimer)
 
 		case elevatorConfig.Idle:
 			// Do nothing
 		}
 	}
 
-	SetAllLights(*elevator)
+	setAllOrderLights(*elevator)
 
 	fmt.Printf("\nNew state after HandleRequestButtonPres:\n")
 	debuggingHelpers.Elevator_print(*elevator)
@@ -202,13 +202,13 @@ func handleStopButton(stopActivated bool, elevator *elevatorConfig.Elevator, doo
 			doorTimer.Stop()
 
 		case elevatorConfig.Moving:
-			ElevatorMotorDirection(elevatorConfig.Stop, detectMotorFailureTimer)
+			motorDirection(elevatorConfig.Stop, detectMotorFailureTimer)
 
 		default:
 
 		}
 		fmt.Println("Stop was activated")
-		TurnOffAllOrderLights()
+		turnOffAllOrderLights()
 		elevio.SetStopLamp(true)
 
 	} else {
@@ -265,7 +265,7 @@ func handleObstruction(obstructionActivated bool, elevator *elevatorConfig.Eleva
 
 func handleRestartElevator(elevatorObject *elevatorConfig.Elevator, detectMotorFailureTimer *time.Timer, controllerChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels elevatorConfig.SynchronisationChannels) {
 
-	ElevatorMotorDirection(elevatorConfig.Stop, detectMotorFailureTimer)
+	motorDirection(elevatorConfig.Stop, detectMotorFailureTimer)
 
 	synchronisationChannels.PeerTxEnableChannel <- false
 
@@ -292,7 +292,7 @@ func handleLightSettingForPeerOrders(floor int, buttonType elevatorConfig.Button
 
 func handleDetectedMotorFailure(elevatorObject *elevatorConfig.Elevator, detectMotorFailureTimer *time.Timer, controllerChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels elevatorConfig.SynchronisationChannels) {
 	synchronisationChannels.PeerTxEnableChannel <- false
-	ElevatorMotorDirection(elevatorConfig.Stop, detectMotorFailureTimer)
+	motorDirection(elevatorConfig.Stop, detectMotorFailureTimer)
 	simulateMotorFailureTimer := time.NewTimer(2 * time.Second)
 	<-simulateMotorFailureTimer.C
 	handleRestartElevator(elevatorObject, detectMotorFailureTimer, controllerChannels, synchronisationChannels)
