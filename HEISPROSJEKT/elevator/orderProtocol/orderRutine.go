@@ -99,6 +99,10 @@ func RunOrder(
 				synchronisation.InitializeElevatorSystem(&system, id)
 				HallRequestsForAllElevators[id] = system.HallRequests
 				CabRequestsForAllElevators[id] = system.States[id].CabRequests
+				servicedHallOrders = servicedHallOrders[:0]
+				servicedCabOrders = servicedCabOrders[:0]
+				newHallOrders = newHallOrders[:0]
+				newCabOrders = newCabOrders[:0]
 			}
 			//fmt.Printf("Paused status: %v", paused)
 		case <-ticker.C:
