@@ -62,7 +62,10 @@ func ElevatorStopButtonLight(v bool) {
 func SetAllLights(elevator elevatorConfig.Elevator) {
 	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
 		for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
+			if (elevator.Requests[floor][btn]){ //only set light if true, (clearing here will also mess withthe network order lights)
+
 			ElevatorRequestButtonLight(floor, elevatorConfig.Button(btn), elevator.Requests[floor][btn])
+			}
 		}
 	}
 }

@@ -12,8 +12,8 @@ func InitializeOrderChannels() elevatorConfig.ElevatorOrderChannelStruckt {
 
 	orderChannelse := elevatorConfig.ElevatorOrderChannelStruckt{
 
-		NewRecievedOrderChannel:     make(chan elevatorConfig.ButtonEvent),
-		NewAssignedOrderChannel:     make(chan elevatorConfig.ButtonEvent),
+		NewRecievedOrderChannel:     make(chan elevatorConfig.ButtonEvent, 10),
+		NewAssignedOrderChannel:     make(chan elevatorConfig.ButtonEvent, 10),
 		NewAssignedPeerOrderChannel: make(chan elevatorConfig.ButtonEvent, 10),
 		ServicedOrderChannel:        make(chan elevatorConfig.ButtonEvent, 10),
 		ServicedPeerOrderChannel:    make(chan elevatorConfig.ButtonEvent, 10),
@@ -29,6 +29,7 @@ const (
 	NoOrderToPending
 	PendingToAssigned
 	PendingToNoOrder
+	PendingToPending
 	AssignedToComplete
 	AssignedToNoOrder
 	CompleteToNoOrder
@@ -51,6 +52,7 @@ var hallTransitions = []OrderTransition{
 	NoOrderToPending,
 	PendingToAssigned,
 	PendingToNoOrder,
+	PendingToPending,
 	AssignedToComplete,
 	CompleteToNoOrder,
 }
@@ -85,7 +87,7 @@ func CheckOrderTransitionStatusForHallRequests(
 
 		for _, peerID := range otherAlivePeers {
 			peerHallStatus := HallRequestsForAllElevators[peerID][floor][halldir]
-			if peerHallStatus == elevatorConfig.Completed {
+			if peerHallStatus == elevatorConfig.Completed { // Må kanskje legge på eller == Assigned
 				noordertopending = false
 				break
 			} else if peerHallStatus != elevatorConfig.NoOrder {
@@ -114,6 +116,13 @@ func CheckOrderTransitionStatusForHallRequests(
 
 		if pendingtoassigned {
 			return PendingToAssigned
+		}
+
+		for _, peerID := range otherAlivePeers {
+			peerHallStatus := HallRequestsForAllElevators[peerID][floor][halldir]
+			if peerHallStatus == elevatorConfig.Assigned {
+				return PendingToPending
+			}
 		}
 
 	case elevatorConfig.Assigned:
@@ -252,6 +261,9 @@ func TransitioningAllHallRequests(system *elevatorConfig.ElevatorSystem, hallReq
 			case PendingToNoOrder:
 				status = elevatorConfig.NoOrder
 				elevatorOrderChannels.ServicedPeerOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Button(hallDir)}
+			case PendingToPending:
+				status = elevatorConfig.Pending
+				elevatorOrderChannels.NewAssignedPeerOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Button(hallDir)}
 			case AssignedToComplete:
 				status = elevatorConfig.Completed
 				//elevatorOrderChannels.ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Button(hallDir)}
