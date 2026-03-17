@@ -9,7 +9,7 @@ type DirectionBehaviorPair struct {
 	behavior  elevatorConfig.Behavior
 }
 
-// static i C -> privat i Go (liten forbokstav)
+
 func RequestsAbove(elevator elevatorConfig.Elevator) bool {
 	for f := elevator.Floor + 1; f < elevatorConfig.N_FLOORS; f++ {
 		for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
