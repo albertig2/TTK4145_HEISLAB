@@ -2,7 +2,6 @@ package orderProtocol
 
 import (
 	"HEISPROSJEKT/elevatorConfig"
-	//"HEISPROSJEKT/elevatorHardware"
 	"HEISPROSJEKT/synchronisation"
 	"encoding/json"
 	"fmt"

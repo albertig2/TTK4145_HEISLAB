@@ -26,17 +26,6 @@ const (
 	UnknownToAssigned
 )
 
-func InitializeOrderChannels() elevatorConfig.OrderChannels {
-	orderChannelse := elevatorConfig.OrderChannels{
-		NewRecievedOrderChannel:     make(chan elevatorConfig.ButtonEvent, 10),
-		NewAssignedOrderChannel:     make(chan elevatorConfig.ButtonEvent, 10),
-		NewAssignedPeerOrderChannel: make(chan elevatorConfig.ButtonEvent, 10),
-		ServicedOrderChannel:        make(chan elevatorConfig.ButtonEvent, 10),
-		ServicedPeerOrderChannel:    make(chan elevatorConfig.ButtonEvent, 10),
-	}
-	return orderChannelse
-}
-
 func checkOrderTransitionStatusForHallRequests(peerView *elevatorConfig.ElevatorSystem, hallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, hallDirection int, floor int, newOrders []elevatorConfig.ButtonEvent, servicedOrders []elevatorConfig.ButtonEvent) OrderTransition {
 	var otherAlivePeers []string
 	for _, peerId := range peerView.AlivePeers {

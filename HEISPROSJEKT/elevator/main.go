@@ -57,7 +57,7 @@ func main() {
 
 	go synchronisation.SynchroniseElevators(hardwareChannels.ElevatorObjectChannel, channels, strconv.Itoa(*id))
 
-	go orderProtocol.ManagingOrders(strconv.Itoa(*id), orderChannels, channels, hardwareChannels)
+	go orderProtocol.ManageAndDistributeOrders(strconv.Itoa(*id), orderChannels, channels, hardwareChannels)
 
 	// go communication.BroadcastElevatorWorldView(strconv.Itoa(*id), channels.BcastOutgoingMessagesChannel, hardwareChannels.ElevatorObjectChannel)
 	// go communication.RecieveBroadcastfWorldViewfFromPeer(channels.BcastIncomingMessagesChannel)
