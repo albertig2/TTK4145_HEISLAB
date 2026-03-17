@@ -44,8 +44,8 @@ func floorIndicatorLight(floor int) {
 	elevio.SetFloorIndicator(floor)
 }
 
-func orderButtonLight(floor int, button elevatorConfig.Button, v bool) {
-	elevio.SetButtonLamp(elevio.ButtonType(button), floor, v)
+func orderButtonLight(floor int, button elevatorConfig.Button, lightValue bool) {
+	elevio.SetButtonLamp(elevio.ButtonType(button), floor, lightValue)
 }
 
 func doorLight(lightValue bool) {
