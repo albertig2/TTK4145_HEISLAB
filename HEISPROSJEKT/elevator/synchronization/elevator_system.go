@@ -34,7 +34,7 @@ func SetHallRequests(peerView *elevatorConfig.PeerView, floor int, hallDirection
 	peerView.HallRequests[floor][hallDirection] = orderStatus
 }
 
-func InitializeElevatorSystem(peerView *elevatorConfig.PeerView, ownId string) {
+func InitializePeerView(peerView *elevatorConfig.PeerView, ownId string) {
 	peerView.AlivePeers = []string{ownId}
 	peerView.OwnId = ownId
 	peerView.HallRequests = [elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus{}

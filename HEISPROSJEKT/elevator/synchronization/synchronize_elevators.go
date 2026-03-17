@@ -6,10 +6,9 @@ import (
 	"time"
 )
 
-
 func SynchronizeElevators(elevator chan elevatorConfig.Elevator, synchronizationChannels elevatorConfig.SynchronizationChannels, ownId string) {
-	elevatorSystem := elevatorConfig.PeerView{}
-	InitializeElevatorSystem(&elevatorSystem, ownId)
+	peerView := elevatorConfig.PeerView{}
+	InitializePeerView(&peerView, ownId)
 
 	broadcastTicker := time.NewTicker(time.Second / 30)
 	printTicker := time.NewTicker(time.Second * 2)
@@ -28,14 +27,14 @@ func SynchronizeElevators(elevator chan elevatorConfig.Elevator, synchronization
 			synchronizationChannels.UpdateElevatorSystemWithElevatorChannel <- elevatorUpdate
 
 		case systemUpdate := <-synchronizationChannels.UpdateElevatorSystemWithElevatorSystemChannel:
-			elevatorSystem = systemUpdate
+			peerView = systemUpdate
 
 		case <-broadcastTicker.C:
-			synchronizationChannels.BcastOutgoingMessagesChannel <- elevatorSystem
+			synchronizationChannels.BcastOutgoingMessagesChannel <- peerView
 			broadcastTicker.Reset(time.Second / 30)
 
 		case <-printTicker.C:
-			debuggingHelpers.PrintElevatorSystem(elevatorSystem)
+			debuggingHelpers.PrintElevatorSystem(peerView)
 		}
 	}
 }
