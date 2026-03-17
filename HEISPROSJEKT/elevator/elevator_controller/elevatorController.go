@@ -29,7 +29,7 @@ func RunElevatorFsm(ownId string, controllerChannels elevatorConfig.ElevatorHard
 		case recievedOrder := <-controllerChannels.PollOrderButtonsChannel:
 
 			orderChannels.NewRecievedOrderChannel <- elevatorConfig.ButtonEvent{Floor: recievedOrder.Floor, Button: elevatorConfig.Button(recievedOrder.Button)}
-			fmt.Printf("New order from FSM: ( %v , %v)", elevatorConfig.ButtonToString(elevatorConfig.Button(int(recievedOrder.Button))), recievedOrder.Floor)
+			fmt.Printf("New order from FSM: (%v , %v) \n", elevatorConfig.ButtonToString(elevatorConfig.Button(int(recievedOrder.Button))), recievedOrder.Floor)
 
 		case assignedOrder := <-orderChannels.NewAssignedOrderChannel:
 
