@@ -79,7 +79,7 @@ func RunOrder(
 		case elevatorUpdate := <-synchronisationChannels.UpdateElevatorSystemWithElevatorChannel:
 			synchronization.UpdateElevatorSystemFromElevator(elevatorUpdate, &system)
 		case PeerSystem := <-synchronisationChannels.UpdateElevatorSystemWithPeerChannel:
-			synchronization.UpdateElevatorSystemWithPeer(&system, &PeerSystem, HallRequestsForAllElevators, CabRequestsForAllElevators)
+			synchronization.UpdateLocalPeerViewWithPeer(&system, &PeerSystem, HallRequestsForAllElevators, CabRequestsForAllElevators)
 		case AlivePeers := <-synchronisationChannels.AlivePeersChannel:
 			filteredAlivePeers := []string{}
 			for _, peerID := range AlivePeers {
@@ -132,7 +132,7 @@ func RunOrder(
 		}
 		//fmt.Println("After select in orderrutine")
 		select {
-		case synchronisationChannels.UpdateElevatorSystemWithElevatorSystemChannel <- *synchronization.CopyElevatorSystem(&system):
+		case synchronisationChannels.UpdateElevatorSystemWithElevatorSystemChannel <- *synchronization.CopyPeerView(&system):
 			//fmt.Println("Sent system update to synchroniseElevators (deep copy)")
 		default:
 			//fmt.Println("Channel full, system update dropped")

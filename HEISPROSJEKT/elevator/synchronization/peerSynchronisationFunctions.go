@@ -5,10 +5,12 @@ import (
 	"Network-go/network/peers"
 )
 
+//remove
+/*
 var (
 	alivePeersList []string
 	deadPeersList  []string
-)
+)*/
 
 func InitializeSynchrinizationChannels() elevatorConfig.SynchronizationChannels {
 	channels := elevatorConfig.SynchronizationChannels{
@@ -25,6 +27,8 @@ func InitializeSynchrinizationChannels() elevatorConfig.SynchronizationChannels 
 	return channels
 }
 
+//remove
+/*
 func UpdatePeerList(synchronizationChannelss elevatorConfig.SynchronizationChannels) {
 	for {
 		peerUpdate := <-synchronizationChannelss.PeerUpdateChannel
@@ -47,14 +51,11 @@ func UpdatePeerList(synchronizationChannelss elevatorConfig.SynchronizationChann
 			deadPeersList = newList
 		}
 	}
-}
-
-
+}*/
 
 func UpdateElevatorSystemFromElevator(elevator elevatorConfig.Elevator, peerView *elevatorConfig.PeerView) {
 	SetBehavior(peerView, elevatorConfig.Behavior(elevator.Behavior))
 	SetDirection(peerView, elevator.Direction)
-	//fmt.Printf("Updating elevator system from elevator struct. Elevator floor: %d\n", elevator.Floor)
 	if elevator.Floor >= 0 && elevator.Floor < elevatorConfig.N_FLOORS {
 		SetFloor(peerView, elevator.Floor)
 	}
