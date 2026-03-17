@@ -231,7 +231,7 @@ func handleStopButton(stopActivated bool, elevator *elevatorConfig.Elevator, doo
 
 }
 
-func handleObstruction(obstructionActivated bool, elevator *elevatorConfig.Elevator, doorTimer *time.Timer, servicedOrderChannel chan elevatorConfig.ButtonEvent, detectMotorFailureTimer *time.Timer, controllerChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels elevatorConfig.SynchronisationChannels) {
+func handleObstruction(obstructionActivated bool, elevator *elevatorConfig.Elevator, doorTimer *time.Timer, servicedOrderChannel chan elevatorConfig.ButtonEvent, detectMotorFailureTimer *time.Timer, controllerChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels elevatorConfig.SynchronizationChannels) {
 
 	if obstructionActivated {
 		fmt.Println("Obstruction was activated")
@@ -263,7 +263,7 @@ func handleObstruction(obstructionActivated bool, elevator *elevatorConfig.Eleva
 
 }
 
-func handleRestartElevator(elevatorObject *elevatorConfig.Elevator, detectMotorFailureTimer *time.Timer, controllerChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels elevatorConfig.SynchronisationChannels) {
+func handleRestartElevator(elevatorObject *elevatorConfig.Elevator, detectMotorFailureTimer *time.Timer, controllerChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels elevatorConfig.SynchronizationChannels) {
 
 	motorDirection(elevatorConfig.Stop, detectMotorFailureTimer)
 
@@ -290,7 +290,7 @@ func handleLightSettingForPeerOrders(floor int, buttonType elevatorConfig.Button
 
 }
 
-func handleDetectedMotorFailure(elevatorObject *elevatorConfig.Elevator, detectMotorFailureTimer *time.Timer, controllerChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels elevatorConfig.SynchronisationChannels) {
+func handleDetectedMotorFailure(elevatorObject *elevatorConfig.Elevator, detectMotorFailureTimer *time.Timer, controllerChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels elevatorConfig.SynchronizationChannels) {
 	synchronisationChannels.PeerTxEnableChannel <- false
 	motorDirection(elevatorConfig.Stop, detectMotorFailureTimer)
 	simulateMotorFailureTimer := time.NewTimer(2 * time.Second)

@@ -10,7 +10,7 @@ import (
 
 	elevatorController "HEISPROSJEKT/elevator_controller"
 	"HEISPROSJEKT/orderProtocol"
-	"HEISPROSJEKT/synchronisation"
+	"HEISPROSJEKT/synchronization"
 
 	//"HEISPROSJEKT/elevatorHardware"
 	//"HEISPROSJEKT/hardware"
@@ -35,7 +35,7 @@ func main() {
 	elevio.Init("localhost:"+strconv.Itoa(*port), numFloors)
 	hardwareChannels := elevatorController.InitializeControllerChannels()
 	orderChannels := orderProtocol.InitializeOrderChannels()
-	channels := synchronisation.InitNetworkChannels()
+	channels := synchronization.InitializeSynchronizationChannels()
 	//elevatorObject := elevatorHardware.InitializeElevatorObject(strconv.Itoa(*id))
 
 	go peers.Receiver(peerPort, channels.PeerUpdateChannel)
@@ -55,9 +55,9 @@ func main() {
 
 	go elevatorController.RunElevatorFsm(strconv.Itoa(*id), hardwareChannels, channels, orderChannels)
 
-	go synchronisation.SynchroniseElevators(hardwareChannels.ElevatorObjectChannel, channels, strconv.Itoa(*id))
+	go synchronization.SynchronizeElevators(hardwareChannels.ElevatorObjectChannel, channels, strconv.Itoa(*id))
 
-	go orderProtocol.RunOrder(strconv.Itoa(*id), orderChannels, channels, hardwareChannels)
+	go orderProtocol.ManageAndDistributeOrders(strconv.Itoa(*id), orderChannels, channels, hardwareChannels)
 
 	// go communication.BroadcastElevatorWorldView(strconv.Itoa(*id), channels.BcastOutgoingMessagesChannel, hardwareChannels.ElevatorObjectChannel)
 	// go communication.RecieveBroadcastfWorldViewfFromPeer(channels.BcastIncomingMessagesChannel)

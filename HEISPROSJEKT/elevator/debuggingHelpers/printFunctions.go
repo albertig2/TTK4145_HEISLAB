@@ -80,7 +80,7 @@ func OrderstatusToSymbol(orderstatus elevatorConfig.OrderStatus) string {
 	case elevatorConfig.Unknown:
 		return " ? "
 	default:
-		
+
 		return "Invalid order staus, recieved: " + string(orderstatus)
 	}
 
@@ -103,7 +103,7 @@ func printCabLine(orders [elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus) {
 	}
 	fmt.Printf(" |\n")
 }
-func PrintCurrentWorkingElevators(elevatorSystem elevatorConfig.ElevatorSystem) {
+func PrintCurrentWorkingElevators(elevatorSystem elevatorConfig.PeerView) {
 	workingNode := elevatorSystem.States[elevatorSystem.OwnId]
 	hallOrders := elevatorSystem.HallRequests
 	cabOrders := workingNode.CabRequests
@@ -135,7 +135,7 @@ func PrintCurrentWorkingElevators(elevatorSystem elevatorConfig.ElevatorSystem) 
 	fmt.Printf("")
 
 }
-func PrintPeerElevators(elevatorSystem elevatorConfig.ElevatorSystem) {
+func PrintPeerElevators(elevatorSystem elevatorConfig.PeerView) {
 	currentPeers := elevatorSystem.States
 
 	for id, state := range currentPeers {
@@ -161,7 +161,7 @@ func PrintPeerElevators(elevatorSystem elevatorConfig.ElevatorSystem) {
 
 }
 
-func PrintElevatorSystem(elevatorSystem elevatorConfig.ElevatorSystem) {
+func PrintElevatorSystem(elevatorSystem elevatorConfig.PeerView) {
 
 	fmt.Println("---------Start System update-----------------")
 
@@ -175,25 +175,25 @@ func PrintElevatorSystem(elevatorSystem elevatorConfig.ElevatorSystem) {
 
 func TestPrintEElevatorSystem() {
 
-	elevatorStatetest := elevatorConfig.ElevatorState{
+	elevatorStatetest := elevatorConfig.PeerState{
 		Behavior:    elevatorConfig.Idle,
 		Direction:   elevatorConfig.Stop,
 		CabRequests: [elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus{elevatorConfig.Pending, elevatorConfig.Assigned, elevatorConfig.NoOrder, elevatorConfig.Completed},
 	}
-	elevatorStatetest2 := elevatorConfig.ElevatorState{
+	elevatorStatetest2 := elevatorConfig.PeerState{
 		Behavior:    elevatorConfig.Idle,
 		Direction:   elevatorConfig.Stop,
 		CabRequests: [elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus{elevatorConfig.Pending, elevatorConfig.Assigned, elevatorConfig.NoOrder, elevatorConfig.Completed},
 	}
-	elevatorStatetest3 := elevatorConfig.ElevatorState{
+	elevatorStatetest3 := elevatorConfig.PeerState{
 		Behavior:    elevatorConfig.Idle,
 		Direction:   elevatorConfig.Stop,
 		CabRequests: [elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus{elevatorConfig.Pending, elevatorConfig.Assigned, elevatorConfig.NoOrder, elevatorConfig.Completed},
 	}
-	elevatortest := elevatorConfig.ElevatorSystem{
+	elevatortest := elevatorConfig.PeerView{
 		OwnId:        "1",
 		HallRequests: [elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus{{elevatorConfig.Pending, elevatorConfig.NoOrder}, {elevatorConfig.Completed, elevatorConfig.NoOrder}, {elevatorConfig.Assigned, elevatorConfig.NoOrder}, {elevatorConfig.Assigned, elevatorConfig.NoOrder}},
-		States:       map[string]*elevatorConfig.ElevatorState{"1": &elevatorStatetest, "2": &elevatorStatetest2, "3": &elevatorStatetest3},
+		States:       map[string]*elevatorConfig.PeerState{"1": &elevatorStatetest, "2": &elevatorStatetest2, "3": &elevatorStatetest3},
 	}
 	// elevatorConfig.PrintCurrentWorkingElevators(elevatortest)
 	// elevatorConfig.PrintPeerElevators(elevatortest)
@@ -359,4 +359,4 @@ func MimicOrderAssignerAndSynch(orderChannelse elevatorConfig.ElevatorOrderChann
 	}
 
 }
-	*/
+*/

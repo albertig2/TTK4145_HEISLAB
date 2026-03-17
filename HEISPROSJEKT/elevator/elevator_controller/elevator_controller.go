@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func RunElevatorFsm(ownId string, controllerChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels elevatorConfig.SynchronisationChannels, orderChannels elevatorConfig.ElevatorOrderChannelStruckt) {
+func RunElevatorFsm(ownId string, controllerChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels elevatorConfig.SynchronizationChannels, orderChannels elevatorConfig.OrderChannels) {
 	openDoorTimer := time.NewTimer(elevatorConfig.DOOR_OPEN_DURATION_S)
 	openDoorTimer.Stop()
 
