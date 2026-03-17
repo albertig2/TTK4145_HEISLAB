@@ -40,7 +40,7 @@ func ordersAtCurrentFloor(elevator elevatorConfig.Elevator) bool {
 	return false
 }
 
-// “API” lik headeren: behold navnet
+
 func chooseDirectionBasedOnOrders(elevator elevatorConfig.Elevator) directionBehaviorPair {
 	switch elevator.Direction {
 	case elevatorConfig.Up:
