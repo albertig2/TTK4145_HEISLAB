@@ -251,7 +251,6 @@ func handleRestartElevator(elevator *elevatorConfig.Elevator, detectMotorFailure
 
 func handleLightSettingForPeerOrders(floor int, buttonType elevatorConfig.Button, lightValue bool) {
 	elevio.SetButtonLamp(elevio.ButtonType(int(buttonType)), floor, lightValue)
-
 }
 
 func handleDetectedMotorFailure(elevator *elevatorConfig.Elevator, detectMotorFailureTimer *time.Timer, controllerChannels elevatorConfig.ElevatorControllerChannels, synchronisationChannels elevatorConfig.SynchronizationChannels) {

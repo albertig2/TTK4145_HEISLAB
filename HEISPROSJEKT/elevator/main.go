@@ -31,12 +31,10 @@ func main() {
 	peerPort := 30004
 	bcastPort := 30400
 
-
 	elevio.Init("localhost:"+strconv.Itoa(*port), numFloors)
 	elevatorControllerChannels := elevatorController.InitializeControllerChannels()
 	orderChannels := orderProtocol.InitializeOrderChannels()
 	synchronizationChannels := synchronization.InitializeSynchronizationChannels()
-
 
 	go peers.Receiver(peerPort, synchronizationChannels.PeerUpdateChannel)
 	go peers.Transmitter(peerPort, strconv.Itoa(*id), synchronizationChannels.PeerTxEnableChannel)
@@ -44,15 +42,12 @@ func main() {
 	go bcast.Transmitter(bcastPort, synchronizationChannels.BcastOutgoingMessagesChannel)
 	go bcast.Receiver(bcastPort, synchronizationChannels.BcastIncomingMessagesChannel)
 
-
-
 	go elevio.PollButtons(elevatorControllerChannels.PollOrderButtonsChannel)
 	go elevio.PollFloorSensor(elevatorControllerChannels.FloorSensorChannel)
 	go elevio.PollObstructionSwitch(elevatorControllerChannels.PollObstructionChannel)
 	go elevio.PollStopButton(elevatorControllerChannels.PollStopButtonChannel)
 
-
-	go elevatorController.RunElevatorFsm(strconv.Itoa(*id), elevatorControllerChannels, synchronizationChannels, orderChannels)
+	go elevatorController.LocalElevatorController(strconv.Itoa(*id), elevatorControllerChannels, synchronizationChannels, orderChannels)
 
 	go synchronization.SynchronizeElevators(elevatorControllerChannels.LocalElevatorChannel, synchronizationChannels, strconv.Itoa(*id))
 
