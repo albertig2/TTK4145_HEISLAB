@@ -55,7 +55,6 @@ func LocalElevatorController(ownId string, controllerChannels elevatorConfig.Ele
 		}
 		select {
 		case controllerChannels.LocalElevatorChannel <- elevator:
-
 		default:
 		}
 	}

@@ -39,7 +39,6 @@ func InitializeControllerChannels() elevatorConfig.ElevatorControllerChannels {
 	return controllerChannels
 }
 
-
 func initializeElevatorHardware(elevator *elevatorConfig.Elevator, detectMotorFailureTimer *time.Timer) {
 	turnOffAllOrderLights()
 	elevio.SetDoorOpenLamp(false)
@@ -62,7 +61,7 @@ func isBetweenFloors() bool {
 
 func handleOnFloorArrival(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, newFloor int, servicedOrderChannel chan elevatorConfig.ButtonEvent, detectMotorFailureTimer *time.Timer) {
 	fmt.Println("Elevator arrived at:", newFloor)
-	debuggingHelpers.Elevator_print(*elevator)
+	debuggingHelpers.PrintLocalElvator(*elevator)
 
 	elevator.Floor = newFloor
 	floorIndicatorLight(elevator.Floor)
@@ -77,7 +76,7 @@ func handleOnFloorArrival(elevator *elevatorConfig.Elevator, doorTimer *time.Tim
 		// nothing
 	}
 	fmt.Printf("\nNew state after HandleOnFloorArrival:\n")
-	debuggingHelpers.Elevator_print(*elevator)
+	debuggingHelpers.PrintLocalElvator(*elevator)
 }
 
 func handleOpenDoor(elevator *elevatorConfig.Elevator, openDoorTimer *time.Timer, timeOpenSeconds time.Duration, servicedOrderChannel chan elevatorConfig.ButtonEvent) {
@@ -118,12 +117,12 @@ func handleDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer,
 		// nothing
 	}
 	fmt.Printf("\nNew state after  OnDoorTimeout:\n")
-	debuggingHelpers.Elevator_print(*elevator)
+	debuggingHelpers.PrintLocalElvator(*elevator)
 }
 
 func handleRequestButtonPressd(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, buttonFloor int, buttonType elevatorConfig.Button, servicedOrderChannel chan elevatorConfig.ButtonEvent, detectMotorFailureTimer *time.Timer) {
 	fmt.Printf("\n\n%s(%d, %s)\n", "Recieved the following order:", buttonFloor, elevatorConfig.ButtonToString(buttonType))
-	debuggingHelpers.Elevator_print(*elevator)
+	debuggingHelpers.PrintLocalElvator(*elevator)
 
 	switch elevator.Behavior {
 	case elevatorConfig.DoorOpen:
@@ -160,7 +159,7 @@ func handleRequestButtonPressd(elevator *elevatorConfig.Elevator, doorTimer *tim
 	setAllOrderLights(*elevator)
 
 	fmt.Printf("\nNew state after HandleRequestButtonPres:\n")
-	debuggingHelpers.Elevator_print(*elevator)
+	debuggingHelpers.PrintLocalElvator(*elevator)
 }
 
 func handleStopButton(stopActivated bool, elevator *elevatorConfig.Elevator, openDoorTimer *time.Timer, servicedOrderChannel chan elevatorConfig.ButtonEvent, detectMotorFailureTimer *time.Timer) {
@@ -246,7 +245,7 @@ func handleRestartElevator(elevator *elevatorConfig.Elevator, detectMotorFailure
 	synchronisationChannels.PeerTxEnableChannel <- true
 
 	fmt.Printf("\nNew state after motor failure detected:\n")
-	debuggingHelpers.Elevator_print(*elevator)
+	debuggingHelpers.PrintLocalElvator(*elevator)
 }
 
 func handleLightSettingForPeerOrders(floor int, buttonType elevatorConfig.Button, lightValue bool) {
@@ -254,7 +253,7 @@ func handleLightSettingForPeerOrders(floor int, buttonType elevatorConfig.Button
 }
 
 func handleDetectedMotorFailure(elevator *elevatorConfig.Elevator, detectMotorFailureTimer *time.Timer, controllerChannels elevatorConfig.ElevatorControllerChannels, synchronisationChannels elevatorConfig.SynchronizationChannels) {
-	
+
 	synchronisationChannels.PeerTxEnableChannel <- false
 
 	motorDirection(elevatorConfig.Stop, detectMotorFailureTimer)
