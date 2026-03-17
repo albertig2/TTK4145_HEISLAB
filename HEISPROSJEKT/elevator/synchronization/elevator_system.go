@@ -78,10 +78,10 @@ func addPeer(peerView *elevatorConfig.PeerView, externalPeerView *elevatorConfig
 	if !Contains(peerView.AlivePeers, externalPeerView.OwnId) {
 		peerView.AlivePeers = append(peerView.AlivePeers, externalPeerView.OwnId)
 	}
-	CabRequests := externalPeerView.States[externalPeerView.OwnId].CabRequests
+	cabRequests := externalPeerView.States[externalPeerView.OwnId].CabRequests
 	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
-		if CabRequests[floor] == elevatorConfig.Unknown {
-			CabRequests[floor] = elevatorConfig.NoOrder
+		if cabRequests[floor] == elevatorConfig.Unknown {
+			cabRequests[floor] = elevatorConfig.NoOrder
 		}
 	}
 
@@ -90,17 +90,17 @@ func addPeer(peerView *elevatorConfig.PeerView, externalPeerView *elevatorConfig
 		Behavior:    peerState.Behavior,
 		Floor:       peerState.Floor,
 		Direction:   peerState.Direction,
-		CabRequests: CabRequests,
+		CabRequests: cabRequests,
 	}
 }
 
 func updatePeer(localPeerView *elevatorConfig.PeerView, extarnalPeerView *elevatorConfig.PeerView) {
 	peerSystemCabRequests := extarnalPeerView.States[extarnalPeerView.OwnId].CabRequests
-	CabRequests := localPeerView.States[extarnalPeerView.OwnId].CabRequests
+	cabRequests := localPeerView.States[extarnalPeerView.OwnId].CabRequests
 
 	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
 		if peerSystemCabRequests[floor] != elevatorConfig.Unknown {
-			CabRequests[floor] = peerSystemCabRequests[floor]
+			cabRequests[floor] = peerSystemCabRequests[floor]
 		}
 	}
 
@@ -109,7 +109,7 @@ func updatePeer(localPeerView *elevatorConfig.PeerView, extarnalPeerView *elevat
 		Behavior:    peerState.Behavior,
 		Floor:       peerState.Floor,
 		Direction:   peerState.Direction,
-		CabRequests: CabRequests,
+		CabRequests: cabRequests,
 	}
 }
 

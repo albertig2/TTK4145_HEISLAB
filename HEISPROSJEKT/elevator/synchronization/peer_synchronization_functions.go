@@ -12,8 +12,8 @@ var (
 	deadPeersList  []string
 )*/
 
-func InitializeSynchrinizationChannels() elevatorConfig.SynchronizationChannels {
-	channels := elevatorConfig.SynchronizationChannels{
+func InitializeSynchronizationChannels() elevatorConfig.SynchronizationChannels {
+	syncronizationChannels := elevatorConfig.SynchronizationChannels{
 		PeerUpdateChannel:                             make(chan peers.PeerUpdate),
 		PeerTxEnableChannel:                           make(chan bool),
 		BcastIncomingMessagesChannel:                  make(chan elevatorConfig.PeerView),
@@ -24,7 +24,7 @@ func InitializeSynchrinizationChannels() elevatorConfig.SynchronizationChannels 
 		AlivePeersChannel:                             make(chan []string),
 	}
 
-	return channels
+	return syncronizationChannels
 }
 
 //remove
