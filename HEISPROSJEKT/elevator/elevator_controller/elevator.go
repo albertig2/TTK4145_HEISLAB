@@ -14,10 +14,10 @@ func FloorSensor() int {
 
 //-------------------motor------------------------------------
 
-func motorDirection(d elevatorConfig.Direction, detectMotorFailureTimer *time.Timer) {
-	elevio.SetMotorDirection(elevio.MotorDirection(d))
+func motorDirection(direction elevatorConfig.Direction, detectMotorFailureTimer *time.Timer) {
+	elevio.SetMotorDirection(elevio.MotorDirection(direction))
 
-	if d == 0 {
+	if direction == 0 {
 		detectMotorFailureTimer.Stop()
 	} else {
 		detectMotorFailureTimer.Stop()
@@ -26,8 +26,8 @@ func motorDirection(d elevatorConfig.Direction, detectMotorFailureTimer *time.Ti
 }
 
 // ------------------Buttons--------------------------------
-func orderButton(f int, b elevatorConfig.Button) bool {
-	return elevio.GetButton((elevio.ButtonType)(b), f)
+func orderButton(floor int, button elevatorConfig.Button) bool {
+	return elevio.GetButton((elevio.ButtonType)(button), floor)
 }
 
 func stopButton() bool {
@@ -40,21 +40,21 @@ func obstruction() bool {
 
 //-------------------Lights----------------------------------
 
-func floorIndicatorLight(f int) {
-	elevio.SetFloorIndicator(f)
+func floorIndicatorLight(floor int) {
+	elevio.SetFloorIndicator(floor)
 }
 
-func orderButtonLight(f int, b elevatorConfig.Button, v bool) {
-	elevio.SetButtonLamp(elevio.ButtonType(b), f, v)
+func orderButtonLight(floor int, button elevatorConfig.Button, v bool) {
+	elevio.SetButtonLamp(elevio.ButtonType(button), floor, v)
 }
 
-func doorLight(v bool) {
-	elevio.SetDoorOpenLamp(v)
+func doorLight(lightValue bool) {
+	elevio.SetDoorOpenLamp(lightValue)
 
 }
 
-func stopButtonLight(v bool) {
-	elevio.SetStopLamp(v)
+func stopButtonLight(lightValue bool) {
+	elevio.SetStopLamp(lightValue)
 }
 
 func setAllOrderLights(elevator elevatorConfig.Elevator) {
