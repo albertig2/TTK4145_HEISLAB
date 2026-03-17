@@ -80,7 +80,7 @@ func HandleOnFloorArrival(elevator *elevatorConfig.Elevator, doorTimer *time.Tim
 
 	switch elevator.Behavior {
 	case elevatorConfig.Moving:
-		if RequestsShouldStop(*elevator) {
+		if shouldStopAtCurrentFloor(*elevator) {
 
 			ElevatorMotorDirection(elevatorConfig.Stop, motorTimeoutTimer)
 
@@ -101,7 +101,7 @@ func OpenDoor(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, timeOpen
 		fmt.Println("Door Open")
 
 		elevio.SetDoorOpenLamp(true)
-		*elevator = RequestsClearAtCurrentFloor(*elevator, ServicedOrderChannel)
+		*elevator = clearOrdersAtCurrentFloor(*elevator, ServicedOrderChannel)
 
 		doorTimer.Stop()
 		doorTimer.Reset(timeOpenSeconds)
@@ -122,7 +122,7 @@ func OnDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, Ser
 
 	switch elevator.Behavior {
 	case elevatorConfig.DoorOpen:
-		pair := Requests_chooseDirection(*elevator)
+		pair := chooseDirectionBasedOnOrders(*elevator)
 		elevator.Direction = pair.Direction
 		elevator.Behavior = pair.behavior
 
@@ -152,7 +152,7 @@ func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time
 	switch elevator.Behavior {
 	case elevatorConfig.DoorOpen:
 
-		if RequestsShouldClearImmediately(*elevator, btn_floor, btn_type) {
+		if shouldClearOrderImmediately(*elevator, btn_floor, btn_type) {
 
 			elevator.Requests[btn_floor][btn_type] = true
 			OpenDoor(elevator, doorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, ServicedOrderChannel)
@@ -167,7 +167,7 @@ func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time
 
 	case elevatorConfig.Idle:
 		elevator.Requests[btn_floor][btn_type] = true
-		pair := Requests_chooseDirection(*elevator)
+		pair := chooseDirectionBasedOnOrders(*elevator)
 		elevator.Direction = pair.Direction
 		elevator.Behavior = pair.behavior
 
