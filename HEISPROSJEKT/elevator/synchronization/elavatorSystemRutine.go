@@ -1,4 +1,4 @@
-package synchronisation
+package synchronization
 
 /*
 func elevatorSystemRutine(id string, elevatorOrderChannels elevatorConfig.ElevatorOrderChannelStruckt, receivedWorldview chan ElevatorSystem, hardwareChannels ElevatorHardwareChannelsStruckt) {

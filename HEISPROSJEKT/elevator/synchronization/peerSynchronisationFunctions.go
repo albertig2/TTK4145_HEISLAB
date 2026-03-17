@@ -14,7 +14,7 @@ var (
 	deadPeersList  []string
 )
 
-func InitSynchrinisationChannels() elevatorConfig.SynchronizationChannels {
+func InitializeSynchrinizationChannels() elevatorConfig.SynchronizationChannels {
 	channels := elevatorConfig.SynchronizationChannels{
 		PeerUpdateChannel:                             make(chan peers.PeerUpdate),
 		PeerTxEnableChannel:                           make(chan bool),
@@ -37,9 +37,9 @@ func StartPeerNetworking(port int, id int, channels elevatorConfig.Synchronizati
 	go peers.Transmitter(port, strconv.Itoa(id), channels.PeerTxEnableChannel)
 }
 
-func UpdatePeerList(synchronisationChannelss elevatorConfig.SynchronizationChannels) {
+func UpdatePeerList(synchronizationChannelss elevatorConfig.SynchronizationChannels) {
 	for {
-		peerUpdate := <-synchronisationChannelss.PeerUpdateChannel
+		peerUpdate := <-synchronizationChannelss.PeerUpdateChannel
 
 		alivePeersList = peerUpdate.Peers
 
@@ -120,12 +120,12 @@ func RecieveBroadcastfWorldViewfFromPeer(BcastIncomingMessagesChannel chan eleva
 	}
 }
 
-func UpdateElevatorSystemFromElevator(elevator elevatorConfig.Elevator, elevatorSystem *elevatorConfig.PeerView) {
-	SetBehavior(elevatorSystem, elevatorConfig.Behavior(elevator.Behavior))
-	SetDirection(elevatorSystem, elevator.Direction)
+func UpdateElevatorSystemFromElevator(elevator elevatorConfig.Elevator, peerView *elevatorConfig.PeerView) {
+	SetBehavior(peerView, elevatorConfig.Behavior(elevator.Behavior))
+	SetDirection(peerView, elevator.Direction)
 	//fmt.Printf("Updating elevator system from elevator struct. Elevator floor: %d\n", elevator.Floor)
 	if elevator.Floor >= 0 && elevator.Floor < elevatorConfig.N_FLOORS {
-		SetFloor(elevatorSystem, elevator.Floor)
+		SetFloor(peerView, elevator.Floor)
 	}
 }
 

@@ -5,7 +5,7 @@ import (
 )
 
 func CheckOrderTransitionStatusForHallRequests2(
-	system *elevatorConfig.ElevatorSystem,
+	system *elevatorConfig.PeerView,
 	HallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus,
 	halldir int,
 	floor int,
@@ -83,7 +83,7 @@ func CheckOrderTransitionStatusForHallRequests2(
 // Cab order never goes from pending to no order for own orders
 // Cab orders goes from assigned to no order when the elevator reaches the floor
 func CheckOrderTransitionStatusForCabRequests2(
-	system *elevatorConfig.ElevatorSystem,
+	system *elevatorConfig.PeerView,
 	CabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus,
 	floor int,
 	newOrders []elevatorConfig.ButtonEvent,
