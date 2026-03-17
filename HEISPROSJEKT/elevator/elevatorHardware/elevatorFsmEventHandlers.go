@@ -295,6 +295,7 @@ func HandlelightSettingForPeerOrders( floor int, buttonType elevatorConfig.Butto
 }
 
 func HandleMotorTimeout(elevatorObject *elevatorConfig.Elevator, motorTimeoutTimer *time.Timer, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt, synchronisationChannels elevatorConfig.SynchronisationChannels) {
+	synchronisationChannels.PeerTxEnableChannel <- false
 	ElevatorMotorDirection(elevatorConfig.Stop, motorTimeoutTimer)
 	simulateMotorFailureTimer := time.NewTimer(2*time.Second)
 	<- simulateMotorFailureTimer.C
