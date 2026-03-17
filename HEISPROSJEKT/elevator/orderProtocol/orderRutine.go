@@ -3,6 +3,7 @@ package orderProtocol
 import (
 	"HEISPROSJEKT/elevatorConfig"
 	"HEISPROSJEKT/synchronisation"
+
 	//"fmt"
 
 	//"fmt"
@@ -86,11 +87,10 @@ func RunOrder(
 					filteredAlivePeers = append(filteredAlivePeers, peerID)
 				}
 			}
-			/*
 
-				if !synchronisation.Contains(filteredAlivePeers, system.OwnId) {
-					filteredAlivePeers = append(filteredAlivePeers, system.OwnId)
-				}*/
+			if !synchronisation.Contains(filteredAlivePeers, system.OwnId) {
+				filteredAlivePeers = append(filteredAlivePeers, system.OwnId)
+			}
 			synchronisation.SetAlivePeers(&system, filteredAlivePeers)
 		case motorstop := <-hardwareChannel.MotorFailureChannel:
 			//fmt.Printf("Received motor failure status: %v", motorstop)
