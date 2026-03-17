@@ -35,7 +35,7 @@ func Elevator_print(es elevatorConfig.Elevator) {
 
 func PrintPeerUpdate(peerUpdate peers.PeerUpdate) {
 
-	fmt.Println("---------------------New peer uppdate recieved----------------------- ")
+	fmt.Println("--------New peer uppdate recieved----------")
 
 	fmt.Printf("Current alive peers: ")
 	for peerIndex := 0; peerIndex < len(peerUpdate.Peers); peerIndex++ {
@@ -53,7 +53,7 @@ func PrintPeerUpdate(peerUpdate peers.PeerUpdate) {
 	}
 	fmt.Printf("\n")
 
-	fmt.Println("---------------------End of peer update------------------------------ ")
+	fmt.Println("---------End of peer update-------------- ")
 }
 
 // switch orderstatus {

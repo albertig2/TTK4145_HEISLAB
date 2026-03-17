@@ -92,13 +92,17 @@ func RunOrder(
 				filteredAlivePeers = append(filteredAlivePeers, system.OwnId)
 			}
 			synchronisation.SetAlivePeers(&system, filteredAlivePeers)
-		case motorstop := <-hardwareChannel.MotorFailureChannel:
+		case motorstop := <-hardwareChannel.RestartElevatorChannel:
 			//fmt.Printf("Received motor failure status: %v", motorstop)
 			paused = motorstop
 			if motorstop {
 				synchronisation.InitializeElevatorSystem(&system, id)
 				HallRequestsForAllElevators[id] = system.HallRequests
 				CabRequestsForAllElevators[id] = system.States[id].CabRequests
+				servicedHallOrders = servicedHallOrders[:0]
+				servicedCabOrders = servicedCabOrders[:0]
+				newHallOrders = newHallOrders[:0]
+				newCabOrders = newCabOrders[:0]
 			}
 			//fmt.Printf("Paused status: %v", paused)
 		case <-ticker.C:
