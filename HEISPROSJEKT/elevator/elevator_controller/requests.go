@@ -103,12 +103,12 @@ func shouldStopAtCurrentFloor(elevator elevatorConfig.Elevator) bool {
 	}
 }
 
-func shouldClearOrderImmediately(elevator elevatorConfig.Elevator, button_Floor int, button_type elevatorConfig.Button) bool {
-	return elevator.Floor == button_Floor &&
-		((elevator.Direction == elevatorConfig.Up && button_type == elevatorConfig.HallUp) ||
-			(elevator.Direction == elevatorConfig.Down && button_type == elevatorConfig.HallDown) ||
+func shouldClearOrderImmediately(elevator elevatorConfig.Elevator, buttonFloor int, buttonType elevatorConfig.Button) bool {
+	return elevator.Floor == buttonFloor &&
+		((elevator.Direction == elevatorConfig.Up && buttonType == elevatorConfig.HallUp) ||
+			(elevator.Direction == elevatorConfig.Down && buttonType == elevatorConfig.HallDown) ||
 			elevator.Direction == elevatorConfig.Stop ||
-			button_type == elevatorConfig.Cab)
+			buttonType == elevatorConfig.Cab)
 }
 
 func clearOrdersAtCurrentFloor(elevator elevatorConfig.Elevator, ServicedOrderChannel chan elevatorConfig.ButtonEvent) elevatorConfig.Elevator {
