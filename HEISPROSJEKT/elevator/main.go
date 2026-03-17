@@ -8,7 +8,7 @@ import (
 
 	// "HEISPROSJEKT/communication"
 
-	"HEISPROSJEKT/elevatorHardware"
+	"HEISPROSJEKT/elevator_controller"
 	"HEISPROSJEKT/orderProtocol"
 	"HEISPROSJEKT/synchronisation"
 
@@ -33,7 +33,7 @@ func main() {
 
 	//init functions
 	elevio.Init("localhost:"+strconv.Itoa(*port), numFloors)
-	hardwareChannels := elevatorHardware.InitElevatorHardwareChannels()
+	hardwareChannels := elevatorController.InitElevatorHardwareChannels()
 	orderChannels := orderProtocol.InitializeOrderChannels()
 	channels := synchronisation.InitNetworkChannels()
 	//elevatorObject := elevatorHardware.InitializeElevatorObject(strconv.Itoa(*id))
@@ -53,7 +53,7 @@ func main() {
 
 	//go debuggingHelpers.MimicOrderAssignerAndSynch(orderChannels)
 
-	go elevatorHardware.RunElevatorFsm(strconv.Itoa(*id), hardwareChannels, channels, orderChannels)
+	go elevatorController.RunElevatorFsm(strconv.Itoa(*id), hardwareChannels, channels, orderChannels)
 
 	go synchronisation.SynchroniseElevators(hardwareChannels.ElevatorObjectChannel, channels, strconv.Itoa(*id))
 

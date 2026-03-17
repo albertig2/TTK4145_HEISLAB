@@ -1,4 +1,4 @@
-package elevatorHardware
+package elevatorController
 
 import (
 	"Driver-go/elevio"
