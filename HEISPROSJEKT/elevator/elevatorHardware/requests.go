@@ -5,7 +5,7 @@ import (
 )
 
 type directionBehaviorPair struct {
-	Direction elevatorConfig.Direction
+	direction elevatorConfig.Direction
 	behavior  elevatorConfig.Behavior
 }
 
@@ -67,7 +67,7 @@ func chooseDirectionBasedOnOrders(elevator elevatorConfig.Elevator) directionBeh
 		}
 		return directionBehaviorPair{elevatorConfig.Stop, elevatorConfig.Idle}
 
-	case elevatorConfig.Stop: 
+	case elevatorConfig.Stop:
 		if ordersAtCurrentFloor(elevator) {
 			return directionBehaviorPair{elevatorConfig.Stop, elevatorConfig.DoorOpen}
 		}
@@ -110,7 +110,6 @@ func shouldClearOrderImmediately(elevator elevatorConfig.Elevator, button_Floor 
 			elevator.Direction == elevatorConfig.Stop ||
 			button_type == elevatorConfig.Cab)
 }
-
 
 func clearOrdersAtCurrentFloor(elevator elevatorConfig.Elevator, ServicedOrderChannel chan elevatorConfig.ButtonEvent) elevatorConfig.Elevator {
 

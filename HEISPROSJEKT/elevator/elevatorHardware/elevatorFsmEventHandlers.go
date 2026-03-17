@@ -123,7 +123,7 @@ func OnDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, Ser
 	switch elevator.Behavior {
 	case elevatorConfig.DoorOpen:
 		pair := chooseDirectionBasedOnOrders(*elevator)
-		elevator.Direction = pair.Direction
+		elevator.Direction = pair.direction
 		elevator.Behavior = pair.behavior
 
 		switch elevator.Behavior {
@@ -168,7 +168,7 @@ func HandleRequestButtonPress(elevator *elevatorConfig.Elevator, doorTimer *time
 	case elevatorConfig.Idle:
 		elevator.Requests[btn_floor][btn_type] = true
 		pair := chooseDirectionBasedOnOrders(*elevator)
-		elevator.Direction = pair.Direction
+		elevator.Direction = pair.direction
 		elevator.Behavior = pair.behavior
 
 		switch pair.behavior {
