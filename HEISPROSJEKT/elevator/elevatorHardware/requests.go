@@ -67,7 +67,7 @@ func chooseDirectionBasedOnOrders(elevator elevatorConfig.Elevator) directionBeh
 		}
 		return directionBehaviorPair{elevatorConfig.Stop, elevatorConfig.Idle}
 
-	case elevatorConfig.Stop: // samme kommentar som i C
+	case elevatorConfig.Stop: 
 		if ordersAtCurrentFloor(elevator) {
 			return directionBehaviorPair{elevatorConfig.Stop, elevatorConfig.DoorOpen}
 		}
@@ -111,9 +111,7 @@ func shouldClearOrderImmediately(elevator elevatorConfig.Elevator, btn_Floor int
 			btn_type == elevatorConfig.Cab)
 }
 
-// fix so that the order that is cleard here, also is sendt on the new order serviced channel
-// note to order handeling: this function clears order regardless of there actually was an oorder there. This means that the order
-// state machine has to be able to handle instances where it recieves a CleardOrder message for orders in other states than assigned
+
 func clearOrdersAtCurrentFloor(e elevatorConfig.Elevator, ServicedOrderChannel chan elevatorConfig.ButtonEvent) elevatorConfig.Elevator {
 
 	e.Requests[e.Floor][elevatorConfig.Cab] = false
