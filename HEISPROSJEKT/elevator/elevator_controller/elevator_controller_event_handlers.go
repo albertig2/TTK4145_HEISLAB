@@ -8,6 +8,20 @@ import (
 	"time"
 )
 
+func InitializeControllerChannels() elevatorConfig.ElevatorControllerChannels {
+	controllerChannels := elevatorConfig.ElevatorControllerChannels{
+		PollOrderButtonsChannel: make(chan elevio.ButtonEvent),
+		PollObstructionChannel:  make(chan bool),
+		PollStopButtonChannel:   make(chan bool),
+		FloorSensorChannel:      make(chan int),
+		DoorOpenChannel:         make(chan bool),
+		MotorDirectionChannel:   make(chan elevatorConfig.Direction),
+		LocalElevatorChannel:    make(chan elevatorConfig.Elevator),
+		RestartElevatorChannel:  make(chan bool),
+	}
+	return controllerChannels
+}
+
 func initializeElevatorBetweenFloors(elevator *elevatorConfig.Elevator, detectMotorFailureTimer *time.Timer) {
 	motorDirection(elevatorConfig.Down, detectMotorFailureTimer)
 	elevator.Direction = elevatorConfig.Down
@@ -25,38 +39,14 @@ func initializeEmptyElevator(ownId string) elevatorConfig.Elevator {
 	return elevator
 }
 
-func InitializeControllerChannels() elevatorConfig.ElevatorControllerChannels {
-	controllerChannels := elevatorConfig.ElevatorControllerChannels{
-		PollOrderButtonsChannel: make(chan elevio.ButtonEvent),
-		PollObstructionChannel:  make(chan bool),
-		PollStopButtonChannel:   make(chan bool),
-		FloorSensorChannel:      make(chan int),
-		DoorOpenChannel:         make(chan bool),
-		MotorDirectionChannel:   make(chan elevatorConfig.Direction),
-		LocalElevatorChannel:    make(chan elevatorConfig.Elevator),
-		RestartElevatorChannel:  make(chan bool),
-	}
-	return controllerChannels
-}
-
 func initializeElevatorHardware(elevator *elevatorConfig.Elevator, detectMotorFailureTimer *time.Timer) {
 	turnOffAllOrderLights()
 	elevio.SetDoorOpenLamp(false)
 	elevio.SetStopLamp(false)
 
-	if elevio.GetFloor() == -1 {
+	if FloorSensor() == -1 {
 		initializeElevatorBetweenFloors(elevator, detectMotorFailureTimer)
 	}
-}
-
-func isBetweenFloors() bool {
-	currentFloor := elevio.GetFloor()
-	if currentFloor != -1 {
-		return false
-	} else {
-		return true
-	}
-
 }
 
 func handleOnFloorArrival(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, newFloor int, servicedOrderChannel chan elevatorConfig.ButtonEvent, detectMotorFailureTimer *time.Timer) {
@@ -89,21 +79,19 @@ func handleUpdatePeerViewOfCleardOrders(cleardOrderList []elevatorConfig.ButtonE
 func handleOpenDoor(elevator *elevatorConfig.Elevator, openDoorTimer *time.Timer, timeOpenSeconds time.Duration, servicedOrderChannel chan elevatorConfig.ButtonEvent) {
 	clearedOrders := []elevatorConfig.ButtonEvent{}
 
-	if !isBetweenFloors() {
+	if (FloorSensor() != -1) {
 		fmt.Println("Door Open")
 
 		elevio.SetDoorOpenLamp(true)
-		*elevator, clearedOrders = clearOrdersAtCurrentFloor(*elevator, servicedOrderChannel)
+		elevator.Behavior = elevatorConfig.DoorOpen
 
 		openDoorTimer.Stop()
 		openDoorTimer.Reset(timeOpenSeconds)
 
-		tunrOnOrderLightsBasedOnLocalQueue(*elevator)
+		*elevator, clearedOrders = clearOrdersAtCurrentFloor(*elevator)
 		clearListOfOrderLighst(clearedOrders)
 
 		handleUpdatePeerViewOfCleardOrders(clearedOrders, servicedOrderChannel)
-
-		elevator.Behavior = elevatorConfig.DoorOpen
 	} else {
 		fmt.Println("Door was attempted opend in between floors")
 	}
@@ -198,7 +186,7 @@ func handleStopButton(stopActivated bool, elevator *elevatorConfig.Elevator, ope
 
 		switch elevator.Behavior {
 		case elevatorConfig.Moving, elevatorConfig.Idle:
-			initializeElevatorBetweenFloors(elevator, detectMotorFailureTimer)
+			initializeElevatorHardware(elevator, detectMotorFailureTimer)
 
 		case elevatorConfig.DoorOpen:
 			handleOpenDoor(elevator, openDoorTimer, elevatorConfig.DOOR_OPEN_DURATION_S, servicedOrderChannel) // keep door open for 3 more sek
