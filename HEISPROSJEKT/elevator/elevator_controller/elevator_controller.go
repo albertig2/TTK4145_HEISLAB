@@ -31,7 +31,7 @@ func LocalElevatorController(ownId string, controllerChannels elevatorConfig.Ele
 			fmt.Printf("New order from FSM: (%v , %v) \n", elevatorConfig.ButtonToString(elevatorConfig.Button(int(recievedOrder.Button))), recievedOrder.Floor)
 
 		case assignedOrder := <-orderChannels.NewAssignedOrderChannel:
-			handleRequestButtonPressd(&elevator, openDoorTimer, int(assignedOrder.Floor), elevatorConfig.Button(assignedOrder.Button), orderChannels.ServicedOrderChannel, detectMotorFailureTimer)
+			handleOrderButtonPressd(&elevator, openDoorTimer, int(assignedOrder.Floor), elevatorConfig.Button(assignedOrder.Button), orderChannels.ServicedOrderChannel, detectMotorFailureTimer)
 
 		case assignedPeerOrder := <-orderChannels.NewAssignedPeerOrderChannel:
 			handleLightSettingForPeerOrders(assignedPeerOrder.Floor, assignedPeerOrder.Button, true)

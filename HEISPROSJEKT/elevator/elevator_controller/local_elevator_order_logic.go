@@ -110,44 +110,63 @@ func shouldClearOrderImmediately(elevator elevatorConfig.Elevator, buttonFloor i
 			buttonType == elevatorConfig.Cab)
 }
 
-func clearOrdersAtCurrentFloor(elevator elevatorConfig.Elevator, ServicedOrderChannel chan elevatorConfig.ButtonEvent) elevatorConfig.Elevator {
+func clearOrdersAtCurrentFloor(elevator elevatorConfig.Elevator, ServicedOrderChannel chan elevatorConfig.ButtonEvent) (elevatorConfig.Elevator, []elevatorConfig.ButtonEvent) {
+
+	clearedOrders := []elevatorConfig.ButtonEvent {}
 
 	elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.Cab] = false
-	ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.Cab} //clear light after the order after network is pinged
-	orderButtonLight(elevator.Floor, elevatorConfig.Cab, false)
+	clearedOrders = append(clearedOrders, elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.Cab})
+
+	// ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.Cab} //clear light after the order after network is pinged
+	// orderButtonLight(elevator.Floor, elevatorConfig.Cab, false)
 
 	switch elevator.Direction {
 	case elevatorConfig.Up:
 		if !ordersAboveCurrentFloor(elevator) && !elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallUp] {
 			elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallDown] = false
-			ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallDown}
-			orderButtonLight(elevator.Floor, elevatorConfig.HallDown, false)
+			clearedOrders = append(clearedOrders, elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallDown})
+
+			// ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallDown}
+			// orderButtonLight(elevator.Floor, elevatorConfig.HallDown, false)
 		}
+
 		elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallUp] = false
-		ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallUp}
-		orderButtonLight(elevator.Floor, elevatorConfig.HallUp, false)
+		clearedOrders = append(clearedOrders, elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallUp})
+
+		// ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallUp}
+		// orderButtonLight(elevator.Floor, elevatorConfig.HallUp, false)
 
 	case elevatorConfig.Down:
 		if !ordersBelowCurrentFloor(elevator) && !elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallDown] {
+			
 			elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallUp] = false
-			ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallUp}
-			orderButtonLight(elevator.Floor, elevatorConfig.HallUp, false)
+			clearedOrders = append(clearedOrders, elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallUp})
+			
+			// ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallUp}
+			// orderButtonLight(elevator.Floor, elevatorConfig.HallUp, false)
 
 		}
 		elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallDown] = false
-		ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallDown}
-		orderButtonLight(elevator.Floor, elevatorConfig.HallDown, false)
+		clearedOrders = append(clearedOrders, elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallDown})
+
+		// ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallDown}
+		// orderButtonLight(elevator.Floor, elevatorConfig.HallDown, false)
 
 	case elevatorConfig.Stop:
 		fallthrough
 	default:
 		elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallUp] = false
-		ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallUp}
-		orderButtonLight(elevator.Floor, elevatorConfig.HallUp, false)
+		clearedOrders = append(clearedOrders, elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallUp})
+
+		// ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallUp}
+		// orderButtonLight(elevator.Floor, elevatorConfig.HallUp, false)
+
 		elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallDown] = false
-		ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallDown}
-		orderButtonLight(elevator.Floor, elevatorConfig.HallDown, false)
+		clearedOrders = append(clearedOrders, elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallDown})
+
+		// ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallDown}
+		// orderButtonLight(elevator.Floor, elevatorConfig.HallDown, false)
 	}
 
-	return elevator
+	return elevator, clearedOrders
 }

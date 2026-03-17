@@ -79,18 +79,30 @@ func handleOnFloorArrival(elevator *elevatorConfig.Elevator, doorTimer *time.Tim
 	debuggingHelpers.PrintLocalElvator(*elevator)
 }
 
+
+func handleUpdatePeerViewOfCleardOrders(cleardOrderList []elevatorConfig.ButtonEvent, servicedOrderChannel chan elevatorConfig.ButtonEvent) {
+	for _, cleardOrder := range cleardOrderList {
+		servicedOrderChannel <- cleardOrder
+	}
+}
+
 func handleOpenDoor(elevator *elevatorConfig.Elevator, openDoorTimer *time.Timer, timeOpenSeconds time.Duration, servicedOrderChannel chan elevatorConfig.ButtonEvent) {
+	clearedOrders := []elevatorConfig.ButtonEvent{}
 
 	if !isBetweenFloors() {
 		fmt.Println("Door Open")
 
 		elevio.SetDoorOpenLamp(true)
-		*elevator = clearOrdersAtCurrentFloor(*elevator, servicedOrderChannel)
+		*elevator, clearedOrders = clearOrdersAtCurrentFloor(*elevator, servicedOrderChannel)
 
 		openDoorTimer.Stop()
 		openDoorTimer.Reset(timeOpenSeconds)
 
-		setAllOrderLights(*elevator)
+		tunrOnOrderLightsBasedOnLocalQueue(*elevator)
+		clearListOfOrderLighst(clearedOrders)
+
+		handleUpdatePeerViewOfCleardOrders(clearedOrders, servicedOrderChannel)
+
 		elevator.Behavior = elevatorConfig.DoorOpen
 	} else {
 		fmt.Println("Door was attempted opend in between floors")
@@ -120,7 +132,7 @@ func handleDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer,
 	debuggingHelpers.PrintLocalElvator(*elevator)
 }
 
-func handleRequestButtonPressd(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, buttonFloor int, buttonType elevatorConfig.Button, servicedOrderChannel chan elevatorConfig.ButtonEvent, detectMotorFailureTimer *time.Timer) {
+func handleOrderButtonPressd(elevator *elevatorConfig.Elevator, doorTimer *time.Timer, buttonFloor int, buttonType elevatorConfig.Button, servicedOrderChannel chan elevatorConfig.ButtonEvent, detectMotorFailureTimer *time.Timer) {
 	fmt.Printf("\n\n%s(%d, %s)\n", "Recieved the following order:", buttonFloor, elevatorConfig.ButtonToString(buttonType))
 	debuggingHelpers.PrintLocalElvator(*elevator)
 
@@ -156,9 +168,9 @@ func handleRequestButtonPressd(elevator *elevatorConfig.Elevator, doorTimer *tim
 		}
 	}
 
-	setAllOrderLights(*elevator)
+	tunrOnOrderLightsBasedOnLocalQueue(*elevator)
 
-	fmt.Printf("\nNew state after HandleRequestButtonPres:\n")
+	fmt.Printf("\nNew state after HandleOrderButtonPres:\n")
 	debuggingHelpers.PrintLocalElvator(*elevator)
 }
 
