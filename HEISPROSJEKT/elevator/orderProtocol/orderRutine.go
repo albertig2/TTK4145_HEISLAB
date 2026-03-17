@@ -38,7 +38,7 @@ func RunOrder(
 ) {
 
 	system := elevatorConfig.PeerView{}
-	synchronization.InitializeElevatorSystem(&system, id)
+	synchronization.InitializePeerView(&system, id)
 
 	HallRequestsForAllElevators := make(map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus)
 	CabRequestsForAllElevators := make(map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus)
@@ -50,7 +50,7 @@ func RunOrder(
 	newHallOrders := make([]elevatorConfig.ButtonEvent, 0)
 	newCabOrders := make([]elevatorConfig.ButtonEvent, 0)
 	UpdatedSystem := elevatorConfig.PeerView{}
-	synchronization.InitializeElevatorSystem(&UpdatedSystem, id)
+	synchronization.InitializePeerView(&UpdatedSystem, id)
 
 	paused := false
 	ticker := time.NewTicker(1 * time.Second / 2)
@@ -96,7 +96,7 @@ func RunOrder(
 			//fmt.Printf("Received motor failure status: %v", motorstop)
 			paused = motorstop
 			if motorstop {
-				synchronization.InitializeElevatorSystem(&system, id)
+				synchronization.InitializePeerView(&system, id)
 				HallRequestsForAllElevators[id] = system.HallRequests
 				CabRequestsForAllElevators[id] = system.States[id].CabRequests
 				servicedHallOrders = servicedHallOrders[:0]

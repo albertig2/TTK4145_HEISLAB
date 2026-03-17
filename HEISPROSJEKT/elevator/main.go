@@ -35,7 +35,7 @@ func main() {
 	elevio.Init("localhost:"+strconv.Itoa(*port), numFloors)
 	hardwareChannels := elevatorHardware.InitElevatorHardwareChannels()
 	orderChannels := orderProtocol.InitializeOrderChannels()
-	channels := synchronization.InitializeSynchrinizationChannels()
+	channels := synchronization.InitializeSynchronizationChannels()
 	//elevatorObject := elevatorHardware.InitializeElevatorObject(strconv.Itoa(*id))
 
 	go peers.Receiver(peerPort, channels.PeerUpdateChannel)
