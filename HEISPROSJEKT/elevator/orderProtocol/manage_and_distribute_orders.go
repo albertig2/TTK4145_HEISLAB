@@ -2,13 +2,13 @@ package orderProtocol
 
 import (
 	"HEISPROSJEKT/elevatorConfig"
-	"HEISPROSJEKT/synchronisation"
+	"HEISPROSJEKT/synchronization"
 	"time"
 	//"fmt"
 )
 
-func ManageAndDistributeOrders(ownId string, orderChannels elevatorConfig.OrderChannels, synchronizationChannels elevatorConfig.SynchronisationChannels, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt) {
-	localPeerView := elevatorConfig.ElevatorSystem{}
+func ManageAndDistributeOrders(ownId string, orderChannels elevatorConfig.OrderChannels, synchronizationChannels elevatorConfig.SynchronizationChannels, hardwareChannels elevatorConfig.ElevatorHardwareChannelsStruckt) {
+	localPeerView := elevatorConfig.PeerView{}
 	hallRequestsForAllElevators, cabRequestsForAllElevators := initializePeerView(&localPeerView, ownId)
 	servicedHallOrders, servicedCabOrders, newHallOrders, newCabOrders := initializeOrDrainOrders()
 	reinitialize := false
@@ -21,12 +21,12 @@ func ManageAndDistributeOrders(ownId string, orderChannels elevatorConfig.OrderC
 		case newOrder := <-orderChannels.NewRecievedOrderChannel:
 			newHallOrders, newCabOrders = appendOrderByType(newHallOrders, newCabOrders, newOrder)
 		case elevatorUpdate := <-synchronizationChannels.UpdateElevatorSystemWithElevatorChannel:
-			synchronisation.UpdateElevatorSystemFromElevator(elevatorUpdate, &localPeerView)
+			synchronization.UpdateElevatorSystemFromElevator(elevatorUpdate, &localPeerView)
 		case externalPeerView := <-synchronizationChannels.UpdateElevatorSystemWithPeerChannel:
-			synchronisation.UpdateElevatorSystemWithPeer(&localPeerView, &externalPeerView, hallRequestsForAllElevators, cabRequestsForAllElevators)
+			synchronization.UpdateLocalPeerViewWithPeer(&localPeerView, &externalPeerView, hallRequestsForAllElevators, cabRequestsForAllElevators)
 		case alivePeers := <-synchronizationChannels.AlivePeersChannel:
 			validAlivePeers := filterValidPeersAndIncludeOwnId(&localPeerView, alivePeers)
-			synchronisation.SetAlivePeers(&localPeerView, validAlivePeers)
+			synchronization.SetAlivePeers(&localPeerView, validAlivePeers)
 		case restart := <-hardwareChannels.RestartElevatorChannel:
 			reinitialize = restart
 			if restart {
@@ -40,7 +40,7 @@ func ManageAndDistributeOrders(ownId string, orderChannels elevatorConfig.OrderC
 			}
 		}
 		select {
-		case synchronizationChannels.UpdateElevatorSystemWithElevatorSystemChannel <- *synchronisation.CopyElevatorSystem(&localPeerView):
+		case synchronizationChannels.UpdateElevatorSystemWithElevatorSystemChannel <- *synchronization.CopyPeerView(&localPeerView):
 		default:
 		}
 	}

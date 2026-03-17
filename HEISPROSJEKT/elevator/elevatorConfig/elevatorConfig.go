@@ -55,18 +55,18 @@ type Elevator struct {
 	Config    Config
 }
 
-type ElevatorState struct {
+type PeerState struct {
 	Behavior    Behavior              `json:"behavior"`
 	Floor       int                   `json:"floor"`
 	Direction   Direction             `json:"direction"`
 	CabRequests [N_FLOORS]OrderStatus `json:"cabRequests"`
 }
 
-type ElevatorSystem struct {
-	AlivePeers   []string                  `json:"alivePeers"`
-	OwnId        string                    `json:"ownId"`
-	HallRequests [N_FLOORS][2]OrderStatus  `json:"hallRequests"`
-	States       map[string]*ElevatorState `json:"states"`
+type PeerView struct {
+	AlivePeers   []string                 `json:"alivePeers"`
+	OwnId        string                   `json:"ownId"`
+	HallRequests [N_FLOORS][2]OrderStatus `json:"hallRequests"`
+	States       map[string]*PeerState    `json:"states"`
 }
 
 type OrderStatus string
@@ -80,14 +80,14 @@ const (
 	Completed OrderStatus = "completed"
 )
 
-type SynchronisationChannels struct {
+type SynchronizationChannels struct {
 	PeerUpdateChannel                             chan peers.PeerUpdate
 	PeerTxEnableChannel                           chan bool
-	BcastIncomingMessagesChannel                  chan ElevatorSystem
-	BcastOutgoingMessagesChannel                  chan ElevatorSystem
+	BcastIncomingMessagesChannel                  chan PeerView
+	BcastOutgoingMessagesChannel                  chan PeerView
 	UpdateElevatorSystemWithElevatorChannel       chan Elevator
-	UpdateElevatorSystemWithElevatorSystemChannel chan ElevatorSystem
-	UpdateElevatorSystemWithPeerChannel           chan ElevatorSystem
+	UpdateElevatorSystemWithElevatorSystemChannel chan PeerView
+	UpdateElevatorSystemWithPeerChannel           chan PeerView
 	AlivePeersChannel                             chan []string
 	//new order channel?
 }

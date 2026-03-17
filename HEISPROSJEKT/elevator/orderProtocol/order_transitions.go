@@ -4,7 +4,7 @@ import (
 	"HEISPROSJEKT/elevatorConfig"
 
 	//"HEISPROSJEKT/elevatorHardware"
-	"HEISPROSJEKT/synchronisation"
+	"HEISPROSJEKT/synchronization"
 )
 
 type OrderTransition int
@@ -26,7 +26,7 @@ const (
 	UnknownToAssigned
 )
 
-func checkOrderTransitionStatusForHallRequests(peerView *elevatorConfig.ElevatorSystem, hallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, hallDirection int, floor int, newOrders []elevatorConfig.ButtonEvent, servicedOrders []elevatorConfig.ButtonEvent) OrderTransition {
+func checkOrderTransitionStatusForHallRequests(peerView *elevatorConfig.PeerView, hallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, hallDirection int, floor int, newOrders []elevatorConfig.ButtonEvent, servicedOrders []elevatorConfig.ButtonEvent) OrderTransition {
 	var otherAlivePeers []string
 	for _, peerId := range peerView.AlivePeers {
 		if peerId != peerView.OwnId {
@@ -49,7 +49,7 @@ func checkOrderTransitionStatusForHallRequests(peerView *elevatorConfig.Elevator
 	return transition
 }
 
-func checkOrderTransitionStatusForCabRequests(peerView *elevatorConfig.ElevatorSystem, cabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus, floor int, newOrders []elevatorConfig.ButtonEvent, servicedOrders []elevatorConfig.ButtonEvent) OrderTransition {
+func checkOrderTransitionStatusForCabRequests(peerView *elevatorConfig.PeerView, cabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus, floor int, newOrders []elevatorConfig.ButtonEvent, servicedOrders []elevatorConfig.ButtonEvent) OrderTransition {
 	var otherAlivePeers []string
 	for _, peerId := range peerView.AlivePeers {
 		if peerId != peerView.OwnId {
@@ -72,10 +72,10 @@ func checkOrderTransitionStatusForCabRequests(peerView *elevatorConfig.ElevatorS
 	return transition
 }
 
-func getAllHallRequestTransitions(peerView *elevatorConfig.ElevatorSystem, hallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, newOrders []elevatorConfig.ButtonEvent, servicedOrders []elevatorConfig.ButtonEvent) [elevatorConfig.N_FLOORS][2]OrderTransition {
+func getAllHallRequestTransitions(peerView *elevatorConfig.PeerView, hallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, newOrders []elevatorConfig.ButtonEvent, servicedOrders []elevatorConfig.ButtonEvent) [elevatorConfig.N_FLOORS][2]OrderTransition {
 	var transitions [elevatorConfig.N_FLOORS][2]OrderTransition
 	for floor := range elevatorConfig.N_FLOORS {
-		for _, hallDirection := range synchronisation.HallDirections {
+		for _, hallDirection := range synchronization.HallDirections {
 			transition := checkOrderTransitionStatusForHallRequests(peerView, hallRequestsForAllElevators, hallDirection, floor, newOrders, servicedOrders)
 			transitions[floor][hallDirection] = transition
 		}
@@ -83,7 +83,7 @@ func getAllHallRequestTransitions(peerView *elevatorConfig.ElevatorSystem, hallR
 	return transitions
 }
 
-func getAllCabRequestTransitions(peerView *elevatorConfig.ElevatorSystem, cabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus, newOrders []elevatorConfig.ButtonEvent, servicedOrders []elevatorConfig.ButtonEvent) [elevatorConfig.N_FLOORS]OrderTransition {
+func getAllCabRequestTransitions(peerView *elevatorConfig.PeerView, cabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus, newOrders []elevatorConfig.ButtonEvent, servicedOrders []elevatorConfig.ButtonEvent) [elevatorConfig.N_FLOORS]OrderTransition {
 	var transitions [elevatorConfig.N_FLOORS]OrderTransition
 	for floor := range elevatorConfig.N_FLOORS {
 		transition := checkOrderTransitionStatusForCabRequests(peerView, cabRequestsForAllElevators, floor, newOrders, servicedOrders)
@@ -94,7 +94,7 @@ func getAllCabRequestTransitions(peerView *elevatorConfig.ElevatorSystem, cabReq
 
 func transitioningAllHallRequests(peerView *elevatorConfig.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, elevatorOrderChannels elevatorConfig.OrderChannels) {
 	for floor := range elevatorConfig.N_FLOORS {
-		for _, hallDirection := range synchronisation.HallDirections {
+		for _, hallDirection := range synchronization.HallDirections {
 			var status elevatorConfig.OrderStatus
 			switch hallRequestTransitions[floor][hallDirection] {
 			case NoOrderToPending:
@@ -112,19 +112,19 @@ func transitioningAllHallRequests(peerView *elevatorConfig.ElevatorSystem, hallR
 			default:
 				status = peerView.HallRequests[floor][hallDirection]
 			}
-			synchronisation.SetHallRequests(peerView, floor, hallDirection, status)
+			synchronization.SetHallRequests(peerView, floor, hallDirection, status)
 		}
 	}
 	transitionFromPendingToAssignedForHallRequests(peerView, hallRequestTransitions, elevatorOrderChannels)
 }
 
 // Called from within the TransitionForHallRequestsByType. Setting to private to avoid it being called directly
-func transitionFromPendingToAssignedForHallRequests(peerView *elevatorConfig.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, orderChannels elevatorConfig.OrderChannels) {
+func transitionFromPendingToAssignedForHallRequests(peerView *elevatorConfig.PeerView, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, orderChannels elevatorConfig.OrderChannels) {
 	output := hallRequestAssigner(peerView, hallRequestTransitions)
 	for floor := range elevatorConfig.N_FLOORS {
-		for _, hallDirection := range synchronisation.HallDirections {
+		for _, hallDirection := range synchronization.HallDirections {
 			if (output)[peerView.OwnId][floor][hallDirection] {
-				synchronisation.SetHallRequests(peerView, floor, hallDirection, elevatorConfig.Assigned)
+				synchronization.SetHallRequests(peerView, floor, hallDirection, elevatorConfig.Assigned)
 				orderChannels.NewAssignedOrderChannel <- elevatorConfig.ButtonEvent{Floor: floor, Button: elevatorConfig.Button(hallDirection)}
 			} else {
 				assignedToOther := false
@@ -142,7 +142,7 @@ func transitionFromPendingToAssignedForHallRequests(peerView *elevatorConfig.Ele
 	}
 }
 
-func transitioningAllCabRequests(peerView *elevatorConfig.ElevatorSystem, cabRequestTransitions [elevatorConfig.N_FLOORS]OrderTransition, orderChannels elevatorConfig.OrderChannels) {
+func transitioningAllCabRequests(peerView *elevatorConfig.PeerView, cabRequestTransitions [elevatorConfig.N_FLOORS]OrderTransition, orderChannels elevatorConfig.OrderChannels) {
 	for floor := range elevatorConfig.N_FLOORS {
 		var status elevatorConfig.OrderStatus
 		switch cabRequestTransitions[floor] {
@@ -156,6 +156,6 @@ func transitioningAllCabRequests(peerView *elevatorConfig.ElevatorSystem, cabReq
 		default:
 			status = peerView.States[peerView.OwnId].CabRequests[floor]
 		}
-		synchronisation.SetCabRequests(peerView, floor, status)
+		synchronization.SetCabRequests(peerView, floor, status)
 	}
 }

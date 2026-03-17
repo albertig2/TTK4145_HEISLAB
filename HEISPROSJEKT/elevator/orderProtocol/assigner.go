@@ -21,7 +21,7 @@ type hallRequestAssignerPeerView struct {
 	States       map[string]*hallRequestAssignerPeerState `json:"states"`
 }
 
-func buildHallRequestAssignerPeerView(peerView elevatorConfig.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition) hallRequestAssignerPeerView {
+func buildHallRequestAssignerPeerView(peerView elevatorConfig.PeerView, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition) hallRequestAssignerPeerView {
 	hallRequestAssignerPeerView := hallRequestAssignerPeerView{
 		HallRequests: [elevatorConfig.N_FLOORS][2]bool{},
 		States:       make(map[string]*hallRequestAssignerPeerState),
@@ -47,7 +47,7 @@ func buildHallRequestAssignerPeerView(peerView elevatorConfig.ElevatorSystem, ha
 	return hallRequestAssignerPeerView
 }
 
-func hallRequestAssigner(peerView *elevatorConfig.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition) map[string][][2]bool {
+func hallRequestAssigner(peerView *elevatorConfig.PeerView, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition) map[string][][2]bool {
 	Executable := ""
 	switch runtime.GOOS {
 	case "linux":
