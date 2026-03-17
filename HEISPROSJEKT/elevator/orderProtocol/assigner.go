@@ -60,21 +60,21 @@ func hallRequestAssigner(peerView *elevatorConfig.ElevatorSystem, hallRequestTra
 
 	input := buildHallRequestAssignerPeerView(*peerView, hallRequestTransitions)
 
-	jsonBytes, err := json.Marshal(input)
-	if err != nil {
-		fmt.Println("json.Marshal error: ", err)
+	jsonBytes, error := json.Marshal(input)
+	if error != nil {
+		fmt.Println("json.Marshal error: ", error)
 		return nil
 	}
-	ret, err := exec.Command("../cost_fns/hall_request_assigner/"+Executable, "-i", string(jsonBytes)).CombinedOutput()
-	if err != nil {
-		fmt.Println("exec.Command error: ", err)
-		fmt.Println(string(ret))
+	outputBytes, error := exec.Command("../cost_fns/hall_request_assigner/"+Executable, "-i", string(jsonBytes)).CombinedOutput()
+	if error != nil {
+		fmt.Println("exec.Command error: ", error)
+		fmt.Println(string(outputBytes))
 		return nil
 	}
 	output := new(map[string][][2]bool)
-	err = json.Unmarshal(ret, &output)
-	if err != nil {
-		fmt.Println("json.Unmarshal error: ", err)
+	error = json.Unmarshal(outputBytes, &output)
+	if error != nil {
+		fmt.Println("json.Unmarshal error: ", error)
 		return nil
 	}
 	return *output
