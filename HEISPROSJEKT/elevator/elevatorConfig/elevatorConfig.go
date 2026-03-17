@@ -41,18 +41,13 @@ const (
 	Moving   Behavior = 2
 )
 
-type Config struct {
-	DoorOpenDuration_s time.Duration
-	MotorTimeout_s     time.Duration
-}
-
 type Elevator struct {
-	OwnId     string
-	Floor     int
-	Direction Direction
-	Requests  [N_FLOORS][N_BUTTONS]bool
-	Behavior  Behavior
-	Config    Config
+	OwnId           string
+	Floor           int
+	Direction       Direction
+	LocalOrderQueue [N_FLOORS][N_BUTTONS]bool
+	Behavior        Behavior
+
 }
 
 type PeerState struct {
@@ -80,6 +75,7 @@ const (
 	Completed OrderStatus = "completed"
 )
 
+// should update the anme of theese
 type SynchronizationChannels struct {
 	PeerUpdateChannel                             chan peers.PeerUpdate
 	PeerTxEnableChannel                           chan bool
@@ -92,14 +88,14 @@ type SynchronizationChannels struct {
 	//new order channel?
 }
 
-type ElevatorHardwareChannelsStruckt struct {
+type ElevatorControllerChannels struct {
 	PollOrderButtonsChannel chan elevio.ButtonEvent
 	PollObstructionChannel  chan bool
 	PollStopButtonChannel   chan bool
 	FloorSensorChannel      chan int
 	DoorOpenChannel         chan bool
 	MotorDirectionChannel   chan Direction
-	ElevatorObjectChannel   chan Elevator
+	LocalElevatorChannel    chan Elevator
 	RestartElevatorChannel  chan bool
 }
 

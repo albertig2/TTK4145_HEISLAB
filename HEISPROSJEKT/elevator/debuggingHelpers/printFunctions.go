@@ -21,7 +21,7 @@ func Elevator_print(es elevatorConfig.Elevator) {
 			if (f == elevatorConfig.N_FLOORS-1 && elevatorConfig.Button(btn) == elevatorConfig.HallUp) || (f == 0 && elevatorConfig.Button(btn) == elevatorConfig.HallDown) {
 				fmt.Printf("|     ")
 			} else {
-				if es.Requests[f][btn] {
+				if es.LocalOrderQueue[f][btn] {
 					fmt.Printf("|  #  ")
 				} else {
 					fmt.Printf("|  -  ")
