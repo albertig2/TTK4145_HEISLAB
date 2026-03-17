@@ -110,7 +110,7 @@ type ElevatorHardwareChannelsStruckt struct {
 		CabReqs  [N_FLOORS]OrderStatus
 	}
 */
-type ElevatorOrderChannelStruckt struct {
+type OrderChannels struct {
 	NewRecievedOrderChannel     chan ButtonEvent //all new orders detected by the fsm from button presses are put here
 	NewAssignedOrderChannel     chan ButtonEvent //when a order is assigned to this elevator, the order is put here
 	NewAssignedPeerOrderChannel chan ButtonEvent //when an order is assigned to this elevator by another elevator, the order is put here

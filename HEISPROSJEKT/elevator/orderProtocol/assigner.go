@@ -2,7 +2,6 @@ package orderProtocol
 
 import (
 	"HEISPROSJEKT/elevatorConfig"
-	//"HEISPROSJEKT/elevatorHardware"
 	"HEISPROSJEKT/synchronization"
 	"encoding/json"
 	"fmt"
@@ -10,47 +9,45 @@ import (
 	"runtime"
 )
 
-type BoolElevatorState struct {
+type hallRequestAssignerPeerState struct {
 	Behavior    string                        `json:"behavior"`
 	Floor       int                           `json:"floor"`
 	Direction   string                        `json:"direction"`
 	CabRequests [elevatorConfig.N_FLOORS]bool `json:"cabRequests"`
 }
 
-type BoolElevatorSystem struct {
-	HallRequests [elevatorConfig.N_FLOORS][2]bool `json:"hallRequests"`
-	States       map[string]*BoolElevatorState    `json:"states"`
+type hallRequestAssignerPeerView struct {
+	HallRequests [elevatorConfig.N_FLOORS][2]bool         `json:"hallRequests"`
+	States       map[string]*hallRequestAssignerPeerState `json:"states"`
 }
 
-// Converts ElevatorSystem and order status to a boolean-based system for assignment logic
-func BuildBoolElevatorSystem(system elevatorConfig.PeerView, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition) BoolElevatorSystem {
-	boolSystem := BoolElevatorSystem{
+func buildHallRequestAssignerPeerView(peerView elevatorConfig.PeerView, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition) hallRequestAssignerPeerView {
+	hallRequestAssignerPeerView := hallRequestAssignerPeerView{
 		HallRequests: [elevatorConfig.N_FLOORS][2]bool{},
-		States:       make(map[string]*BoolElevatorState),
+		States:       make(map[string]*hallRequestAssignerPeerState),
 	}
 
-	for _, peerId := range system.AlivePeers {
-		idState := system.States[peerId]
-
-		boolSystem.States[peerId] = &BoolElevatorState{
-			Behavior:    elevatorConfig.BehaviorToString(idState.Behavior),
-			Floor:       idState.Floor,
-			Direction:   elevatorConfig.DirectionToString(idState.Direction),
+	for _, peerId := range peerView.AlivePeers {
+		peerState := peerView.States[peerId]
+		hallRequestAssignerPeerView.States[peerId] = &hallRequestAssignerPeerState{
+			Behavior:    elevatorConfig.BehaviorToString(peerState.Behavior),
+			Floor:       peerState.Floor,
+			Direction:   elevatorConfig.DirectionToString(peerState.Direction),
 			CabRequests: [elevatorConfig.N_FLOORS]bool{},
 		}
 	}
 
 	for floor := range elevatorConfig.N_FLOORS {
-		for _, hallDir := range synchronization.HallDirections {
-			if hallRequestTransitions[floor][hallDir] == PendingToAssigned {
-				boolSystem.HallRequests[floor][hallDir] = true
+		for _, hallDirection := range synchronization.HallDirections {
+			if hallRequestTransitions[floor][hallDirection] == PendingToAssigned {
+				hallRequestAssignerPeerView.HallRequests[floor][hallDirection] = true
 			}
 		}
 	}
-	return boolSystem
+	return hallRequestAssignerPeerView
 }
 
-func HallRequestAssigner(system *elevatorConfig.PeerView, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition) map[string][][2]bool {
+func hallRequestAssigner(peerView *elevatorConfig.PeerView, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition) map[string][][2]bool {
 	Executable := ""
 	switch runtime.GOOS {
 	case "linux":
@@ -61,31 +58,24 @@ func HallRequestAssigner(system *elevatorConfig.PeerView, hallRequestTransitions
 		panic("OS not supported")
 	}
 
-	input := BuildBoolElevatorSystem(*system, hallRequestTransitions)
+	input := buildHallRequestAssignerPeerView(*peerView, hallRequestTransitions)
 
-	jsonBytes, err := json.Marshal(input)
-	if err != nil {
-		fmt.Println("json.Marshal error: ", err)
+	jsonBytes, error := json.Marshal(input)
+	if error != nil {
+		fmt.Println("json.Marshal error: ", error)
 		return nil
 	}
-	ret, err := exec.Command("../cost_fns/hall_request_assigner/"+Executable, "-i", string(jsonBytes)).CombinedOutput()
-	if err != nil {
-		fmt.Println("exec.Command error: ", err)
-		fmt.Println(string(ret))
+	outputBytes, error := exec.Command("../cost_fns/hall_request_assigner/"+Executable, "-i", string(jsonBytes)).CombinedOutput()
+	if error != nil {
+		fmt.Println("exec.Command error: ", error)
+		fmt.Println(string(outputBytes))
 		return nil
 	}
-
 	output := new(map[string][][2]bool)
-	err = json.Unmarshal(ret, &output)
-	if err != nil {
-		fmt.Println("json.Unmarshal error: ", err)
+	error = json.Unmarshal(outputBytes, &output)
+	if error != nil {
+		fmt.Println("json.Unmarshal error: ", error)
 		return nil
 	}
-	/*
-		fmt.Printf("output: \n")
-		for id, hallRequests := range *output {
-			fmt.Printf("%6v :  %+v\n", id, hallRequests)
-		}
-	*/
 	return *output
 }
