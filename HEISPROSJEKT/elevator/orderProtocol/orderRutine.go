@@ -2,7 +2,7 @@ package orderProtocol
 
 import (
 	"HEISPROSJEKT/elevatorConfig"
-	"HEISPROSJEKT/synchronisation"
+	"HEISPROSJEKT/synchronization"
 
 	//"fmt"
 
@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func orderRutine(system *elevatorConfig.ElevatorSystem,
+func orderRutine(system *elevatorConfig.PeerView,
 	HallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus,
 	CabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus,
 	elevatorOrderChannels elevatorConfig.ElevatorOrderChannelStruckt,
@@ -33,12 +33,12 @@ func orderRutine(system *elevatorConfig.ElevatorSystem,
 func RunOrder(
 	id string,
 	elevatorOrderChannels elevatorConfig.ElevatorOrderChannelStruckt,
-	synchronisationChannels elevatorConfig.SynchronisationChannels,
+	synchronisationChannels elevatorConfig.SynchronizationChannels,
 	hardwareChannel elevatorConfig.ElevatorHardwareChannelsStruckt,
 ) {
 
-	system := elevatorConfig.ElevatorSystem{}
-	synchronisation.InitializeElevatorSystem(&system, id)
+	system := elevatorConfig.PeerView{}
+	synchronization.InitializePeerView(&system, id)
 
 	HallRequestsForAllElevators := make(map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus)
 	CabRequestsForAllElevators := make(map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus)
@@ -49,8 +49,8 @@ func RunOrder(
 	servicedCabOrders := make([]elevatorConfig.ButtonEvent, 0)
 	newHallOrders := make([]elevatorConfig.ButtonEvent, 0)
 	newCabOrders := make([]elevatorConfig.ButtonEvent, 0)
-	UpdatedSystem := elevatorConfig.ElevatorSystem{}
-	synchronisation.InitializeElevatorSystem(&UpdatedSystem, id)
+	UpdatedSystem := elevatorConfig.PeerView{}
+	synchronization.InitializePeerView(&UpdatedSystem, id)
 
 	paused := false
 	ticker := time.NewTicker(1 * time.Second / 2)
@@ -77,9 +77,9 @@ func RunOrder(
 			//fmt.Println("After new order")
 		// etterhvert kan denne fjernes
 		case elevatorUpdate := <-synchronisationChannels.UpdateElevatorSystemWithElevatorChannel:
-			synchronisation.UpdateElevatorSystemFromElevator(elevatorUpdate, &system)
+			synchronization.UpdateElevatorSystemFromElevator(elevatorUpdate, &system)
 		case PeerSystem := <-synchronisationChannels.UpdateElevatorSystemWithPeerChannel:
-			synchronisation.UpdateElevatorSystemWithPeer(&system, &PeerSystem, HallRequestsForAllElevators, CabRequestsForAllElevators)
+			synchronization.UpdateLocalPeerViewWithPeer(&system, &PeerSystem, HallRequestsForAllElevators, CabRequestsForAllElevators)
 		case AlivePeers := <-synchronisationChannels.AlivePeersChannel:
 			filteredAlivePeers := []string{}
 			for _, peerID := range AlivePeers {
@@ -88,15 +88,15 @@ func RunOrder(
 				}
 			}
 
-			if !synchronisation.Contains(filteredAlivePeers, system.OwnId) {
+			if !synchronization.Contains(filteredAlivePeers, system.OwnId) {
 				filteredAlivePeers = append(filteredAlivePeers, system.OwnId)
 			}
-			synchronisation.SetAlivePeers(&system, filteredAlivePeers)
+			synchronization.SetAlivePeers(&system, filteredAlivePeers)
 		case motorstop := <-hardwareChannel.RestartElevatorChannel:
 			//fmt.Printf("Received motor failure status: %v", motorstop)
 			paused = motorstop
 			if motorstop {
-				synchronisation.InitializeElevatorSystem(&system, id)
+				synchronization.InitializePeerView(&system, id)
 				HallRequestsForAllElevators[id] = system.HallRequests
 				CabRequestsForAllElevators[id] = system.States[id].CabRequests
 				servicedHallOrders = servicedHallOrders[:0]
@@ -132,7 +132,7 @@ func RunOrder(
 		}
 		//fmt.Println("After select in orderrutine")
 		select {
-		case synchronisationChannels.UpdateElevatorSystemWithElevatorSystemChannel <- *synchronisation.CopyElevatorSystem(&system):
+		case synchronisationChannels.UpdateElevatorSystemWithElevatorSystemChannel <- *synchronization.CopyPeerView(&system):
 			//fmt.Println("Sent system update to synchroniseElevators (deep copy)")
 		default:
 			//fmt.Println("Channel full, system update dropped")
