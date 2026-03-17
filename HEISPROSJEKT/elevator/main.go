@@ -55,7 +55,7 @@ func main() {
 
 	go elevatorHardware.RunElevatorFsm(strconv.Itoa(*id), hardwareChannels, channels, orderChannels)
 
-	go synchronization.SynchroniseElevators(hardwareChannels.ElevatorObjectChannel, channels, strconv.Itoa(*id))
+	go synchronization.SynchronizeElevators(hardwareChannels.ElevatorObjectChannel, channels, strconv.Itoa(*id))
 
 	go orderProtocol.RunOrder(strconv.Itoa(*id), orderChannels, channels, hardwareChannels)
 

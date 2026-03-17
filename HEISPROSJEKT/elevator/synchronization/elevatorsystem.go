@@ -152,19 +152,22 @@ func UpdateElevatorSystemWithPeer(localPeerView *elevatorConfig.PeerView, extarn
 		cabRequestsForAllElevators[extarnalPeerView.OwnId] = extarnalPeerView.States[localPeerView.OwnId].CabRequests
 	}
 }
-
+/*
 func UpdateElevatorSystemWithSelf(peerView *elevatorConfig.PeerView, hallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, cabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus) {
 	hallRequestsForAllElevators[peerView.OwnId] = peerView.HallRequests
 	cabRequestsForAllElevators[peerView.OwnId] = peerView.States[peerView.OwnId].CabRequests
 }
+	*/
 
 // Not used:
+/*
 func updateElevatorSystem(peerView *elevatorConfig.PeerView, hallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, cabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus, receivedWorldView chan string) {
 	peerSystem := DecodeElevatorSystem(<-receivedWorldView)
 	addPeer(peerView, &peerSystem)
 	UpdateElevatorSystemWithPeer(peerView, &peerSystem, hallRequestsForAllElevators, cabRequestsForAllElevators)
 	UpdateElevatorSystemWithSelf(peerView, hallRequestsForAllElevators, cabRequestsForAllElevators)
 }
+	*/
 
 func CopyElevatorSystem(peerView *elevatorConfig.PeerView) *elevatorConfig.PeerView {
 	copyPeerView := *peerView // shallow copy

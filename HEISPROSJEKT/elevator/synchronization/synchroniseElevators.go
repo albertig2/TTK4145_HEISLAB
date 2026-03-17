@@ -17,7 +17,7 @@ import (
 )
 
 // called as a go functions
-func SynchroniseElevators(elevator chan elevatorConfig.Elevator, synchronizationChannels elevatorConfig.SynchronizationChannels, ownId string) {
+func SynchronizeElevators(elevator chan elevatorConfig.Elevator, synchronizationChannels elevatorConfig.SynchronizationChannels, ownId string) {
 
 	elevatorSystem := elevatorConfig.PeerView{}
 	InitializeElevatorSystem(&elevatorSystem, ownId)
