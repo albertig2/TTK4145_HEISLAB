@@ -92,7 +92,7 @@ func getAllCabRequestTransitions(peerView *elevatorConfig.PeerView, cabRequestsF
 	return transitions
 }
 
-func transitioningAllHallRequests(peerView *elevatorConfig.ElevatorSystem, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, elevatorOrderChannels elevatorConfig.OrderChannels) {
+func transitioningAllHallRequests(peerView *elevatorConfig.PeerView, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition, elevatorOrderChannels elevatorConfig.OrderChannels) {
 	for floor := range elevatorConfig.N_FLOORS {
 		for _, hallDirection := range synchronization.HallDirections {
 			var status elevatorConfig.OrderStatus

@@ -2,7 +2,7 @@ package orderProtocol
 
 import (
 	"HEISPROSJEKT/elevatorConfig"
-	"HEISPROSJEKT/synchronisation"
+	"HEISPROSJEKT/synchronization"
 	"encoding/json"
 	"fmt"
 	"os/exec"
@@ -38,7 +38,7 @@ func buildHallRequestAssignerPeerView(peerView elevatorConfig.PeerView, hallRequ
 	}
 
 	for floor := range elevatorConfig.N_FLOORS {
-		for _, hallDirection := range synchronisation.HallDirections {
+		for _, hallDirection := range synchronization.HallDirections {
 			if hallRequestTransitions[floor][hallDirection] == PendingToAssigned {
 				hallRequestAssignerPeerView.HallRequests[floor][hallDirection] = true
 			}
