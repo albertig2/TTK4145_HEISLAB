@@ -21,6 +21,8 @@ import (
 //note: Det skjer noen ganger at heisen kommer out of bounds, burde vi legge på faktiske hardware 
 //sikkert som hindrer heisen i å få til dette
 
+//der er flere initer i kontroller, burde noen slås sammen?
+
 func main() {
 	fmt.Println("Jeg nekter å kommentere ut fmt hver gang jeg skal debugge")
 	id := flag.Int("id", 1, "Input id")
