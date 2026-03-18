@@ -31,6 +31,7 @@ func PrintLocalElvator(elevator elevatorConfig.Elevator) {
 	fmt.Println("  +--------------------+")
 }
 
+
 func PrintPeerUpdate(peerUpdate peers.PeerUpdate) {
 
 	fmt.Println("--------New peer uppdate recieved----------")
@@ -84,7 +85,7 @@ func printCabOrderLine(orders [elevatorConfig.N_FLOORS]elevatorConfig.OrderStatu
 	}
 	fmt.Printf(" |\n")
 }
-func PrintCurrentWorkingElevatorFromPeerView (peerView elevatorConfig.PeerView) {
+func printCurrentWorkingElevatorFromPeerView (peerView elevatorConfig.PeerView) {
 	workingNode := peerView.States[peerView.OwnId]
 	hallOrders := peerView.HallRequests
 	cabOrders := workingNode.CabRequests
@@ -108,7 +109,7 @@ func PrintCurrentWorkingElevatorFromPeerView (peerView elevatorConfig.PeerView) 
 
 }
 
-func PrintPeerElevatorStates (peerView elevatorConfig.PeerView) {
+func printPeerElevatorStates (peerView elevatorConfig.PeerView) {
 	currentPeers := peerView.States
 
 	for id, state := range currentPeers {
@@ -134,11 +135,42 @@ func PrintPeerElevatorStates (peerView elevatorConfig.PeerView) {
 
 }
 
+func printDeadAndAliveElevators (peerView elevatorConfig.PeerView){
+
+	fmt.Printf("Alive elevators: ")
+	for _, peerId := range peerView.AlivePeers{
+	fmt.Printf("%s ", peerId)
+	}
+	fmt.Printf("\n")
+	fmt.Printf("Lost elevators: ")
+
+	lostOwnId := true
+	for peerId := range peerView.States {
+		idLost := true 
+		for _, aliveId := range peerView.AlivePeers{
+			if (aliveId == peerId){
+				idLost = false
+			}  
+			if (aliveId == peerView.OwnId){
+				lostOwnId = false
+			}
+		}
+		if( idLost){
+			fmt.Printf("%s ", peerId)
+		}
+	}
+	fmt.Printf("\n")
+	if (lostOwnId){
+		fmt.Println("This elevator is currently offline")
+	}
+}
+
 func PrintElevatorSystem(elevatorSystem elevatorConfig.PeerView) {
 	fmt.Println("---------Start System update-----------------")
-	PrintCurrentWorkingElevatorFromPeerView(elevatorSystem)
+	printDeadAndAliveElevators(elevatorSystem)
+	printCurrentWorkingElevatorFromPeerView(elevatorSystem)
 	fmt.Printf("\n")
-	PrintPeerElevatorStates(elevatorSystem)
+	printPeerElevatorStates(elevatorSystem)
 	fmt.Println("---------End System update-------------------")
 }
 
