@@ -35,11 +35,9 @@ func LocalElevatorController(ownId string, controllerChannels elevatorConfig.Ele
 
 		case assignedPeerOrder := <-orderChannels.NewAssignedPeerOrderChannel:
 			handleLightSettingForPeerOrders(assignedPeerOrder.Floor, assignedPeerOrder.Button, true)
-			fmt.Printf("Turned on the light for %v at floor %v \n", elevatorConfig.ButtonToString(assignedPeerOrder.Button), assignedPeerOrder.Floor)
 
 		case servicedPeerOrder := <-orderChannels.ServicedPeerOrderChannel:
 			handleLightSettingForPeerOrders(servicedPeerOrder.Floor, servicedPeerOrder.Button, false)
-			fmt.Printf("Turned of the light for %v at floor %v \n", elevatorConfig.ButtonToString(servicedPeerOrder.Button), servicedPeerOrder.Floor)
 
 		case stopActivated := <-controllerChannels.PollStopButtonChannel:
 			handleStopButton(stopActivated, &elevator, openDoorTimer, orderChannels.ServicedOrderChannel, detectMotorFailureTimer)
