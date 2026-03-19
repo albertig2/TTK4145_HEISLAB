@@ -142,3 +142,11 @@ func CopyPeerView(peerView *elevatorConfig.PeerView) *elevatorConfig.PeerView {
 
 	return &copyPeerView
 }
+
+func UpdateElevatorSystemFromElevator(elevator elevatorConfig.Elevator, peerView *elevatorConfig.PeerView) {
+	SetBehavior(peerView, elevatorConfig.Behavior(elevator.Behavior))
+	SetDirection(peerView, elevator.Direction)
+	if elevator.Floor >= 0 && elevator.Floor < elevatorConfig.N_FLOORS {
+		SetFloor(peerView, elevator.Floor)
+	}
+}
