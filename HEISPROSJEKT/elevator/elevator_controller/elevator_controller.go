@@ -13,7 +13,7 @@ func LocalElevatorController(ownId string, controllerChannels elevatorConfig.Con
 	detectMotorFailureTimer := time.NewTimer(elevatorConfig.MOTOR_TIMEOUT_DURATION_S)
 	detectMotorFailureTimer.Stop()
 
-	sendUpdateToPeerViewTicker := time.NewTicker(time.Second / 10)
+	sendElevatorUpdateTicker := time.NewTicker(time.Second / 10)
 
 	elevator := initializeEmptyElevator(ownId)
 
@@ -52,7 +52,7 @@ func LocalElevatorController(ownId string, controllerChannels elevatorConfig.Con
 		case <-detectMotorFailureTimer.C:
 			handleDetectedMotorFailure(&elevator, detectMotorFailureTimer, controllerChannels, synchronisationChannels)
 
-		case <-sendUpdateToPeerViewTicker.C:
+		case <-sendElevatorUpdateTicker.C:
 			controllerChannels.LocalElevatorChannel <- elevator
 		}
 	}
