@@ -15,7 +15,7 @@ two select cases. One is used to detect events from the hardware and the order a
 handler corresponding to the event. The other case sends the elevator object to the synchronization module. 
 */
 
-func LocalElevatorController(ownId string, controllerChannels elevatorConfig.ElevatorControllerChannels, synchronisationChannels elevatorConfig.SynchronizationChannels, orderChannels elevatorConfig.OrderChannels) {
+func LocalElevatorController(ownId string, controllerChannels elevatorConfig.ControllerChannels, synchronisationChannels elevatorConfig.SynchronizationChannels, orderChannels elevatorConfig.OrderChannels) {
 	openDoorTimer := time.NewTimer(elevatorConfig.DOOR_OPEN_DURATION_S)
 	openDoorTimer.Stop()
 
