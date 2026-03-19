@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func SynchronizeElevators(elevator chan elevatorConfig.Elevator, synchronizationChannels elevatorConfig.SynchronizationChannels, ownId string) {
+func SynchronizeElevators(elevator chan elevatorConfig.Elevator, synchronizationChannels elevatorConfig.SynchronizationChannels, controllerChannels elevatorConfig.ControllerChannels, ownId string) {
 	peerView := elevatorConfig.PeerView{}
 	InitializePeerView(&peerView, ownId)
 
@@ -23,7 +23,7 @@ func SynchronizeElevators(elevator chan elevatorConfig.Elevator, synchronization
 			debuggingHelpers.PrintPeerUpdate(peerUpdate)
 			synchronizationChannels.AlivePeersChannel <- peerUpdate.Peers
 
-		case elevatorUpdate := <-elevator:
+		case elevatorUpdate := <-controllerChannels.LocalElevatorChannel:
 			synchronizationChannels.UpdateElevatorSystemWithElevatorChannel <- elevatorUpdate
 
 		case systemUpdate := <-synchronizationChannels.UpdateElevatorSystemWithElevatorSystemChannel:

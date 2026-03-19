@@ -46,8 +46,8 @@ func initializeEmptyElevator(ownId string) elevatorConfig.Elevator {
 	return elevator
 }
 
-func InitializeControllerChannels() elevatorConfig.ElevatorControllerChannels {
-	controllerChannels := elevatorConfig.ElevatorControllerChannels{
+func InitializeControllerChannels() elevatorConfig.ControllerChannels {
+	controllerChannels := elevatorConfig.ControllerChannels{
 		PollOrderButtonsChannel: make(chan elevio.ButtonEvent),
 		PollObstructionChannel:  make(chan bool),
 		PollStopButtonChannel:   make(chan bool),
@@ -220,7 +220,7 @@ func handleStopButton(stopActivated bool, elevator *elevatorConfig.Elevator, ope
 
 }
 
-func handleObstruction(obstructionActivated bool, elevator *elevatorConfig.Elevator, doorTimer *time.Timer, servicedOrderChannel chan elevatorConfig.ButtonEvent, detectMotorFailureTimer *time.Timer, controllerChannels elevatorConfig.ElevatorControllerChannels, synchronisationChannels elevatorConfig.SynchronizationChannels) {
+func handleObstruction(obstructionActivated bool, elevator *elevatorConfig.Elevator, doorTimer *time.Timer, servicedOrderChannel chan elevatorConfig.ButtonEvent, detectMotorFailureTimer *time.Timer, controllerChannels elevatorConfig.ControllerChannels, synchronisationChannels elevatorConfig.SynchronizationChannels) {
 
 	if obstructionActivated {
 		fmt.Println("Obstruction was activated")
@@ -247,7 +247,7 @@ func handleObstruction(obstructionActivated bool, elevator *elevatorConfig.Eleva
 	}
 }
 
-func handleRestartElevator(elevator *elevatorConfig.Elevator, detectMotorFailureTimer *time.Timer, controllerChannels elevatorConfig.ElevatorControllerChannels, synchronisationChannels elevatorConfig.SynchronizationChannels) {
+func handleRestartElevator(elevator *elevatorConfig.Elevator, detectMotorFailureTimer *time.Timer, controllerChannels elevatorConfig.ControllerChannels, synchronisationChannels elevatorConfig.SynchronizationChannels) {
 
 	motorDirection(elevatorConfig.Stop, detectMotorFailureTimer)
 
@@ -273,7 +273,7 @@ func handleLightSettingForPeerOrders(floor int, buttonType elevatorConfig.Button
 	elevio.SetButtonLamp(elevio.ButtonType(int(buttonType)), floor, lightValue)
 }
 
-func handleDetectedMotorFailure(elevator *elevatorConfig.Elevator, detectMotorFailureTimer *time.Timer, controllerChannels elevatorConfig.ElevatorControllerChannels, synchronisationChannels elevatorConfig.SynchronizationChannels) {
+func handleDetectedMotorFailure(elevator *elevatorConfig.Elevator, detectMotorFailureTimer *time.Timer, controllerChannels elevatorConfig.ControllerChannels, synchronisationChannels elevatorConfig.SynchronizationChannels) {
 
 	synchronisationChannels.PeerTxEnableChannel <- false
 
