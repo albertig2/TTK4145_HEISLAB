@@ -47,7 +47,6 @@ type Elevator struct {
 	Direction       Direction
 	LocalOrderQueue [N_FLOORS][N_BUTTONS]bool
 	Behavior        Behavior
-
 }
 
 type PeerState struct {
@@ -88,7 +87,7 @@ type SynchronizationChannels struct {
 	//new order channel?
 }
 
-type ElevatorControllerChannels struct {
+type ControllerChannels struct {
 	PollOrderButtonsChannel chan elevio.ButtonEvent
 	PollObstructionChannel  chan bool
 	PollStopButtonChannel   chan bool

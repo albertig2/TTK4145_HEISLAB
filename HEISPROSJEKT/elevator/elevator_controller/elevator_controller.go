@@ -6,12 +6,14 @@ import (
 	"time"
 )
 
-func LocalElevatorController(ownId string, controllerChannels elevatorConfig.ElevatorControllerChannels, synchronisationChannels elevatorConfig.SynchronizationChannels, orderChannels elevatorConfig.OrderChannels) {
+func LocalElevatorController(ownId string, controllerChannels elevatorConfig.ControllerChannels, synchronisationChannels elevatorConfig.SynchronizationChannels, orderChannels elevatorConfig.OrderChannels) {
 	openDoorTimer := time.NewTimer(elevatorConfig.DOOR_OPEN_DURATION_S)
 	openDoorTimer.Stop()
 
 	detectMotorFailureTimer := time.NewTimer(elevatorConfig.MOTOR_TIMEOUT_DURATION_S)
 	detectMotorFailureTimer.Stop()
+
+	sendUpdateToPeerViewTicker := time.NewTicker(time.Second / 10)
 
 	elevator := initializeEmptyElevator(ownId)
 
@@ -52,10 +54,9 @@ func LocalElevatorController(ownId string, controllerChannels elevatorConfig.Ele
 
 		case <-detectMotorFailureTimer.C:
 			handleDetectedMotorFailure(&elevator, detectMotorFailureTimer, controllerChannels, synchronisationChannels)
-		}
-		select {
-		case controllerChannels.LocalElevatorChannel <- elevator:
-		default:
+
+		case <-sendUpdateToPeerViewTicker.C:
+			controllerChannels.LocalElevatorChannel <- elevator
 		}
 	}
 }
