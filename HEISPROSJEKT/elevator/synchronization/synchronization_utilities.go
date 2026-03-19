@@ -1,7 +1,8 @@
 package synchronization
 
-// Provides channel initialization for synchronization
-
+/*
+Provides channel initialization for synchronization
+*/
 
 import (
 	"HEISPROSJEKT/elevatorConfig"

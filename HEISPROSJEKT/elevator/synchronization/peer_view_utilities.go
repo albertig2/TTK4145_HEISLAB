@@ -1,7 +1,9 @@
 package synchronization
 
-// Handles the representation and manipulation of the shared elevator system state (PeerView).
-// Provides initialization, update, and merge logic for local and external peer data.
+/*
+Handles the representation and manipulation of the shared elevator system state (PeerView).
+Provides initialization, update, and merge logic for local and external peer data.
+*/
 
 import (
 	"HEISPROSJEKT/elevatorConfig"
