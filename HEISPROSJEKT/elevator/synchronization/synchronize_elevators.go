@@ -1,5 +1,9 @@
 package synchronization
 
+// Runs the main synchronization loop.
+// Coordinates communication between peers, local elevator updates,
+// and periodic broadcasting of the system state.
+
 import (
 	"HEISPROSJEKT/debuggingHelpers"
 	"HEISPROSJEKT/elevatorConfig"
