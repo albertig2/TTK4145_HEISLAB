@@ -25,26 +25,33 @@ func ManageAndDistributeOrders(ownId string, orderChannels elevatorConfig.OrderC
 		select {
 		case servicedorder := <-orderChannels.ServicedOrderChannel:
 			servicedHallOrders, servicedCabOrders = appendOrderByType(servicedHallOrders, servicedCabOrders, servicedorder)
+
 		case newOrder := <-orderChannels.NewRecievedOrderChannel:
 			newHallOrders, newCabOrders = appendOrderByType(newHallOrders, newCabOrders, newOrder)
+
 		case elevatorUpdate := <-synchronizationChannels.UpdatePeerViewWithLocalElevatorChannel:
 			synchronization.UpdateElevatorSystemFromElevator(elevatorUpdate, &localPeerView)
+
 		case externalPeerView := <-synchronizationChannels.UpdateLocalPeerViewWithExternalPeerViewChannel:
 			synchronization.UpdateLocalPeerViewWithPeer(&localPeerView, &externalPeerView, hallOrdersForAllElevators, cabOrdersForAllElevators)
+
 		case alivePeers := <-synchronizationChannels.AlivePeersChannel:
 			validAlivePeers := filterValidPeersAndIncludeOwnId(&localPeerView, alivePeers)
 			synchronization.SetAlivePeers(&localPeerView, validAlivePeers)
+
 		case restart := <-hardwareChannels.RestartElevatorChannel:
 			reinitialize = restart
 			if restart {
 				hallOrdersForAllElevators, cabOrdersForAllElevators = initializePeerView(&localPeerView, ownId)
 				servicedHallOrders, servicedCabOrders, newHallOrders, newCabOrders = initializeOrDrainOrders()
 			}
+
 		case <-ticker.C:
 			if !reinitialize && areAllFloorsValid(&localPeerView) {
 				orderRutine(&localPeerView, &hallOrdersForAllElevators, &cabOrdersForAllElevators, orderChannels, newHallOrders, newCabOrders, servicedHallOrders, servicedCabOrders)
 				servicedHallOrders, servicedCabOrders, newHallOrders, newCabOrders = initializeOrDrainOrders()
 			}
+			
 		}
 		select {
 		case synchronizationChannels.UpdatePeerViewforBroadcastWithLocalPeerViewChannel <- *synchronization.CopyPeerView(&localPeerView):

@@ -21,6 +21,5 @@ func InitializeSynchronizationChannels() elevatorConfig.SynchronizationChannels 
 		UpdateLocalPeerViewWithExternalPeerViewChannel:     make(chan elevatorConfig.PeerView),
 		AlivePeersChannel:                                  make(chan []string),
 	}
-
 	return syncronizationChannels
 }

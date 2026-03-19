@@ -2,15 +2,12 @@ package elevatorController
 
 import (
 	elevatorConfig "HEISPROSJEKT/elevator_config"
-	"fmt"
 	"time"
 )
 
 /*
-
-This is file contains the finite state machine for the elevator. 
-It detects events, and calls their corresponding handlers. 
-
+This is file contains the finite state machine for the elevator.
+It detects events, and calls their corresponding handlers.
 */
 
 func LocalElevatorController(ownId string, controllerChannels elevatorConfig.ControllerChannels, synchronizationChannels elevatorConfig.SynchronizationChannels, orderChannels elevatorConfig.OrderChannels) {
@@ -36,7 +33,6 @@ func LocalElevatorController(ownId string, controllerChannels elevatorConfig.Con
 
 		case recievedOrder := <-controllerChannels.PollOrderButtonsChannel:
 			orderChannels.NewRecievedOrderChannel <- elevatorConfig.ButtonEvent{Floor: recievedOrder.Floor, Button: elevatorConfig.Button(recievedOrder.Button)}
-			fmt.Printf("New order from FSM: (%v , %v) \n", elevatorConfig.ButtonToString(elevatorConfig.Button(int(recievedOrder.Button))), recievedOrder.Floor)
 
 		case assignedOrder := <-orderChannels.NewAssignedOrderChannel:
 			handleOrderButtonPressd(&elevator, openDoorTimer, int(assignedOrder.Floor), elevatorConfig.Button(assignedOrder.Button), orderChannels.ServicedOrderChannel, detectMotorFailureTimer)

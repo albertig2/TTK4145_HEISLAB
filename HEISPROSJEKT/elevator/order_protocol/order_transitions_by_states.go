@@ -10,7 +10,6 @@ values are used by the order state machine to update and synchronize order state
 */
 
 func getHallTransitionFromNoOrder(hallOrdersForAllElevators map[string][elevatorConfig.NumberOfFloors][elevatorConfig.NumberOfHallButtons]elevatorConfig.OrderStatus, hallDirection int, floor int, newOrders []elevatorConfig.ButtonEvent, otherAlivePeers []string) OrderTransition {
-	// If any of the elevators are in completed, the new order will not be set, but then the person just have to press the button again I guess.
 	noOrderToPending := false
 	for _, order := range newOrders {
 		if order.Floor == floor && int(order.Button) == hallDirection {

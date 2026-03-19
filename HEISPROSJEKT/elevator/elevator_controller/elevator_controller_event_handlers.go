@@ -107,7 +107,7 @@ func handleDoorTimeout(elevator *elevatorConfig.Elevator, doorTimer *time.Timer,
 			motorDirection(elevator.Direction, detectMotorFailureTimer)
 		}
 	default:
-		// nothing
+		// Do nothing
 	}
 }
 
@@ -174,7 +174,7 @@ func handleStopButton(stopActivated bool, elevator *elevatorConfig.Elevator, ope
 		case elevatorConfig.DoorOpen:
 			handleOpenDoor(elevator, openDoorTimer, elevatorConfig.DoorOpenDurationInSeconds, servicedOrderChannel)
 		default:
-			//do nothing
+			//Do nothing
 		}
 	}
 }
