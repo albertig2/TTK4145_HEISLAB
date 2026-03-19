@@ -1,13 +1,13 @@
 package synchronization
 
+import (
+	elevatorConfig "HEISPROSJEKT/elevator_config"
+)
+
 /*
 Handles the representation and manipulation of the shared elevator system state (PeerView).
 Provides initialization, update, and merge logic for local and external peer data.
 */
-
-import (
-	elevatorConfig "HEISPROSJEKT/elevator_config"
-)
 
 var HallDirections = [2]int{int(elevatorConfig.HallUp), int(elevatorConfig.HallDown)}
 

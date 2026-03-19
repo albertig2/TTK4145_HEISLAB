@@ -2,6 +2,13 @@ package orderProtocol
 
 import elevatorConfig "HEISPROSJEKT/elevator_config"
 
+/*
+This file contains functions that determine state transitions for hall and cab orders
+in the distributed elevator control system. Each function is called for an order in a
+specific state and determines the transition from that state. The returned OrderTransition
+values are used by the order state machine to update and synchronize order states across all peers.
+*/
+
 func getHallTransitionFromNoOrder(hallOrdersForAllElevators map[string][elevatorConfig.NumberOfFloors][elevatorConfig.NumberOfHallButtons]elevatorConfig.OrderStatus, hallDirection int, floor int, newOrders []elevatorConfig.ButtonEvent, otherAlivePeers []string) OrderTransition {
 	// If any of the elevators are in completed, the new order will not be set, but then the person just have to press the button again I guess.
 	noOrderToPending := false

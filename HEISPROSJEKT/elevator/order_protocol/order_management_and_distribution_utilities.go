@@ -5,6 +5,20 @@ import (
 	"HEISPROSJEKT/synchronization"
 )
 
+/*
+This file contains utility functions for the order management and distribution protocol.
+It includes functions for initializing order channels, processing order transitions, and managing the state of orders across the system.
+*/
+
+func orderRutine(peerView *elevatorConfig.PeerView, hallOrdersForAllElevators *map[string][elevatorConfig.NumberOfFloors][elevatorConfig.NumberOfHallButtons]elevatorConfig.OrderStatus, cabOrdersForAllElevators *map[string][elevatorConfig.NumberOfFloors]elevatorConfig.OrderStatus, orderChannels elevatorConfig.OrderChannels, newHallOrders []elevatorConfig.ButtonEvent, newCabOrders []elevatorConfig.ButtonEvent, servicedHallOrders []elevatorConfig.ButtonEvent, servicedCabOrders []elevatorConfig.ButtonEvent) {
+	HallRequestTransitions := getAllHallRequestTransitions(peerView, *hallOrdersForAllElevators, newHallOrders, servicedHallOrders)
+	CabRequestTransitions := getAllCabRequestTransitions(peerView, *cabOrdersForAllElevators, newCabOrders, servicedCabOrders)
+	transitioningAllHallOrders(peerView, HallRequestTransitions, orderChannels)
+	transitioningAllCabOrders(peerView, CabRequestTransitions, orderChannels)
+	(*hallOrdersForAllElevators)[peerView.OwnId] = peerView.HallOrders
+	(*cabOrdersForAllElevators)[peerView.OwnId] = peerView.States[peerView.OwnId].CabOrders
+}
+
 func InitializeOrderChannels() elevatorConfig.OrderChannels {
 	orderChannelse := elevatorConfig.OrderChannels{
 		NewRecievedOrderChannel:     make(chan elevatorConfig.ButtonEvent, 10),
@@ -14,15 +28,6 @@ func InitializeOrderChannels() elevatorConfig.OrderChannels {
 		ServicedPeerOrderChannel:    make(chan elevatorConfig.ButtonEvent, 10),
 	}
 	return orderChannelse
-}
-
-func orderRutine(peerView *elevatorConfig.PeerView, hallOrdersForAllElevators *map[string][elevatorConfig.NumberOfFloors][elevatorConfig.NumberOfHallButtons]elevatorConfig.OrderStatus, cabOrdersForAllElevators *map[string][elevatorConfig.NumberOfFloors]elevatorConfig.OrderStatus, orderChannels elevatorConfig.OrderChannels, newHallOrders []elevatorConfig.ButtonEvent, newCabOrders []elevatorConfig.ButtonEvent, servicedHallOrders []elevatorConfig.ButtonEvent, servicedCabOrders []elevatorConfig.ButtonEvent) {
-	HallRequestTransitions := getAllHallRequestTransitions(peerView, *hallOrdersForAllElevators, newHallOrders, servicedHallOrders)
-	CabRequestTransitions := getAllCabRequestTransitions(peerView, *cabOrdersForAllElevators, newCabOrders, servicedCabOrders)
-	transitioningAllHallOrders(peerView, HallRequestTransitions, orderChannels)
-	transitioningAllCabOrders(peerView, CabRequestTransitions, orderChannels)
-	(*hallOrdersForAllElevators)[peerView.OwnId] = peerView.HallOrders
-	(*cabOrdersForAllElevators)[peerView.OwnId] = peerView.States[peerView.OwnId].CabOrders
 }
 
 func initializePeerView(peerView *elevatorConfig.PeerView, ownId string) (map[string][elevatorConfig.NumberOfFloors][elevatorConfig.NumberOfHallButtons]elevatorConfig.OrderStatus, map[string][elevatorConfig.NumberOfFloors]elevatorConfig.OrderStatus) {

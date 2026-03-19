@@ -9,6 +9,12 @@ import (
 	"runtime"
 )
 
+/*
+This file converts the PeerView struct to the format that the hall_request_assigner script takes in.
+All orders where all peers have Pending will be passed into the hall_request_assigner and
+distributed among the all peers.
+*/
+
 type hallOrderAssignerPeerState struct {
 	Behavior  string                              `json:"behavior"`
 	Floor     int                                 `json:"floor"`
