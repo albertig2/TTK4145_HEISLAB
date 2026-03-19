@@ -6,6 +6,11 @@ import (
 	"fmt"
 )
 
+/*
+Contains functions needed to print the different structs, as well as utility functions needed to do so
+
+*/
+
 func PrintLocalElvator(elevator elevatorConfig.Elevator) {
 	fmt.Println("  +--------------------+")
 	fmt.Printf("  |%-6s = %-2d          |\n", "floor", elevator.Floor)
