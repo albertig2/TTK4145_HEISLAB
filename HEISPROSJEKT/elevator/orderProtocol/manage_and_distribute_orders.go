@@ -7,7 +7,7 @@ import (
 	//"fmt"
 )
 
-func ManageAndDistributeOrders(ownId string, orderChannels elevatorConfig.OrderChannels, synchronizationChannels elevatorConfig.SynchronizationChannels, hardwareChannels elevatorConfig.ElevatorControllerChannels) {
+func ManageAndDistributeOrders(ownId string, orderChannels elevatorConfig.OrderChannels, synchronizationChannels elevatorConfig.SynchronizationChannels, hardwareChannels elevatorConfig.ControllerChannels) {
 	localPeerView := elevatorConfig.PeerView{}
 	hallRequestsForAllElevators, cabRequestsForAllElevators := initializePeerView(&localPeerView, ownId)
 	servicedHallOrders, servicedCabOrders, newHallOrders, newCabOrders := initializeOrDrainOrders()
