@@ -6,7 +6,7 @@ Provides initialization, update, and merge logic for local and external peer dat
 */
 
 import (
-	"HEISPROSJEKT/elevatorConfig"
+	elevatorConfig "HEISPROSJEKT/elevator_config"
 )
 
 var HallDirections = [2]int{int(elevatorConfig.HallUp), int(elevatorConfig.HallDown)}
@@ -30,26 +30,26 @@ func SetDirection(peerView *elevatorConfig.PeerView, direction elevatorConfig.Di
 	state.Direction = direction
 }
 
-func SetCabRequests(peerView *elevatorConfig.PeerView, floor int, orderStatus elevatorConfig.OrderStatus) {
+func SetCabOrders(peerView *elevatorConfig.PeerView, floor int, orderStatus elevatorConfig.OrderStatus) {
 	state := peerView.States[peerView.OwnId]
-	state.CabRequests[floor] = orderStatus
+	state.CabOrders[floor] = orderStatus
 }
 
-func SetHallRequests(peerView *elevatorConfig.PeerView, floor int, hallDirection int, orderStatus elevatorConfig.OrderStatus) {
-	peerView.HallRequests[floor][hallDirection] = orderStatus
+func SetHallOrders(peerView *elevatorConfig.PeerView, floor int, hallDirection int, orderStatus elevatorConfig.OrderStatus) {
+	peerView.HallOrders[floor][hallDirection] = orderStatus
 }
 
 func InitializePeerView(peerView *elevatorConfig.PeerView, ownId string) {
 	peerView.AlivePeers = []string{ownId}
 	peerView.OwnId = ownId
-	peerView.HallRequests = [elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus{}
+	peerView.HallOrders = [elevatorConfig.NumberOfFloors][2]elevatorConfig.OrderStatus{}
 	peerView.States = make(map[string]*elevatorConfig.PeerState)
 	unknownFloor := -1
 	peerView.States[ownId] = &elevatorConfig.PeerState{
-		Behavior:    elevatorConfig.Idle,
-		Floor:       unknownFloor,
-		Direction:   elevatorConfig.Stop,
-		CabRequests: [elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus{},
+		Behavior:  elevatorConfig.Idle,
+		Floor:     unknownFloor,
+		Direction: elevatorConfig.Stop,
+		CabOrders: [elevatorConfig.NumberOfFloors]elevatorConfig.OrderStatus{},
 	}
 
 	initializeHallRequests(peerView)
@@ -57,16 +57,16 @@ func InitializePeerView(peerView *elevatorConfig.PeerView, ownId string) {
 }
 
 func initializeHallRequests(peerView *elevatorConfig.PeerView) {
-	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
+	for floor := 0; floor < elevatorConfig.NumberOfFloors; floor++ {
 		for _, hallDirection := range HallDirections {
-			peerView.HallRequests[floor][hallDirection] = elevatorConfig.NoOrder
+			peerView.HallOrders[floor][hallDirection] = elevatorConfig.NoOrder
 		}
 	}
 }
 
 func initializeCabRequests(peerView *elevatorConfig.PeerView) {
-	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
-		peerView.States[peerView.OwnId].CabRequests[floor] = elevatorConfig.Unknown
+	for floor := 0; floor < elevatorConfig.NumberOfFloors; floor++ {
+		peerView.States[peerView.OwnId].CabOrders[floor] = elevatorConfig.Unknown
 	}
 }
 
@@ -83,8 +83,8 @@ func addPeer(peerView *elevatorConfig.PeerView, externalPeerView *elevatorConfig
 	if !Contains(peerView.AlivePeers, externalPeerView.OwnId) {
 		peerView.AlivePeers = append(peerView.AlivePeers, externalPeerView.OwnId)
 	}
-	cabRequests := externalPeerView.States[externalPeerView.OwnId].CabRequests
-	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
+	cabRequests := externalPeerView.States[externalPeerView.OwnId].CabOrders
+	for floor := 0; floor < elevatorConfig.NumberOfFloors; floor++ {
 		if cabRequests[floor] == elevatorConfig.Unknown {
 			cabRequests[floor] = elevatorConfig.NoOrder
 		}
@@ -92,18 +92,18 @@ func addPeer(peerView *elevatorConfig.PeerView, externalPeerView *elevatorConfig
 
 	peerState := externalPeerView.States[externalPeerView.OwnId]
 	peerView.States[externalPeerView.OwnId] = &elevatorConfig.PeerState{
-		Behavior:    peerState.Behavior,
-		Floor:       peerState.Floor,
-		Direction:   peerState.Direction,
-		CabRequests: cabRequests,
+		Behavior:  peerState.Behavior,
+		Floor:     peerState.Floor,
+		Direction: peerState.Direction,
+		CabOrders: cabRequests,
 	}
 }
 
 func updatePeer(localPeerView *elevatorConfig.PeerView, extarnalPeerView *elevatorConfig.PeerView) {
-	peerSystemCabRequests := extarnalPeerView.States[extarnalPeerView.OwnId].CabRequests
-	cabRequests := localPeerView.States[extarnalPeerView.OwnId].CabRequests
+	peerSystemCabRequests := extarnalPeerView.States[extarnalPeerView.OwnId].CabOrders
+	cabRequests := localPeerView.States[extarnalPeerView.OwnId].CabOrders
 
-	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
+	for floor := 0; floor < elevatorConfig.NumberOfFloors; floor++ {
 		if peerSystemCabRequests[floor] != elevatorConfig.Unknown {
 			cabRequests[floor] = peerSystemCabRequests[floor]
 		}
@@ -111,23 +111,23 @@ func updatePeer(localPeerView *elevatorConfig.PeerView, extarnalPeerView *elevat
 
 	peerState := extarnalPeerView.States[extarnalPeerView.OwnId]
 	localPeerView.States[extarnalPeerView.OwnId] = &elevatorConfig.PeerState{
-		Behavior:    peerState.Behavior,
-		Floor:       peerState.Floor,
-		Direction:   peerState.Direction,
-		CabRequests: cabRequests,
+		Behavior:  peerState.Behavior,
+		Floor:     peerState.Floor,
+		Direction: peerState.Direction,
+		CabOrders: cabRequests,
 	}
 }
 
-func UpdateLocalPeerViewWithPeer(localPeerView *elevatorConfig.PeerView, extarnalPeerView *elevatorConfig.PeerView, hallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, cabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus) {
+func UpdateLocalPeerViewWithPeer(localPeerView *elevatorConfig.PeerView, extarnalPeerView *elevatorConfig.PeerView, hallRequestsForAllElevators map[string][elevatorConfig.NumberOfFloors][2]elevatorConfig.OrderStatus, cabRequestsForAllElevators map[string][elevatorConfig.NumberOfFloors]elevatorConfig.OrderStatus) {
 	if _, exists := localPeerView.States[extarnalPeerView.OwnId]; exists {
 		updatePeer(localPeerView, extarnalPeerView)
 	} else {
 		addPeer(localPeerView, extarnalPeerView)
 	}
 
-	hallRequestsForAllElevators[extarnalPeerView.OwnId] = extarnalPeerView.HallRequests
+	hallRequestsForAllElevators[extarnalPeerView.OwnId] = extarnalPeerView.HallOrders
 	if _, exists := extarnalPeerView.States[localPeerView.OwnId]; exists {
-		cabRequestsForAllElevators[extarnalPeerView.OwnId] = extarnalPeerView.States[localPeerView.OwnId].CabRequests
+		cabRequestsForAllElevators[extarnalPeerView.OwnId] = extarnalPeerView.States[localPeerView.OwnId].CabOrders
 	}
 }
 
@@ -137,7 +137,7 @@ func CopyPeerView(peerView *elevatorConfig.PeerView) *elevatorConfig.PeerView {
 	copyPeerView.AlivePeers = make([]string, len(peerView.AlivePeers))
 	copy(copyPeerView.AlivePeers, peerView.AlivePeers)
 
-	copyPeerView.HallRequests = peerView.HallRequests
+	copyPeerView.HallOrders = peerView.HallOrders
 
 	copyPeerView.States = make(map[string]*elevatorConfig.PeerState, len(peerView.States))
 	for peerId, peerState := range peerView.States {
@@ -151,7 +151,7 @@ func CopyPeerView(peerView *elevatorConfig.PeerView) *elevatorConfig.PeerView {
 func UpdateElevatorSystemFromElevator(elevator elevatorConfig.Elevator, peerView *elevatorConfig.PeerView) {
 	SetBehavior(peerView, elevatorConfig.Behavior(elevator.Behavior))
 	SetDirection(peerView, elevator.Direction)
-	if elevator.Floor >= 0 && elevator.Floor < elevatorConfig.N_FLOORS {
+	if elevator.Floor >= 0 && elevator.Floor < elevatorConfig.NumberOfFloors {
 		SetFloor(peerView, elevator.Floor)
 	}
 }

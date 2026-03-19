@@ -2,7 +2,7 @@ package elevatorController
 
 import (
 	"Driver-go/elevio"
-	"HEISPROSJEKT/elevatorConfig"
+	elevatorConfig "HEISPROSJEKT/elevator_config"
 	"time"
 )
 
@@ -28,7 +28,7 @@ func motorDirection(direction elevatorConfig.Direction, detectMotorFailureTimer 
 		detectMotorFailureTimer.Stop()
 	} else {
 		detectMotorFailureTimer.Stop()
-		detectMotorFailureTimer.Reset(elevatorConfig.MOTOR_TIMEOUT_DURATION_S)
+		detectMotorFailureTimer.Reset(elevatorConfig.MotorTimeOutDurationInSeconds)
 	}
 }
 
@@ -52,8 +52,8 @@ func stopButtonLight(lightValue bool) {
 }
 
 func tunrOnOrderLightsBasedOnLocalQueue(elevator elevatorConfig.Elevator) {
-	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
-		for button := 0; button < elevatorConfig.N_BUTTONS; button++ {
+	for floor := 0; floor < elevatorConfig.NumberOfFloors; floor++ {
+		for button := 0; button < elevatorConfig.NunberOfButtons; button++ {
 			if elevator.LocalOrderQueue[floor][button] { //only set light if true, (clearing here will also mess withthe network order lights)
 				orderButtonLight(floor, elevatorConfig.Button(button), elevator.LocalOrderQueue[floor][button])
 			}
@@ -62,8 +62,8 @@ func tunrOnOrderLightsBasedOnLocalQueue(elevator elevatorConfig.Elevator) {
 }
 
 func turnOffAllOrderLights() {
-	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
-		for button := 0; button < elevatorConfig.N_BUTTONS; button++ {
+	for floor := 0; floor < elevatorConfig.NumberOfFloors; floor++ {
+		for button := 0; button < elevatorConfig.NunberOfButtons; button++ {
 			orderButtonLight(floor, elevatorConfig.Button(button), false)
 		}
 	}

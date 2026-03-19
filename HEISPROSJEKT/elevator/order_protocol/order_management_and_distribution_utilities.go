@@ -1,7 +1,7 @@
 package orderProtocol
 
 import (
-	"HEISPROSJEKT/elevatorConfig"
+	elevatorConfig "HEISPROSJEKT/elevator_config"
 	"HEISPROSJEKT/synchronization"
 )
 
@@ -16,22 +16,22 @@ func InitializeOrderChannels() elevatorConfig.OrderChannels {
 	return orderChannelse
 }
 
-func orderRutine(peerView *elevatorConfig.PeerView, hallRequestsForAllElevators *map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, cabRequestsForAllElevators *map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus, orderChannels elevatorConfig.OrderChannels, newHallOrders []elevatorConfig.ButtonEvent, newCabOrders []elevatorConfig.ButtonEvent, servicedHallOrders []elevatorConfig.ButtonEvent, servicedCabOrders []elevatorConfig.ButtonEvent) {
-	HallRequestTransitions := getAllHallRequestTransitions(peerView, *hallRequestsForAllElevators, newHallOrders, servicedHallOrders)
-	CabRequestTransitions := getAllCabRequestTransitions(peerView, *cabRequestsForAllElevators, newCabOrders, servicedCabOrders)
-	transitioningAllHallRequests(peerView, HallRequestTransitions, orderChannels)
-	transitioningAllCabRequests(peerView, CabRequestTransitions, orderChannels)
-	(*hallRequestsForAllElevators)[peerView.OwnId] = peerView.HallRequests
-	(*cabRequestsForAllElevators)[peerView.OwnId] = peerView.States[peerView.OwnId].CabRequests
+func orderRutine(peerView *elevatorConfig.PeerView, hallOrdersForAllElevators *map[string][elevatorConfig.NumberOfFloors][elevatorConfig.NumberOfHallButtons]elevatorConfig.OrderStatus, cabOrdersForAllElevators *map[string][elevatorConfig.NumberOfFloors]elevatorConfig.OrderStatus, orderChannels elevatorConfig.OrderChannels, newHallOrders []elevatorConfig.ButtonEvent, newCabOrders []elevatorConfig.ButtonEvent, servicedHallOrders []elevatorConfig.ButtonEvent, servicedCabOrders []elevatorConfig.ButtonEvent) {
+	HallRequestTransitions := getAllHallRequestTransitions(peerView, *hallOrdersForAllElevators, newHallOrders, servicedHallOrders)
+	CabRequestTransitions := getAllCabRequestTransitions(peerView, *cabOrdersForAllElevators, newCabOrders, servicedCabOrders)
+	transitioningAllHallOrders(peerView, HallRequestTransitions, orderChannels)
+	transitioningAllCabOrders(peerView, CabRequestTransitions, orderChannels)
+	(*hallOrdersForAllElevators)[peerView.OwnId] = peerView.HallOrders
+	(*cabOrdersForAllElevators)[peerView.OwnId] = peerView.States[peerView.OwnId].CabOrders
 }
 
-func initializePeerView(peerView *elevatorConfig.PeerView, ownId string) (map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus) {
+func initializePeerView(peerView *elevatorConfig.PeerView, ownId string) (map[string][elevatorConfig.NumberOfFloors][elevatorConfig.NumberOfHallButtons]elevatorConfig.OrderStatus, map[string][elevatorConfig.NumberOfFloors]elevatorConfig.OrderStatus) {
 	synchronization.InitializePeerView(peerView, ownId)
-	hallRequestsForAllElevators := make(map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus)
-	cabRequestsForAllElevators := make(map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus)
-	hallRequestsForAllElevators[ownId] = peerView.HallRequests
-	cabRequestsForAllElevators[ownId] = peerView.States[ownId].CabRequests
-	return hallRequestsForAllElevators, cabRequestsForAllElevators
+	hallOrdersForAllElevators := make(map[string][elevatorConfig.NumberOfFloors][elevatorConfig.NumberOfHallButtons]elevatorConfig.OrderStatus)
+	cabOrdersForAllElevators := make(map[string][elevatorConfig.NumberOfFloors]elevatorConfig.OrderStatus)
+	hallOrdersForAllElevators[ownId] = peerView.HallOrders
+	cabOrdersForAllElevators[ownId] = peerView.States[ownId].CabOrders
+	return hallOrdersForAllElevators, cabOrdersForAllElevators
 }
 
 func appendOrderByType(hallOrders []elevatorConfig.ButtonEvent, cabOrders []elevatorConfig.ButtonEvent, order elevatorConfig.ButtonEvent) ([]elevatorConfig.ButtonEvent, []elevatorConfig.ButtonEvent) {

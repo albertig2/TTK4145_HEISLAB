@@ -8,39 +8,39 @@ and periodic broadcasting of the system state.
 
 import (
 	"HEISPROSJEKT/debuggingHelpers"
-	"HEISPROSJEKT/elevatorConfig"
+	elevatorConfig "HEISPROSJEKT/elevator_config"
 	"time"
 )
 
-func SynchronizeElevators(elevator chan elevatorConfig.Elevator, synchronizationChannels elevatorConfig.SynchronizationChannels, controllerChannels elevatorConfig.ControllerChannels, ownId string) {
-	peerView := elevatorConfig.PeerView{}
-	InitializePeerView(&peerView, ownId)
+func SynchronizeElevators(synchronizationChannels elevatorConfig.SynchronizationChannels, controllerChannels elevatorConfig.ControllerChannels, ownId string) {
+	peerViewForBroadcast := elevatorConfig.PeerView{}
+	InitializePeerView(&peerViewForBroadcast, ownId)
 
 	broadcastTicker := time.NewTicker(time.Second / 30)
 	printTicker := time.NewTicker(time.Second * 2)
 	for {
 		select {
-		case incommingBroadcast := <-synchronizationChannels.BcastIncomingMessagesChannel:
-			if incommingBroadcast.OwnId != ownId {
-				synchronizationChannels.UpdateElevatorSystemWithPeerChannel <- incommingBroadcast
+		case externalPeerView := <-synchronizationChannels.BroadcastIncomingMessagesChannel:
+			if externalPeerView.OwnId != ownId {
+				synchronizationChannels.UpdateLocalPeerViewWithExternalPeerViewChannel <- externalPeerView
 			}
 
 		case peerUpdate := <-synchronizationChannels.PeerUpdateChannel:
 			debuggingHelpers.PrintPeerUpdate(peerUpdate)
 			synchronizationChannels.AlivePeersChannel <- peerUpdate.Peers
 
-		case elevatorUpdate := <-controllerChannels.LocalElevatorChannel:
-			synchronizationChannels.UpdateElevatorSystemWithElevatorChannel <- elevatorUpdate
+		case elevatorUpdate := <-synchronizationChannels.LocalElevatorChannel:
+			synchronizationChannels.UpdatePeerViewWithLocalElevatorChannel <- elevatorUpdate
 
-		case systemUpdate := <-synchronizationChannels.UpdateElevatorSystemWithElevatorSystemChannel:
-			peerView = systemUpdate
+		case localPeerView := <-synchronizationChannels.UpdatePeerViewforBroadcastWithLocalPeerViewChannel:
+			peerViewForBroadcast = localPeerView
 
 		case <-broadcastTicker.C:
-			synchronizationChannels.BcastOutgoingMessagesChannel <- peerView
+			synchronizationChannels.BroadcastOutgoingMessagesChannel <- peerViewForBroadcast
 			broadcastTicker.Reset(time.Second / 30)
 
 		case <-printTicker.C:
-			debuggingHelpers.PrintPeerViewUpdate(peerView)
+			debuggingHelpers.PrintPeerViewUpdate(peerViewForBroadcast)
 		}
 	}
 }

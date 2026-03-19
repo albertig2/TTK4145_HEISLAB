@@ -1,7 +1,7 @@
 package orderProtocol
 
 import (
-	"HEISPROSJEKT/elevatorConfig"
+	elevatorConfig "HEISPROSJEKT/elevator_config"
 	"HEISPROSJEKT/synchronization"
 	"encoding/json"
 	"fmt"
@@ -9,45 +9,45 @@ import (
 	"runtime"
 )
 
-type hallRequestAssignerPeerState struct {
-	Behavior    string                        `json:"behavior"`
-	Floor       int                           `json:"floor"`
-	Direction   string                        `json:"direction"`
-	CabRequests [elevatorConfig.N_FLOORS]bool `json:"cabRequests"`
+type hallOrderAssignerPeerState struct {
+	Behavior  string                              `json:"behavior"`
+	Floor     int                                 `json:"floor"`
+	Direction string                              `json:"direction"`
+	CabOrders [elevatorConfig.NumberOfFloors]bool `json:"cabRequests"`
 }
 
-type hallRequestAssignerPeerView struct {
-	HallRequests [elevatorConfig.N_FLOORS][2]bool         `json:"hallRequests"`
-	States       map[string]*hallRequestAssignerPeerState `json:"states"`
+type hallOrderAssignerPeerView struct {
+	HallOrders [elevatorConfig.NumberOfFloors][elevatorConfig.NumberOfHallButtons]bool `json:"hallRequests"`
+	States     map[string]*hallOrderAssignerPeerState                                  `json:"states"`
 }
 
-func buildHallRequestAssignerPeerView(peerView elevatorConfig.PeerView, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition) hallRequestAssignerPeerView {
-	hallRequestAssignerPeerView := hallRequestAssignerPeerView{
-		HallRequests: [elevatorConfig.N_FLOORS][2]bool{},
-		States:       make(map[string]*hallRequestAssignerPeerState),
+func buildHallOrderAssignerPeerView(peerView elevatorConfig.PeerView, hallOrderTransitions [elevatorConfig.NumberOfFloors][elevatorConfig.NumberOfHallButtons]OrderTransition) hallOrderAssignerPeerView {
+	hallOrderAssignerPeerView := hallOrderAssignerPeerView{
+		HallOrders: [elevatorConfig.NumberOfFloors][elevatorConfig.NumberOfHallButtons]bool{},
+		States:     make(map[string]*hallOrderAssignerPeerState),
 	}
 
 	for _, peerId := range peerView.AlivePeers {
 		peerState := peerView.States[peerId]
-		hallRequestAssignerPeerView.States[peerId] = &hallRequestAssignerPeerState{
-			Behavior:    elevatorConfig.BehaviorToString(peerState.Behavior),
-			Floor:       peerState.Floor,
-			Direction:   elevatorConfig.DirectionToString(peerState.Direction),
-			CabRequests: [elevatorConfig.N_FLOORS]bool{},
+		hallOrderAssignerPeerView.States[peerId] = &hallOrderAssignerPeerState{
+			Behavior:  elevatorConfig.BehaviorToString(peerState.Behavior),
+			Floor:     peerState.Floor,
+			Direction: elevatorConfig.DirectionToString(peerState.Direction),
+			CabOrders: [elevatorConfig.NumberOfFloors]bool{},
 		}
 	}
 
-	for floor := range elevatorConfig.N_FLOORS {
+	for floor := range elevatorConfig.NumberOfFloors {
 		for _, hallDirection := range synchronization.HallDirections {
-			if hallRequestTransitions[floor][hallDirection] == PendingToAssigned {
-				hallRequestAssignerPeerView.HallRequests[floor][hallDirection] = true
+			if hallOrderTransitions[floor][hallDirection] == PendingToAssigned {
+				hallOrderAssignerPeerView.HallOrders[floor][hallDirection] = true
 			}
 		}
 	}
-	return hallRequestAssignerPeerView
+	return hallOrderAssignerPeerView
 }
 
-func hallRequestAssigner(peerView *elevatorConfig.PeerView, hallRequestTransitions [elevatorConfig.N_FLOORS][2]OrderTransition) map[string][][2]bool {
+func hallOrderAssigner(peerView *elevatorConfig.PeerView, hallOrderTransitions [elevatorConfig.NumberOfFloors][elevatorConfig.NumberOfHallButtons]OrderTransition) map[string][][elevatorConfig.NumberOfHallButtons]bool {
 	Executable := ""
 	switch runtime.GOOS {
 	case "linux":
@@ -58,7 +58,7 @@ func hallRequestAssigner(peerView *elevatorConfig.PeerView, hallRequestTransitio
 		panic("OS not supported")
 	}
 
-	input := buildHallRequestAssignerPeerView(*peerView, hallRequestTransitions)
+	input := buildHallOrderAssignerPeerView(*peerView, hallOrderTransitions)
 
 	jsonBytes, error := json.Marshal(input)
 	if error != nil {
@@ -71,7 +71,7 @@ func hallRequestAssigner(peerView *elevatorConfig.PeerView, hallRequestTransitio
 		fmt.Println(string(outputBytes))
 		return nil
 	}
-	output := new(map[string][][2]bool)
+	output := new(map[string][][elevatorConfig.NumberOfHallButtons]bool)
 	error = json.Unmarshal(outputBytes, &output)
 	if error != nil {
 		fmt.Println("json.Unmarshal error: ", error)

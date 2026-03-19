@@ -1,7 +1,7 @@
 package orderProtocol
 
 import (
-	"HEISPROSJEKT/elevatorConfig"
+	elevatorConfig "HEISPROSJEKT/elevator_config"
 	"HEISPROSJEKT/synchronization"
 	"time"
 	//"fmt"
@@ -20,9 +20,9 @@ func ManageAndDistributeOrders(ownId string, orderChannels elevatorConfig.OrderC
 			servicedHallOrders, servicedCabOrders = appendOrderByType(servicedHallOrders, servicedCabOrders, servicedorder)
 		case newOrder := <-orderChannels.NewRecievedOrderChannel:
 			newHallOrders, newCabOrders = appendOrderByType(newHallOrders, newCabOrders, newOrder)
-		case elevatorUpdate := <-synchronizationChannels.UpdateElevatorSystemWithElevatorChannel:
+		case elevatorUpdate := <-synchronizationChannels.UpdatePeerViewWithLocalElevatorChannel:
 			synchronization.UpdateElevatorSystemFromElevator(elevatorUpdate, &localPeerView)
-		case externalPeerView := <-synchronizationChannels.UpdateElevatorSystemWithPeerChannel:
+		case externalPeerView := <-synchronizationChannels.UpdateLocalPeerViewWithExternalPeerViewChannel:
 			synchronization.UpdateLocalPeerViewWithPeer(&localPeerView, &externalPeerView, hallRequestsForAllElevators, cabRequestsForAllElevators)
 		case alivePeers := <-synchronizationChannels.AlivePeersChannel:
 			validAlivePeers := filterValidPeersAndIncludeOwnId(&localPeerView, alivePeers)
@@ -40,7 +40,7 @@ func ManageAndDistributeOrders(ownId string, orderChannels elevatorConfig.OrderC
 			}
 		}
 		select {
-		case synchronizationChannels.UpdateElevatorSystemWithElevatorSystemChannel <- *synchronization.CopyPeerView(&localPeerView):
+		case synchronizationChannels.UpdatePeerViewforBroadcastWithLocalPeerViewChannel <- *synchronization.CopyPeerView(&localPeerView):
 		default:
 		}
 	}
