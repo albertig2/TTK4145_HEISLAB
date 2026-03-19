@@ -1,10 +1,10 @@
 # The elevator project
 
-This is group 51’s (Albertine Gjøs, Odin Sandli Mellingsæter and Mathilde Skaset-Haarr) solution to the distributed elevator project for spring 2026 (TTK4155). The project is solved using UDP with a peer to peer structure. Information is shared between nodes by regular broadcasts ( 30 hz update frequency). Each broadcast contains the state of the local node (direction, behavior and floor and alivelist) the order queue viewed from the nodes perspective, and the nodes cab orders. To be able to deal with order assignments, reassignment and prevent loss of cab orders, the orders are managed as a state machine. Together with the synchronization module, this limits double assignment, assures automatic reassignment of the orders after a disconnection and the restoration of cab orders after reconnection . The local elevator and its hardware are managed by another finite state machine. The modules communicate through channels. 
+This is group 51’s (Albertine Gjøs, Odin Sandli Mellingsæter and Mathilde Skaset-Haarr) solution to the distributed elevator project for spring 2026 (TTK4155). The project is solved using UDP with a peer to peer structure. Information is shared between nodes by regular broadcasts ( 30 hz update frequency). Each broadcast contains the state of the local node (direction, behavior and floor and alivelist), the order queue viewed from the nodes perspective, and the nodes cab orders. To be able to deal with order assignments, reassignment and prevent loss of cab orders, the orders are managed as a state machine. Together with the synchronization module, this limits double assignment, assures automatic reassignment of the orders after a disconnection and the restoration of cab orders after reconnection . The local elevator and its hardware are managed by another finite state machine. The modules communicate through channels. 
 ## Run the project
 The project is run by calling:
 ```bash
-go run main.go -id=  yourId -port= yourPort
+go run main.go -id=yourId -port=yourPort
 ```
 In the terminal. Note that you must enter this from the correct folder. 
 Both the id and port should be entered as an integer. If no id is provided the elevator takes the default value of id=1. If no port is provided, the port is set to its default value of port= 15657. The port specified in the terminal, is the TCP port used to connect to the elevator server or the simulator server.
