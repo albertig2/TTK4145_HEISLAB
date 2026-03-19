@@ -1,13 +1,13 @@
 package synchronization
 
-/*
-Provides channel initialization for synchronization
-*/
-
 import (
 	elevatorConfig "HEISPROSJEKT/elevator_config"
 	"Network-go/network/peers"
 )
+
+/*
+Provides channel initialization for synchronization
+*/
 
 func InitializeSynchronizationChannels() elevatorConfig.SynchronizationChannels {
 	syncronizationChannels := elevatorConfig.SynchronizationChannels{
