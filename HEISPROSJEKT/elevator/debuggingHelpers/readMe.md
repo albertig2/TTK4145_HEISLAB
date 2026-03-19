@@ -18,7 +18,7 @@ PrintLocalElvator(elevator)
 
 ```
 #### Output
-``` bash
+``` text
   +--------------------+
   |floor  = 2          |
   |dirn   = down       |
@@ -44,7 +44,7 @@ PrintPeerUpdate(peerUpdate)
 ```
 #### Output
 
-``` bash
+``` text
 --------New peer uppdate recieved----------
 Current alive peers: 1 2
 Elevator ID  1 just joind the network
@@ -83,7 +83,7 @@ PrintElevatorSystem(peerView)
 
 ```
 #### Output
-``` bash
+``` text
 ---------Start PeerView update------------
 
 Alive elevators: 2 3
