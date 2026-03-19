@@ -5,6 +5,14 @@ import (
 	"HEISPROSJEKT/synchronization"
 )
 
+/*
+This file defines the OrderTransition type and implements the logic for determining and applying
+state transitions for hall and cab orders in the distributed elevator system. It provides functions
+to check the current state of each order, evaluate possible transitions based on system events and
+peer states, and update the order state accordingly. These transitions are used to keep the distributed
+order state machine consistent and synchronized across all elevators.
+*/
+
 type OrderTransition int
 
 const (

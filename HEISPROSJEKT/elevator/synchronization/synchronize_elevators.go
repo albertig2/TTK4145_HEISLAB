@@ -1,16 +1,16 @@
 package synchronization
 
-/*
-Runs the main synchronization loop.
-Coordinates communication between peers, local elevator updates,
-and periodic broadcasting of the system state.
-*/
-
 import (
 	"HEISPROSJEKT/debuggingHelpers"
 	elevatorConfig "HEISPROSJEKT/elevator_config"
 	"time"
 )
+
+/*
+Runs the main synchronization loop.
+Coordinates communication between peers, local elevator updates,
+and periodic broadcasting of the system state.
+*/
 
 func SynchronizeElevators(synchronizationChannels elevatorConfig.SynchronizationChannels, controllerChannels elevatorConfig.ControllerChannels, ownId string) {
 	peerViewForBroadcast := elevatorConfig.PeerView{}
