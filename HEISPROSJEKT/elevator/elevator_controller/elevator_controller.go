@@ -20,7 +20,6 @@ func LocalElevatorController(ownId string, controllerChannels elevatorConfig.Ele
 	for {
 		select {
 		case floor := <-controllerChannels.FloorSensorChannel:
-			// Should wait for assignment before opening the door
 			detectMotorFailureTimer.Stop()
 			detectMotorFailureTimer.Reset(elevatorConfig.MOTOR_TIMEOUT_DURATION_S)
 
