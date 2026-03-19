@@ -1,7 +1,7 @@
 package synchronization
 
 import (
-	"HEISPROSJEKT/debuggingHelpers"
+
 	elevatorConfig "HEISPROSJEKT/elevator_config"
 	"time"
 )
@@ -17,7 +17,7 @@ func SynchronizeElevators(synchronizationChannels elevatorConfig.Synchronization
 	InitializePeerView(&peerViewForBroadcast, ownId)
 
 	broadcastTicker := time.NewTicker(time.Second / 30)
-	printTicker := time.NewTicker(time.Second * 2)
+
 	for {
 		select {
 		case externalPeerView := <-synchronizationChannels.BroadcastIncomingMessagesChannel:
@@ -26,7 +26,6 @@ func SynchronizeElevators(synchronizationChannels elevatorConfig.Synchronization
 			}
 
 		case peerUpdate := <-synchronizationChannels.PeerUpdateChannel:
-			debuggingHelpers.PrintPeerUpdate(peerUpdate)
 			synchronizationChannels.AlivePeersChannel <- peerUpdate.Peers
 
 		case elevatorUpdate := <-synchronizationChannels.LocalElevatorChannel:
@@ -38,9 +37,6 @@ func SynchronizeElevators(synchronizationChannels elevatorConfig.Synchronization
 		case <-broadcastTicker.C:
 			synchronizationChannels.BroadcastOutgoingMessagesChannel <- peerViewForBroadcast
 			broadcastTicker.Reset(time.Second / 30)
-
-		case <-printTicker.C:
-			debuggingHelpers.PrintPeerViewUpdate(peerViewForBroadcast)
 		}
 	}
 }

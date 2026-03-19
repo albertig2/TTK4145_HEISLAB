@@ -71,7 +71,7 @@ func hallOrderAssigner(peerView *elevatorConfig.PeerView, hallOrderTransitions [
 		fmt.Println("json.Marshal error: ", error)
 		return nil
 	}
-	outputBytes, error := exec.Command("../cost_fns/hall_request_assigner/"+Executable, "-i", string(jsonBytes)).CombinedOutput()
+	outputBytes, error := exec.Command("../"+Executable, "-i", string(jsonBytes)).CombinedOutput()
 	if error != nil {
 		fmt.Println("exec.Command error: ", error)
 		fmt.Println(string(outputBytes))
