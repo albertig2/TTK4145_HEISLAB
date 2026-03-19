@@ -9,7 +9,7 @@ import (
 	// "HEISPROSJEKT/communication"
 
 	elevatorController "HEISPROSJEKT/elevator_controller"
-	"HEISPROSJEKT/orderProtocol"
+	orderProtocol "HEISPROSJEKT/order_protocol"
 	"HEISPROSJEKT/synchronization"
 
 	//"HEISPROSJEKT/elevatorHardware"
