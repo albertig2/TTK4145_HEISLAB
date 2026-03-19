@@ -1,5 +1,9 @@
 package synchronization
 
+/*
+Provides channel initialization for synchronization
+*/
+
 import (
 	"HEISPROSJEKT/elevatorConfig"
 	"Network-go/network/peers"
