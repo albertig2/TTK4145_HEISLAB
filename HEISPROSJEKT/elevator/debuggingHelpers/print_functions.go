@@ -1,7 +1,7 @@
 package debuggingHelpers
 
 import (
-	"HEISPROSJEKT/elevatorConfig"
+	elevatorConfig "HEISPROSJEKT/elevator_config"
 	"Network-go/network/peers"
 	"fmt"
 )
@@ -18,10 +18,10 @@ func PrintLocalElvator(elevator elevatorConfig.Elevator) {
 	fmt.Printf("  |%-6s = %-12.12s|\n", "behav", elevatorConfig.BehaviorToString(elevator.Behavior))
 	fmt.Println("  +--------------------+")
 	fmt.Println("  |  | up  | dn  | cab |")
-	for f := elevatorConfig.N_FLOORS - 1; f >= 0; f-- {
+	for f := elevatorConfig.NumberOfFloors - 1; f >= 0; f-- {
 		fmt.Printf("  | %d", f)
-		for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
-			if (f == elevatorConfig.N_FLOORS-1 && elevatorConfig.Button(btn) == elevatorConfig.HallUp) || (f == 0 && elevatorConfig.Button(btn) == elevatorConfig.HallDown) {
+		for btn := 0; btn < elevatorConfig.NunberOfButtons; btn++ {
+			if (f == elevatorConfig.NumberOfFloors-1 && elevatorConfig.Button(btn) == elevatorConfig.HallUp) || (f == 0 && elevatorConfig.Button(btn) == elevatorConfig.HallDown) {
 				fmt.Printf("|     ")
 			} else {
 				if elevator.LocalOrderQueue[f][btn] {
@@ -62,7 +62,7 @@ func orderStatusToSymbolToString(orderstatus elevatorConfig.OrderStatus) string 
 		return " ! "
 	case elevatorConfig.Assigned:
 		return " * "
-	case elevatorConfig.Completed:
+	case elevatorConfig.Serviced:
 		return " ^ "
 	case elevatorConfig.Unknown:
 		return " ? "
@@ -71,7 +71,7 @@ func orderStatusToSymbolToString(orderstatus elevatorConfig.OrderStatus) string 
 	}
 }
 
-func printHallOrderLine(orders [elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, orderTypeIndex int) {
+func printHallOrderLine(orders [elevatorConfig.NumberOfFloors][2]elevatorConfig.OrderStatus, orderTypeIndex int) {
 	for index := 0; index < len(orders); index++ {
 		orderstatus := orders[index][orderTypeIndex]
 		fmt.Printf("%s", orderStatusToSymbolToString(orderstatus))
@@ -79,7 +79,7 @@ func printHallOrderLine(orders [elevatorConfig.N_FLOORS][2]elevatorConfig.OrderS
 	fmt.Printf(" |\n")
 }
 
-func printCabOrderLine(orders [elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus) {
+func printCabOrderLine(orders [elevatorConfig.NumberOfFloors]elevatorConfig.OrderStatus) {
 	for index := 0; index < len(orders); index++ {
 		orderstatus := orders[index]
 		fmt.Printf("%s", orderStatusToSymbolToString(orderstatus))
@@ -88,8 +88,8 @@ func printCabOrderLine(orders [elevatorConfig.N_FLOORS]elevatorConfig.OrderStatu
 }
 func printCurrentWorkingElevatorFromPeerView(peerView elevatorConfig.PeerView) {
 	workingNode := peerView.States[peerView.OwnId]
-	hallOrders := peerView.HallRequests
-	cabOrders := workingNode.CabRequests
+	hallOrders := peerView.HallOrders
+	cabOrders := workingNode.CabOrders
 
 	fmt.Println("+----------------------------+")
 	fmt.Printf("|         ElevatorID: %v      |\n", peerView.OwnId)
@@ -115,7 +115,7 @@ func printPeerElevatorStates(peerView elevatorConfig.PeerView) {
 
 	for id, state := range currentPeers {
 		if id != peerView.OwnId {
-			cabOrders := state.CabRequests
+			cabOrders := state.CabOrders
 
 			fmt.Println("+----------------------------+")
 			fmt.Printf("|         ElevatorID: %v      |\n", id)

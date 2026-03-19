@@ -8,6 +8,7 @@ import (
 
 	// "HEISPROSJEKT/communication"
 
+	elevatorConfig "HEISPROSJEKT/elevator_config"
 	elevatorController "HEISPROSJEKT/elevator_controller"
 	orderProtocol "HEISPROSJEKT/order_protocol"
 	"HEISPROSJEKT/synchronization"
@@ -18,7 +19,7 @@ import (
 	"Network-go/network/peers"
 )
 
-//note: Det skjer noen ganger at heisen kommer out of bounds, burde vi legge på faktiske hardware 
+//note: Det skjer noen ganger at heisen kommer out of bounds, burde vi legge på faktiske hardware
 //sikkert som hindrer heisen i å få til dette
 
 //der er flere initer i kontroller, burde noen slås sammen?
@@ -31,29 +32,25 @@ func main() {
 	port := flag.Int("port", 15657, "Input port")
 	flag.Parse()
 
-	numFloors := 4
-	peerPort := 30004
-	bcastPort := 30400
-
-	elevio.Init("localhost:"+strconv.Itoa(*port), numFloors)
+	elevio.Init("localhost:"+strconv.Itoa(*port), elevatorConfig.NumberOfFloors)
 	ControllerChannels := elevatorController.InitializeControllerChannels()
 	orderChannels := orderProtocol.InitializeOrderChannels()
 	synchronizationChannels := synchronization.InitializeSynchronizationChannels()
 
-	go peers.Receiver(peerPort, synchronizationChannels.PeerUpdateChannel)
-	go peers.Transmitter(peerPort, strconv.Itoa(*id), synchronizationChannels.PeerTxEnableChannel)
+	go peers.Receiver(elevatorConfig.PeerUpdatePort, synchronizationChannels.PeerUpdateChannel)
+	go peers.Transmitter(elevatorConfig.PeerUpdatePort, strconv.Itoa(*id), synchronizationChannels.PeerTransmitEnableChannel)
 
-	go bcast.Transmitter(bcastPort, synchronizationChannels.BcastOutgoingMessagesChannel)
-	go bcast.Receiver(bcastPort, synchronizationChannels.BcastIncomingMessagesChannel)
+	go bcast.Transmitter(elevatorConfig.BroadcastPort, synchronizationChannels.BroadcastOutgoingMessagesChannel)
+	go bcast.Receiver(elevatorConfig.BroadcastPort, synchronizationChannels.BroadcastIncomingMessagesChannel)
 
 	go elevio.PollButtons(ControllerChannels.PollOrderButtonsChannel)
-	go elevio.PollFloorSensor(ControllerChannels.FloorSensorChannel)
+	go elevio.PollFloorSensor(ControllerChannels.PollFloorSensorChannel)
 	go elevio.PollObstructionSwitch(ControllerChannels.PollObstructionChannel)
 	go elevio.PollStopButton(ControllerChannels.PollStopButtonChannel)
 
 	go elevatorController.LocalElevatorController(strconv.Itoa(*id), ControllerChannels, synchronizationChannels, orderChannels)
 
-	go synchronization.SynchronizeElevators(ControllerChannels.LocalElevatorChannel, synchronizationChannels,ControllerChannels, strconv.Itoa(*id))
+	go synchronization.SynchronizeElevators(synchronizationChannels, ControllerChannels, strconv.Itoa(*id))
 
 	go orderProtocol.ManageAndDistributeOrders(strconv.Itoa(*id), orderChannels, synchronizationChannels, ControllerChannels)
 

@@ -1,8 +1,8 @@
 package orderProtocol
 
-import "HEISPROSJEKT/elevatorConfig"
+import elevatorConfig "HEISPROSJEKT/elevator_config"
 
-func getHallTransitionFromNoOrder(hallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, hallDirection int, floor int, newOrders []elevatorConfig.ButtonEvent, otherAlivePeers []string) OrderTransition {
+func getHallTransitionFromNoOrder(hallOrdersForAllElevators map[string][elevatorConfig.NumberOfFloors][elevatorConfig.NumberOfHallButtons]elevatorConfig.OrderStatus, hallDirection int, floor int, newOrders []elevatorConfig.ButtonEvent, otherAlivePeers []string) OrderTransition {
 	// If any of the elevators are in completed, the new order will not be set, but then the person just have to press the button again I guess.
 	noOrderToPending := false
 	for _, order := range newOrders {
@@ -13,8 +13,8 @@ func getHallTransitionFromNoOrder(hallRequestsForAllElevators map[string][elevat
 	}
 
 	for _, peerId := range otherAlivePeers {
-		peerHallStatus := hallRequestsForAllElevators[peerId][floor][hallDirection]
-		if peerHallStatus == elevatorConfig.Completed {
+		peerHallStatus := hallOrdersForAllElevators[peerId][floor][hallDirection]
+		if peerHallStatus == elevatorConfig.Serviced {
 			noOrderToPending = false
 			break
 		} else if peerHallStatus != elevatorConfig.NoOrder {
@@ -29,16 +29,16 @@ func getHallTransitionFromNoOrder(hallRequestsForAllElevators map[string][elevat
 	return NoTransition
 }
 
-func getHallTransitionFromPending(hallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, hallDirection int, floor int, otherAlivePeers []string) OrderTransition {
+func getHallTransitionFromPending(hallOrdersForAllElevators map[string][elevatorConfig.NumberOfFloors][elevatorConfig.NumberOfHallButtons]elevatorConfig.OrderStatus, hallDirection int, floor int, otherAlivePeers []string) OrderTransition {
 	for _, peerId := range otherAlivePeers {
-		peerHallStatus := hallRequestsForAllElevators[peerId][floor][hallDirection]
-		if peerHallStatus == elevatorConfig.Completed {
+		peerHallStatus := hallOrdersForAllElevators[peerId][floor][hallDirection]
+		if peerHallStatus == elevatorConfig.Serviced {
 			return PendingToNoOrder
 		}
 	}
 
 	for _, peerId := range otherAlivePeers {
-		peerHallStatus := hallRequestsForAllElevators[peerId][floor][hallDirection]
+		peerHallStatus := hallOrdersForAllElevators[peerId][floor][hallDirection]
 		if peerHallStatus == elevatorConfig.Assigned {
 			return PendingToPending
 		}
@@ -46,7 +46,7 @@ func getHallTransitionFromPending(hallRequestsForAllElevators map[string][elevat
 
 	pendingToAssigned := true
 	for _, peerId := range otherAlivePeers {
-		peerHallStatus := hallRequestsForAllElevators[peerId][floor][hallDirection]
+		peerHallStatus := hallOrdersForAllElevators[peerId][floor][hallDirection]
 		if peerHallStatus != elevatorConfig.Pending {
 			pendingToAssigned = false
 		}
@@ -69,10 +69,10 @@ func getHallTransitionFromAssigned(hallDirection int, floor int, servicedOrders 
 	return NoTransition
 }
 
-func getHallTransitionFromCompleted(hallRequestsForAllElevators map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, hallDirection int, floor int, otherAlivePeers []string) OrderTransition {
+func getHallTransitionFromCompleted(hallOrdersForAllElevators map[string][elevatorConfig.NumberOfFloors][elevatorConfig.NumberOfHallButtons]elevatorConfig.OrderStatus, hallDirection int, floor int, otherAlivePeers []string) OrderTransition {
 	completeToNoOrder := true
 	for _, peerId := range otherAlivePeers {
-		peerHallStatus := hallRequestsForAllElevators[peerId][floor][hallDirection]
+		peerHallStatus := hallOrdersForAllElevators[peerId][floor][hallDirection]
 		if peerHallStatus != elevatorConfig.NoOrder {
 			completeToNoOrder = false
 			break
@@ -86,12 +86,12 @@ func getHallTransitionFromCompleted(hallRequestsForAllElevators map[string][elev
 	return NoTransition
 }
 
-func getCabTransitionFromUnknown(cabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus, floor int, newOrders []elevatorConfig.ButtonEvent, otherAlivePeers []string) OrderTransition {
+func getCabTransitionFromUnknown(cabOrdersForAllElevators map[string][elevatorConfig.NumberOfFloors]elevatorConfig.OrderStatus, floor int, newOrders []elevatorConfig.ButtonEvent, otherAlivePeers []string) OrderTransition {
 	allNoOrder := true
 	anyPending := false
 	allAssignedOrPending := true
 	for _, peerId := range otherAlivePeers {
-		peerCabStatus := cabRequestsForAllElevators[peerId][floor]
+		peerCabStatus := cabOrdersForAllElevators[peerId][floor]
 		if peerCabStatus != elevatorConfig.NoOrder {
 			allNoOrder = false
 		}
@@ -130,10 +130,10 @@ func getCabTransitionFromNoOrder(floor int, newOrders []elevatorConfig.ButtonEve
 	return NoTransition
 }
 
-func getCabTransitionFromPending(cabRequestsForAllElevators map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus, floor int, otherAlivePeers []string) OrderTransition {
+func getCabTransitionFromPending(cabOrdersForAllElevators map[string][elevatorConfig.NumberOfFloors]elevatorConfig.OrderStatus, floor int, otherAlivePeers []string) OrderTransition {
 	pendingtoassigned := true
 	for _, peerId := range otherAlivePeers {
-		peerCabStatus := cabRequestsForAllElevators[peerId][floor]
+		peerCabStatus := cabOrdersForAllElevators[peerId][floor]
 		if peerCabStatus != elevatorConfig.Pending {
 			pendingtoassigned = false
 		}

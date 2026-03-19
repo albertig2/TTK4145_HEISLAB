@@ -1,12 +1,13 @@
 package elevatorController
 
 import (
-	"HEISPROSJEKT/elevatorConfig"
+	elevatorConfig "HEISPROSJEKT/elevator_config"
 )
+
 /*
-This file contains all functions related to managing and interaction with the local order queue. 
-This includes utility functions to detect orders relative to the elevator position, functions to 
-calculate behavior and motor direction based local orders and routines for clearing the correct orders 
+This file contains all functions related to managing and interaction with the local order queue.
+This includes utility functions to detect orders relative to the elevator position, functions to
+calculate behavior and motor direction based local orders and routines for clearing the correct orders
 based the current direction
 */
 
@@ -16,8 +17,8 @@ type directionBehaviorPair struct {
 }
 
 func ordersAboveCurrentFloor(elevator elevatorConfig.Elevator) bool {
-	for floor := elevator.Floor + 1; floor < elevatorConfig.N_FLOORS; floor++ {
-		for button := 0; button < elevatorConfig.N_BUTTONS; button++ {
+	for floor := elevator.Floor + 1; floor < elevatorConfig.NumberOfFloors; floor++ {
+		for button := 0; button < elevatorConfig.NunberOfButtons; button++ {
 			if elevator.LocalOrderQueue[floor][button] {
 				return true
 			}
@@ -28,7 +29,7 @@ func ordersAboveCurrentFloor(elevator elevatorConfig.Elevator) bool {
 
 func ordersBelowCurrentFloor(elevator elevatorConfig.Elevator) bool {
 	for floor := 0; floor < elevator.Floor; floor++ {
-		for button := 0; button < elevatorConfig.N_BUTTONS; button++ {
+		for button := 0; button < elevatorConfig.NunberOfButtons; button++ {
 			if elevator.LocalOrderQueue[floor][button] {
 				return true
 			}
@@ -38,7 +39,7 @@ func ordersBelowCurrentFloor(elevator elevatorConfig.Elevator) bool {
 }
 
 func ordersAtCurrentFloor(elevator elevatorConfig.Elevator) bool {
-	for button := 0; button < elevatorConfig.N_BUTTONS; button++ {
+	for button := 0; button < elevatorConfig.NunberOfButtons; button++ {
 		if elevator.LocalOrderQueue[elevator.Floor][button] {
 			return true
 		}
@@ -118,7 +119,7 @@ func shouldClearOrderImmediately(elevator elevatorConfig.Elevator, buttonFloor i
 
 func clearOrdersAtCurrentFloor(elevator elevatorConfig.Elevator) (elevatorConfig.Elevator, []elevatorConfig.ButtonEvent) {
 
-	clearedOrders := []elevatorConfig.ButtonEvent {}
+	clearedOrders := []elevatorConfig.ButtonEvent{}
 
 	elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.Cab] = false
 	clearedOrders = append(clearedOrders, elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.Cab})
