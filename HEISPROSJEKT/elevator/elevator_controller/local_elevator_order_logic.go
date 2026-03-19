@@ -3,6 +3,12 @@ package elevatorController
 import (
 	"HEISPROSJEKT/elevatorConfig"
 )
+/*
+This file contains all functions related to managing and interaction with the local order queue. 
+This includes utility functions to detect orders relative to the elevator position, functions to 
+calculate behavior and motor direction based local orders and routines for clearing the correct orders 
+based the current direction
+*/
 
 type directionBehaviorPair struct {
 	direction elevatorConfig.Direction
