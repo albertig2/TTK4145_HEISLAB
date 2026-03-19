@@ -7,12 +7,10 @@ import (
 )
 
 /*
-This is file contains one global function, LocalElevatorController.This is the finite state machine
-loop for handleing the local elevator behavior. The controller loop contains 3 objects: One elevator, which contains the internal
-state variables needed to make decisions in the state machine and two timers. One timer is used to detect
-motor failure, and one is used to control the amount of time the door is open. The infinite for loop contains
-two select cases. One is used to detect events from the hardware and the order assigner and trigger the correct
-handler corresponding to the event. The other case sends the elevator object to the synchronization module.
+
+This is file contains the finite state machine for the elevator. 
+It detects events, and calls their corresponding handlers. 
+
 */
 
 func LocalElevatorController(ownId string, controllerChannels elevatorConfig.ControllerChannels, synchronizationChannels elevatorConfig.SynchronizationChannels, orderChannels elevatorConfig.OrderChannels) {
