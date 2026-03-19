@@ -5,7 +5,45 @@ This module contains functions to ease the debugging process, specifically by pr
 ## Output examples
 
 ### PrintLocalElvator(elevator)
-### PrintPeerElevatorStates (peerView elevatorConfig.PeerView)
+#### Input
+``` go
+elevator := elevatorConfig.Elevator{
+    OwnId:           "1",
+    Floor:           2,
+    Direction:       elevatorConfig.down,
+    LocalOrderQueue: [elevatorConfig.N_FLOORS][elevatorConfig.N_BUTTONS]bool{},
+    Behavior:        elevatorConfig.Moving,
+}
+PrintLocalElvator(elevator)
+
+```
+#### Output
+``` bash
+  +--------------------+
+  |floor  = 2          |
+  |dirn   = down       |
+  |behav  = moving     |
+  +--------------------+
+  |  | up  | dn  | cab |
+  | 3|     |  -  |  -  |
+  | 2|  -  |  -  |  -  |
+  | 1|  -  |  -  |  -  |
+  | 0|  -  |     |  -  |
+  +--------------------+
+```
+### PrintPeerUpdate (Update peers.PeerUpdate)
+#### Input
+
+``` go
+peerUpdate := peer.PeerUpdate{
+    Peers [] string {"1", "2"},
+    New   "1",
+    Lost  []string {},
+}
+PrintPeerUpdate(peerUpdate)
+```
+#### Output
+
 ``` bash
 --------New peer uppdate recieved----------
 Current alive peers: 1 2
@@ -13,45 +51,81 @@ Elevator ID  1 just joind the network
 Peers considerd lost:
 ---------End of peer update--------------
 ```
-### PrintElevatorSystem(elevatorSystem elevatorConfig.PeerView) 
+### PrintElevatorSystem(elevatorSystem elevatorConfig.PeerView)
+#### Input
+``` go
+peerState1 := elevatorConfig.PeerState{
+    Behavior:    elevatorConfig.Moving,
+    Floor:    1,
+    Direction:   elevatorConfig.down,
+    CabRequests: [elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus{elevatorConfig.Assigned, elevatorConfig.Assigned, elevatorConfig.NoOrder, elevatorConfig.Assigned},
+}
+peerState2 := elevatorConfig.PeerState{
+    Behavior:   elevatorConfig.down,
+    Floor:       2,
+    Direction:   elevatorConfig.Stop,
+    CabRequests: [elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus{elevatorConfig.Assigned, elevatorConfig.Assigned, elevatorConfig.Assigned, elevatorConfig.Assigned},
+}
+peerState3 := elevatorConfig.PeerState{
+    Behavior:    elevatorConfig.DoorOpen,
+    Floor:        3,
+    Direction:   elevatorConfig.down,
+    CabRequests: [elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus{elevatorConfig.Assigned, elevatorConfig.Assigned, elevatorConfig.NoOrder, elevatorConfig.NoOrder},
+}
+peerView := elevatorConfig.PeerView{
+    AlivePeers   ["3", "2"]
+    OwnId:        "3",
+    HallRequests: [elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus{{elevatorConfig.Pending, elevatorConfig.NoOrder}, {elevatorConfig.Assigned, elevatorConfig.NoOrder}, {elevatorConfig.Pending, elevatorConfig.NoOrder}, {elevatorConfig.NoOrder, elevatorConfig.Assigned}},
+    States:       map[string]*elevatorConfig.PeerState{"1": &peerState1, "2": &peerState2, "3": &peerState3},
+}
+
+PrintElevatorSystem(peerView)
+
+```
+#### Output
 ``` bash
----------Start System update-----------------
+---------Start PeerView update------------
+
+Alive elevators: 2 3
+Lost elevators: 1
 +----------------------------+
 |         ElevatorID: 3      |
 +----------------------------+
-| Floor        | 1           |
-| Direction    | stop        |
-| Behavior     | idle        |
+| Floor        | 3           |
+| Direction    | down        |
+| Behavior     | moving      |
 +----------------------------+
 | Floor        | 1  2  3  4  |
 +----------------------------+
-| Up           | !  !  !  -  |
-| Down         | -  -  -  -  |
-| Cab          | -  -  -  -  |
+| Up           | *  !  *  -  |
+| Down         | -  -  *  !  |
+| Cab          | *  *  -  -  |
 +----------------------------+
 
+
++----------------------------+
+|         ElevatorID: 2      |
++----------------------------+
+| Floor        | 2           |
+| Direction    | down        |
+| Behavior     | moving      |
++----------------------------+
+| Floor        | 1  2  3  4  |
++----------------------------+
+| Cab          | *  *  *  *  |
++----------------------------+
 
 +----------------------------+
 |         ElevatorID: 1      |
 +----------------------------+
 | Floor        | 1           |
 | Direction    | down        |
-| Behavior     | moving      |
-+----------------------------+
-| Floor        | 1  2  3  4  |
-+----------------------------+
-| Cab          | -  -  -  -  |
-+----------------------------+
-
-+----------------------------+
-|         ElevatorID: 2      |
-+----------------------------+
-| Floor        | 0           |
-| Direction    | down        |
 | Behavior     | doorOpen    |
 +----------------------------+
 | Floor        | 1  2  3  4  |
 +----------------------------+
-| Cab          | -  -  -  -  |
+| Cab          | *  -  *  *  |
 +----------------------------+
+
+---------End PeerView update--------------
 ```
