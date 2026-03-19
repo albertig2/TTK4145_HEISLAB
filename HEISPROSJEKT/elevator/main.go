@@ -23,6 +23,8 @@ import (
 
 //der er flere initer i kontroller, burde noen slås sammen?
 
+//sto er broken i master, er den det her?
+
 func main() {
 	fmt.Println("Jeg nekter å kommentere ut fmt hver gang jeg skal debugge")
 	id := flag.Int("id", 1, "Input id")
