@@ -5,15 +5,6 @@ import (
 	"HEISPROSJEKT/synchronization"
 )
 
-func orderRutine(peerView *elevatorConfig.PeerView, hallRequestsForAllElevators *map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, cabRequestsForAllElevators *map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus, orderChannels elevatorConfig.OrderChannels, newHallOrders []elevatorConfig.ButtonEvent, newCabOrders []elevatorConfig.ButtonEvent, servicedHallOrders []elevatorConfig.ButtonEvent, servicedCabOrders []elevatorConfig.ButtonEvent) {
-	HallRequestTransitions := getAllHallRequestTransitions(peerView, *hallRequestsForAllElevators, newHallOrders, servicedHallOrders)
-	CabRequestTransitions := getAllCabRequestTransitions(peerView, *cabRequestsForAllElevators, newCabOrders, servicedCabOrders)
-	transitioningAllHallRequests(peerView, HallRequestTransitions, orderChannels)
-	transitioningAllCabRequests(peerView, CabRequestTransitions, orderChannels)
-	(*hallRequestsForAllElevators)[peerView.OwnId] = peerView.HallRequests
-	(*cabRequestsForAllElevators)[peerView.OwnId] = peerView.States[peerView.OwnId].CabRequests
-}
-
 func InitializeOrderChannels() elevatorConfig.OrderChannels {
 	orderChannelse := elevatorConfig.OrderChannels{
 		NewRecievedOrderChannel:     make(chan elevatorConfig.ButtonEvent, 10),
@@ -25,6 +16,15 @@ func InitializeOrderChannels() elevatorConfig.OrderChannels {
 	return orderChannelse
 }
 
+func orderRutine(peerView *elevatorConfig.PeerView, hallRequestsForAllElevators *map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, cabRequestsForAllElevators *map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus, orderChannels elevatorConfig.OrderChannels, newHallOrders []elevatorConfig.ButtonEvent, newCabOrders []elevatorConfig.ButtonEvent, servicedHallOrders []elevatorConfig.ButtonEvent, servicedCabOrders []elevatorConfig.ButtonEvent) {
+	HallRequestTransitions := getAllHallRequestTransitions(peerView, *hallRequestsForAllElevators, newHallOrders, servicedHallOrders)
+	CabRequestTransitions := getAllCabRequestTransitions(peerView, *cabRequestsForAllElevators, newCabOrders, servicedCabOrders)
+	transitioningAllHallRequests(peerView, HallRequestTransitions, orderChannels)
+	transitioningAllCabRequests(peerView, CabRequestTransitions, orderChannels)
+	(*hallRequestsForAllElevators)[peerView.OwnId] = peerView.HallRequests
+	(*cabRequestsForAllElevators)[peerView.OwnId] = peerView.States[peerView.OwnId].CabRequests
+}
+
 func initializePeerView(peerView *elevatorConfig.PeerView, ownId string) (map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus, map[string][elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus) {
 	synchronization.InitializePeerView(peerView, ownId)
 	hallRequestsForAllElevators := make(map[string][elevatorConfig.N_FLOORS][2]elevatorConfig.OrderStatus)
@@ -32,10 +32,6 @@ func initializePeerView(peerView *elevatorConfig.PeerView, ownId string) (map[st
 	hallRequestsForAllElevators[ownId] = peerView.HallRequests
 	cabRequestsForAllElevators[ownId] = peerView.States[ownId].CabRequests
 	return hallRequestsForAllElevators, cabRequestsForAllElevators
-}
-
-func initializeOrDrainOrders() ([]elevatorConfig.ButtonEvent, []elevatorConfig.ButtonEvent, []elevatorConfig.ButtonEvent, []elevatorConfig.ButtonEvent) {
-	return make([]elevatorConfig.ButtonEvent, 0), make([]elevatorConfig.ButtonEvent, 0), make([]elevatorConfig.ButtonEvent, 0), make([]elevatorConfig.ButtonEvent, 0)
 }
 
 func appendOrderByType(hallOrders []elevatorConfig.ButtonEvent, cabOrders []elevatorConfig.ButtonEvent, order elevatorConfig.ButtonEvent) ([]elevatorConfig.ButtonEvent, []elevatorConfig.ButtonEvent) {
@@ -69,4 +65,8 @@ func areAllFloorsValid(peerView *elevatorConfig.PeerView) bool {
 		}
 	}
 	return allFloorsValid
+}
+
+func initializeOrDrainOrders() ([]elevatorConfig.ButtonEvent, []elevatorConfig.ButtonEvent, []elevatorConfig.ButtonEvent, []elevatorConfig.ButtonEvent) {
+	return make([]elevatorConfig.ButtonEvent, 0), make([]elevatorConfig.ButtonEvent, 0), make([]elevatorConfig.ButtonEvent, 0), make([]elevatorConfig.ButtonEvent, 0)
 }
