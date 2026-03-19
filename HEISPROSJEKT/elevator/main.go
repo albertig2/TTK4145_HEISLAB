@@ -32,7 +32,7 @@ func main() {
 	bcastPort := 30400
 
 	elevio.Init("localhost:"+strconv.Itoa(*port), numFloors)
-	elevatorControllerChannels := elevatorController.InitializeControllerChannels()
+	ControllerChannels := elevatorController.InitializeControllerChannels()
 	orderChannels := orderProtocol.InitializeOrderChannels()
 	synchronizationChannels := synchronization.InitializeSynchronizationChannels()
 
@@ -42,16 +42,16 @@ func main() {
 	go bcast.Transmitter(bcastPort, synchronizationChannels.BcastOutgoingMessagesChannel)
 	go bcast.Receiver(bcastPort, synchronizationChannels.BcastIncomingMessagesChannel)
 
-	go elevio.PollButtons(elevatorControllerChannels.PollOrderButtonsChannel)
-	go elevio.PollFloorSensor(elevatorControllerChannels.FloorSensorChannel)
-	go elevio.PollObstructionSwitch(elevatorControllerChannels.PollObstructionChannel)
-	go elevio.PollStopButton(elevatorControllerChannels.PollStopButtonChannel)
+	go elevio.PollButtons(ControllerChannels.PollOrderButtonsChannel)
+	go elevio.PollFloorSensor(ControllerChannels.FloorSensorChannel)
+	go elevio.PollObstructionSwitch(ControllerChannels.PollObstructionChannel)
+	go elevio.PollStopButton(ControllerChannels.PollStopButtonChannel)
 
-	go elevatorController.LocalElevatorController(strconv.Itoa(*id), elevatorControllerChannels, synchronizationChannels, orderChannels)
+	go elevatorController.LocalElevatorController(strconv.Itoa(*id), ControllerChannels, synchronizationChannels, orderChannels)
 
-	go synchronization.SynchronizeElevators(elevatorControllerChannels.LocalElevatorChannel, synchronizationChannels, strconv.Itoa(*id))
+	go synchronization.SynchronizeElevators(ControllerChannels.LocalElevatorChannel, synchronizationChannels,ControllerChannels, strconv.Itoa(*id))
 
-	go orderProtocol.ManageAndDistributeOrders(strconv.Itoa(*id), orderChannels, synchronizationChannels, elevatorControllerChannels)
+	go orderProtocol.ManageAndDistributeOrders(strconv.Itoa(*id), orderChannels, synchronizationChannels, ControllerChannels)
 
 	select {}
 }
