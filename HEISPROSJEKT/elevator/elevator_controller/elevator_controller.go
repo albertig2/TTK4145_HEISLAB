@@ -22,7 +22,7 @@ func LocalElevatorController(ownId string, controllerChannels elevatorConfig.Con
 	detectMotorFailureTimer := time.NewTimer(elevatorConfig.MOTOR_TIMEOUT_DURATION_S)
 	detectMotorFailureTimer.Stop()
 
-	sendUpdateToPeerViewTicker := time.NewTicker(time.Second / 10)
+	sendElevatorUpdateTicker := time.NewTicker(time.Second / 10)
 
 	elevator := initializeEmptyElevator(ownId)
 
@@ -31,7 +31,6 @@ func LocalElevatorController(ownId string, controllerChannels elevatorConfig.Con
 	for {
 		select {
 		case floor := <-controllerChannels.FloorSensorChannel:
-			// Should wait for assignment before opening the door
 			detectMotorFailureTimer.Stop()
 			detectMotorFailureTimer.Reset(elevatorConfig.MOTOR_TIMEOUT_DURATION_S)
 
@@ -42,15 +41,13 @@ func LocalElevatorController(ownId string, controllerChannels elevatorConfig.Con
 			fmt.Printf("New order from FSM: (%v , %v) \n", elevatorConfig.ButtonToString(elevatorConfig.Button(int(recievedOrder.Button))), recievedOrder.Floor)
 
 		case assignedOrder := <-orderChannels.NewAssignedOrderChannel:
-			handleRequestButtonPressd(&elevator, openDoorTimer, int(assignedOrder.Floor), elevatorConfig.Button(assignedOrder.Button), orderChannels.ServicedOrderChannel, detectMotorFailureTimer)
+			handleOrderButtonPressd(&elevator, openDoorTimer, int(assignedOrder.Floor), elevatorConfig.Button(assignedOrder.Button), orderChannels.ServicedOrderChannel, detectMotorFailureTimer)
 
 		case assignedPeerOrder := <-orderChannels.NewAssignedPeerOrderChannel:
 			handleLightSettingForPeerOrders(assignedPeerOrder.Floor, assignedPeerOrder.Button, true)
-			fmt.Printf("Turned on the light for %v at floor %v \n", elevatorConfig.ButtonToString(assignedPeerOrder.Button), assignedPeerOrder.Floor)
 
 		case servicedPeerOrder := <-orderChannels.ServicedPeerOrderChannel:
 			handleLightSettingForPeerOrders(servicedPeerOrder.Floor, servicedPeerOrder.Button, false)
-			fmt.Printf("Turned of the light for %v at floor %v \n", elevatorConfig.ButtonToString(servicedPeerOrder.Button), servicedPeerOrder.Floor)
 
 		case stopActivated := <-controllerChannels.PollStopButtonChannel:
 			handleStopButton(stopActivated, &elevator, openDoorTimer, orderChannels.ServicedOrderChannel, detectMotorFailureTimer)
@@ -64,7 +61,7 @@ func LocalElevatorController(ownId string, controllerChannels elevatorConfig.Con
 		case <-detectMotorFailureTimer.C:
 			handleDetectedMotorFailure(&elevator, detectMotorFailureTimer, controllerChannels, synchronisationChannels)
 
-		case <-sendUpdateToPeerViewTicker.C:
+		case <-sendElevatorUpdateTicker.C:
 			controllerChannels.LocalElevatorChannel <- elevator
 		}
 	}

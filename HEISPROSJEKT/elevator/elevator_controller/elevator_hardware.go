@@ -65,7 +65,7 @@ func stopButtonLight(lightValue bool) {
 	elevio.SetStopLamp(lightValue)
 }
 
-func setAllOrderLights(elevator elevatorConfig.Elevator) {
+func tunrOnOrderLightsBasedOnLocalQueue(elevator elevatorConfig.Elevator) {
 	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
 		for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
 			if elevator.LocalOrderQueue[floor][btn] { //only set light if true, (clearing here will also mess withthe network order lights)
@@ -75,10 +75,17 @@ func setAllOrderLights(elevator elevatorConfig.Elevator) {
 		}
 	}
 }
+
 func turnOffAllOrderLights() {
 	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
 		for button := elevio.ButtonType(0); button < 3; button++ {
 			elevio.SetButtonLamp(button, floor, false)
 		}
+	}
+}
+
+func clearListOfOrderLighst(orderLightList []elevatorConfig.ButtonEvent) {
+	for _, orderLightToBeCleard := range orderLightList {
+		elevio.SetButtonLamp(elevio.ButtonType(int(orderLightToBeCleard.Button)), orderLightToBeCleard.Floor, false)
 	}
 }

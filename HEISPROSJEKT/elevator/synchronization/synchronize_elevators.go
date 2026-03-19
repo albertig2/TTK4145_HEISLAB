@@ -34,7 +34,7 @@ func SynchronizeElevators(elevator chan elevatorConfig.Elevator, synchronization
 			broadcastTicker.Reset(time.Second / 30)
 
 		case <-printTicker.C:
-			debuggingHelpers.PrintElevatorSystem(peerView)
+			debuggingHelpers.PrintPeerViewUpdate(peerView)
 		}
 	}
 }

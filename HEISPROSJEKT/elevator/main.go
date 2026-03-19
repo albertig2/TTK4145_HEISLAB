@@ -18,8 +18,12 @@ import (
 	"Network-go/network/peers"
 )
 
-//note to slef: DET ER TO FUNSKJONER SOM LYTTER PÅ PEERUPDATE CHL (eller kanskje dte ble skrevet om nå i kveld(fredag)
-//dette er grunnen til at peerUpdat oppfører seg rart, og at den ikke printes fra sync elevators
+//note: Det skjer noen ganger at heisen kommer out of bounds, burde vi legge på faktiske hardware 
+//sikkert som hindrer heisen i å få til dette
+
+//der er flere initer i kontroller, burde noen slås sammen?
+
+//sto er broken i master, er den det her?
 
 func main() {
 	fmt.Println("Jeg nekter å kommentere ut fmt hver gang jeg skal debugge")
