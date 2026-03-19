@@ -13,4 +13,4 @@ Both the id and port should be entered as an integer. If no id is provided the e
 go run main.go -id=5 -port=15777
 ```
 ## Global variables and configuration
-All global variables can be found in the elevator_config folder. This includes the broadcast and peerUpdate ports, the number of floors and buttons, and the duration of the door open timer and motor failure detection timer. The file also contains all global structs and enums. Anny changes to these variables will affect the entire code, making changing the number of floors or the door open time easy, pain free and bug resistant. 
+All global variables can be found in the elevator_config folder. This includes the broadcast and peerUpdate ports, the number of floors and buttons, and the duration of the door open timer and motor failure detection timer. The file also contains all global structs and enums. Changes to these variables will affect the entire code, making changing the number of floors or the door open time easy, pain free and bug resistant. 
