@@ -6,6 +6,14 @@ import (
 	"time"
 )
 
+/*
+The elevator hardware sub module functions as an intermediate layer between the higher-level 
+code and the hardware. It is essentially made to “hide” the raw hardware layer of the elevio 
+hardware driver (elevio is pre made, and handed out as a project resource), and support the 
+error handling in the finite state machine.
+*/
+
+
 //------------------Sensors-------------------------------
 
 func FloorSensor() int {
