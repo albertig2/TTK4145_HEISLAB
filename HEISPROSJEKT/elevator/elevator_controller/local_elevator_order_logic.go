@@ -3,6 +3,12 @@ package elevatorController
 import (
 	"HEISPROSJEKT/elevatorConfig"
 )
+/*
+This file contains all functions related to managing and interaction with the local order queue. 
+This includes utility functions to detect orders relative to the elevator position, functions to 
+calculate behavior and motor direction based local orders and routines for clearing the correct orders 
+based the current direction
+*/
 
 type directionBehaviorPair struct {
 	direction elevatorConfig.Direction
@@ -110,44 +116,39 @@ func shouldClearOrderImmediately(elevator elevatorConfig.Elevator, buttonFloor i
 			buttonType == elevatorConfig.Cab)
 }
 
-func clearOrdersAtCurrentFloor(elevator elevatorConfig.Elevator, ServicedOrderChannel chan elevatorConfig.ButtonEvent) elevatorConfig.Elevator {
+func clearOrdersAtCurrentFloor(elevator elevatorConfig.Elevator) (elevatorConfig.Elevator, []elevatorConfig.ButtonEvent) {
+
+	clearedOrders := []elevatorConfig.ButtonEvent {}
 
 	elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.Cab] = false
-	ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.Cab} //clear light after the order after network is pinged
-	orderButtonLight(elevator.Floor, elevatorConfig.Cab, false)
+	clearedOrders = append(clearedOrders, elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.Cab})
 
 	switch elevator.Direction {
 	case elevatorConfig.Up:
 		if !ordersAboveCurrentFloor(elevator) && !elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallUp] {
 			elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallDown] = false
-			ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallDown}
-			orderButtonLight(elevator.Floor, elevatorConfig.HallDown, false)
+			clearedOrders = append(clearedOrders, elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallDown})
 		}
+
 		elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallUp] = false
-		ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallUp}
-		orderButtonLight(elevator.Floor, elevatorConfig.HallUp, false)
+		clearedOrders = append(clearedOrders, elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallUp})
 
 	case elevatorConfig.Down:
 		if !ordersBelowCurrentFloor(elevator) && !elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallDown] {
 			elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallUp] = false
-			ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallUp}
-			orderButtonLight(elevator.Floor, elevatorConfig.HallUp, false)
-
+			clearedOrders = append(clearedOrders, elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallUp})
 		}
 		elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallDown] = false
-		ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallDown}
-		orderButtonLight(elevator.Floor, elevatorConfig.HallDown, false)
+		clearedOrders = append(clearedOrders, elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallDown})
 
 	case elevatorConfig.Stop:
 		fallthrough
 	default:
 		elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallUp] = false
-		ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallUp}
-		orderButtonLight(elevator.Floor, elevatorConfig.HallUp, false)
-		elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallDown] = false
-		ServicedOrderChannel <- elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallDown}
-		orderButtonLight(elevator.Floor, elevatorConfig.HallDown, false)
-	}
+		clearedOrders = append(clearedOrders, elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallUp})
 
-	return elevator
+		elevator.LocalOrderQueue[elevator.Floor][elevatorConfig.HallDown] = false
+		clearedOrders = append(clearedOrders, elevatorConfig.ButtonEvent{Floor: elevator.Floor, Button: elevatorConfig.HallDown})
+	}
+	return elevator, clearedOrders
 }

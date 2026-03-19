@@ -6,6 +6,11 @@ import (
 	"fmt"
 )
 
+/*
+Contains functions needed to print the different structs, as well as utility functions needed to do so
+
+*/
+
 func PrintLocalElvator(elevator elevatorConfig.Elevator) {
 	fmt.Println("  +--------------------+")
 	fmt.Printf("  |%-6s = %-2d          |\n", "floor", elevator.Floor)
@@ -32,18 +37,15 @@ func PrintLocalElvator(elevator elevatorConfig.Elevator) {
 }
 
 func PrintPeerUpdate(peerUpdate peers.PeerUpdate) {
-
 	fmt.Println("--------New peer uppdate recieved----------")
 	fmt.Printf("Current alive peers: ")
 	for peerIndex := 0; peerIndex < len(peerUpdate.Peers); peerIndex++ {
 		fmt.Printf("%+v ", peerUpdate.Peers[peerIndex])
 	}
 	fmt.Printf("\n")
-
 	if peerUpdate.New != "" {
 		fmt.Printf("Elevator ID  %+v just joind the network \n", peerUpdate.New)
 	}
-
 	fmt.Printf("Peers considerd lost: ")
 	for peerIndex := 0; peerIndex < len(peerUpdate.Lost); peerIndex++ {
 		fmt.Printf("%+v ", peerUpdate.Lost[peerIndex])
@@ -52,7 +54,7 @@ func PrintPeerUpdate(peerUpdate peers.PeerUpdate) {
 	fmt.Println("---------End of peer update-------------- ")
 }
 
-func orderStatusToSymbolToString (orderstatus elevatorConfig.OrderStatus) string {
+func orderStatusToSymbolToString(orderstatus elevatorConfig.OrderStatus) string {
 	switch orderstatus {
 	case elevatorConfig.NoOrder:
 		return " - "
@@ -76,15 +78,15 @@ func printHallOrderLine(orders [elevatorConfig.N_FLOORS][2]elevatorConfig.OrderS
 	}
 	fmt.Printf(" |\n")
 }
-func printCabOrderLine(orders [elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus) {
 
+func printCabOrderLine(orders [elevatorConfig.N_FLOORS]elevatorConfig.OrderStatus) {
 	for index := 0; index < len(orders); index++ {
 		orderstatus := orders[index]
 		fmt.Printf("%s", orderStatusToSymbolToString(orderstatus))
 	}
 	fmt.Printf(" |\n")
 }
-func PrintCurrentWorkingElevatorFromPeerView (peerView elevatorConfig.PeerView) {
+func printCurrentWorkingElevatorFromPeerView(peerView elevatorConfig.PeerView) {
 	workingNode := peerView.States[peerView.OwnId]
 	hallOrders := peerView.HallRequests
 	cabOrders := workingNode.CabRequests
@@ -108,7 +110,7 @@ func PrintCurrentWorkingElevatorFromPeerView (peerView elevatorConfig.PeerView) 
 
 }
 
-func PrintPeerElevatorStates (peerView elevatorConfig.PeerView) {
+func printPeerElevatorStates(peerView elevatorConfig.PeerView) {
 	currentPeers := peerView.States
 
 	for id, state := range currentPeers {
@@ -131,16 +133,43 @@ func PrintPeerElevatorStates (peerView elevatorConfig.PeerView) {
 		fmt.Printf("\n")
 
 	}
-
 }
 
-func PrintElevatorSystem(elevatorSystem elevatorConfig.PeerView) {
-	fmt.Println("---------Start System update-----------------")
-	PrintCurrentWorkingElevatorFromPeerView(elevatorSystem)
+func printDeadAndAliveElevators(peerView elevatorConfig.PeerView) {
+
+	fmt.Printf("Alive elevators: ")
+	for _, peerId := range peerView.AlivePeers {
+		fmt.Printf("%s ", peerId)
+	}
 	fmt.Printf("\n")
-	PrintPeerElevatorStates(elevatorSystem)
-	fmt.Println("---------End System update-------------------")
+	fmt.Printf("Lost elevators: ")
+
+	lostOwnId := true
+	for peerId := range peerView.States {
+		idLost := true
+		for _, aliveId := range peerView.AlivePeers {
+			if aliveId == peerId {
+				idLost = false
+			}
+			if aliveId == peerView.OwnId {
+				lostOwnId = false
+			}
+		}
+		if idLost {
+			fmt.Printf("%s ", peerId)
+		}
+	}
+	fmt.Printf("\n")
+	if lostOwnId {
+		fmt.Println("This elevator is currently offline")
+	}
 }
 
-
-
+func PrintPeerViewUpdate(peerView elevatorConfig.PeerView) {
+	fmt.Println("---------Start PeerView update------------")
+	printDeadAndAliveElevators(peerView)
+	printCurrentWorkingElevatorFromPeerView(peerView)
+	fmt.Printf("\n")
+	printPeerElevatorStates(peerView)
+	fmt.Println("---------End PeerView update--------------")
+}

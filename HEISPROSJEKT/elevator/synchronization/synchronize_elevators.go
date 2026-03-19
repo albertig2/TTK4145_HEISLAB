@@ -1,12 +1,18 @@
 package synchronization
 
+/*
+Runs the main synchronization loop.
+Coordinates communication between peers, local elevator updates,
+and periodic broadcasting of the system state.
+*/
+
 import (
 	"HEISPROSJEKT/debuggingHelpers"
 	"HEISPROSJEKT/elevatorConfig"
 	"time"
 )
 
-func SynchronizeElevators(elevator chan elevatorConfig.Elevator, synchronizationChannels elevatorConfig.SynchronizationChannels, ownId string) {
+func SynchronizeElevators(elevator chan elevatorConfig.Elevator, synchronizationChannels elevatorConfig.SynchronizationChannels, controllerChannels elevatorConfig.ControllerChannels, ownId string) {
 	peerView := elevatorConfig.PeerView{}
 	InitializePeerView(&peerView, ownId)
 
@@ -23,7 +29,7 @@ func SynchronizeElevators(elevator chan elevatorConfig.Elevator, synchronization
 			debuggingHelpers.PrintPeerUpdate(peerUpdate)
 			synchronizationChannels.AlivePeersChannel <- peerUpdate.Peers
 
-		case elevatorUpdate := <-elevator:
+		case elevatorUpdate := <-controllerChannels.LocalElevatorChannel:
 			synchronizationChannels.UpdateElevatorSystemWithElevatorChannel <- elevatorUpdate
 
 		case systemUpdate := <-synchronizationChannels.UpdateElevatorSystemWithElevatorSystemChannel:
@@ -34,7 +40,7 @@ func SynchronizeElevators(elevator chan elevatorConfig.Elevator, synchronization
 			broadcastTicker.Reset(time.Second / 30)
 
 		case <-printTicker.C:
-			debuggingHelpers.PrintElevatorSystem(peerView)
+			debuggingHelpers.PrintPeerViewUpdate(peerView)
 		}
 	}
 }

@@ -6,6 +6,13 @@ import (
 	"time"
 )
 
+/*
+The elevator hardware sub module functions as an intermediate layer between the higher-level
+code and the hardware. It is essentially made to “hide” the raw hardware layer of the elevio
+hardware driver (elevio is pre made, and handed out as a project resource), and support the
+error handling in the finite state machine.
+*/
+
 //------------------Sensors-------------------------------
 
 func FloorSensor() int {
@@ -23,19 +30,6 @@ func motorDirection(direction elevatorConfig.Direction, detectMotorFailureTimer 
 		detectMotorFailureTimer.Stop()
 		detectMotorFailureTimer.Reset(elevatorConfig.MOTOR_TIMEOUT_DURATION_S)
 	}
-}
-
-// ------------------Buttons--------------------------------
-func orderButton(floor int, button elevatorConfig.Button) bool {
-	return elevio.GetButton((elevio.ButtonType)(button), floor)
-}
-
-func stopButton() bool {
-	return elevio.GetStop()
-}
-
-func obstruction() bool {
-	return elevio.GetObstruction()
 }
 
 //-------------------Lights----------------------------------
@@ -57,20 +51,26 @@ func stopButtonLight(lightValue bool) {
 	elevio.SetStopLamp(lightValue)
 }
 
-func setAllOrderLights(elevator elevatorConfig.Elevator) {
+func tunrOnOrderLightsBasedOnLocalQueue(elevator elevatorConfig.Elevator) {
 	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
-		for btn := 0; btn < elevatorConfig.N_BUTTONS; btn++ {
-			if elevator.LocalOrderQueue[floor][btn] { //only set light if true, (clearing here will also mess withthe network order lights)
-
-				orderButtonLight(floor, elevatorConfig.Button(btn), elevator.LocalOrderQueue[floor][btn])
+		for button := 0; button < elevatorConfig.N_BUTTONS; button++ {
+			if elevator.LocalOrderQueue[floor][button] { //only set light if true, (clearing here will also mess withthe network order lights)
+				orderButtonLight(floor, elevatorConfig.Button(button), elevator.LocalOrderQueue[floor][button])
 			}
 		}
 	}
 }
+
 func turnOffAllOrderLights() {
 	for floor := 0; floor < elevatorConfig.N_FLOORS; floor++ {
-		for button := elevio.ButtonType(0); button < 3; button++ {
-			elevio.SetButtonLamp(button, floor, false)
+		for button := 0; button < elevatorConfig.N_BUTTONS; button++ {
+			orderButtonLight(floor, elevatorConfig.Button(button), false)
 		}
+	}
+}
+
+func clearListOfOrderLighst(orderLightList []elevatorConfig.ButtonEvent) {
+	for _, orderLightToBeCleard := range orderLightList {
+		orderButtonLight(orderLightToBeCleard.Floor, orderLightToBeCleard.Button, false)
 	}
 }

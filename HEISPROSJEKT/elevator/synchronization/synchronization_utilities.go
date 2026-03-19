@@ -1,16 +1,13 @@
 package synchronization
 
+/*
+Provides channel initialization for synchronization
+*/
+
 import (
 	"HEISPROSJEKT/elevatorConfig"
 	"Network-go/network/peers"
 )
-
-//remove
-/*
-var (
-	alivePeersList []string
-	deadPeersList  []string
-)*/
 
 func InitializeSynchronizationChannels() elevatorConfig.SynchronizationChannels {
 	syncronizationChannels := elevatorConfig.SynchronizationChannels{
@@ -25,38 +22,4 @@ func InitializeSynchronizationChannels() elevatorConfig.SynchronizationChannels 
 	}
 
 	return syncronizationChannels
-}
-
-//remove
-/*
-func UpdatePeerList(synchronizationChannelss elevatorConfig.SynchronizationChannels) {
-	for {
-		peerUpdate := <-synchronizationChannelss.PeerUpdateChannel
-
-		alivePeersList = peerUpdate.Peers
-
-		deadPeersList = append(deadPeersList, peerUpdate.Lost...)
-
-		newPeer := peerUpdate.New
-
-		if newPeer != "" {
-			newList := []string{}
-
-			for _, dead := range deadPeersList {
-				if dead != newPeer {
-					newList = append(newList, dead)
-				}
-			}
-
-			deadPeersList = newList
-		}
-	}
-}*/
-
-func UpdateElevatorSystemFromElevator(elevator elevatorConfig.Elevator, peerView *elevatorConfig.PeerView) {
-	SetBehavior(peerView, elevatorConfig.Behavior(elevator.Behavior))
-	SetDirection(peerView, elevator.Direction)
-	if elevator.Floor >= 0 && elevator.Floor < elevatorConfig.N_FLOORS {
-		SetFloor(peerView, elevator.Floor)
-	}
 }

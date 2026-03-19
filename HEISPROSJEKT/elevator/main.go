@@ -18,8 +18,12 @@ import (
 	"Network-go/network/peers"
 )
 
-//note to slef: DET ER TO FUNSKJONER SOM LYTTER PÅ PEERUPDATE CHL (eller kanskje dte ble skrevet om nå i kveld(fredag)
-//dette er grunnen til at peerUpdat oppfører seg rart, og at den ikke printes fra sync elevators
+//note: Det skjer noen ganger at heisen kommer out of bounds, burde vi legge på faktiske hardware 
+//sikkert som hindrer heisen i å få til dette
+
+//der er flere initer i kontroller, burde noen slås sammen?
+
+//sto er broken i master, er den det her?
 
 func main() {
 	fmt.Println("Jeg nekter å kommentere ut fmt hver gang jeg skal debugge")
@@ -32,7 +36,7 @@ func main() {
 	bcastPort := 30400
 
 	elevio.Init("localhost:"+strconv.Itoa(*port), numFloors)
-	elevatorControllerChannels := elevatorController.InitializeControllerChannels()
+	ControllerChannels := elevatorController.InitializeControllerChannels()
 	orderChannels := orderProtocol.InitializeOrderChannels()
 	synchronizationChannels := synchronization.InitializeSynchronizationChannels()
 
@@ -42,16 +46,16 @@ func main() {
 	go bcast.Transmitter(bcastPort, synchronizationChannels.BcastOutgoingMessagesChannel)
 	go bcast.Receiver(bcastPort, synchronizationChannels.BcastIncomingMessagesChannel)
 
-	go elevio.PollButtons(elevatorControllerChannels.PollOrderButtonsChannel)
-	go elevio.PollFloorSensor(elevatorControllerChannels.FloorSensorChannel)
-	go elevio.PollObstructionSwitch(elevatorControllerChannels.PollObstructionChannel)
-	go elevio.PollStopButton(elevatorControllerChannels.PollStopButtonChannel)
+	go elevio.PollButtons(ControllerChannels.PollOrderButtonsChannel)
+	go elevio.PollFloorSensor(ControllerChannels.FloorSensorChannel)
+	go elevio.PollObstructionSwitch(ControllerChannels.PollObstructionChannel)
+	go elevio.PollStopButton(ControllerChannels.PollStopButtonChannel)
 
-	go elevatorController.LocalElevatorController(strconv.Itoa(*id), elevatorControllerChannels, synchronizationChannels, orderChannels)
+	go elevatorController.LocalElevatorController(strconv.Itoa(*id), ControllerChannels, synchronizationChannels, orderChannels)
 
-	go synchronization.SynchronizeElevators(elevatorControllerChannels.LocalElevatorChannel, synchronizationChannels, strconv.Itoa(*id))
+	go synchronization.SynchronizeElevators(ControllerChannels.LocalElevatorChannel, synchronizationChannels,ControllerChannels, strconv.Itoa(*id))
 
-	go orderProtocol.ManageAndDistributeOrders(strconv.Itoa(*id), orderChannels, synchronizationChannels, elevatorControllerChannels)
+	go orderProtocol.ManageAndDistributeOrders(strconv.Itoa(*id), orderChannels, synchronizationChannels, ControllerChannels)
 
 	select {}
 }
