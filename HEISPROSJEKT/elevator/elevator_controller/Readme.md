@@ -7,7 +7,7 @@ ElevatorController(ownId string, controllerChannels elevatorConfig.ElevatorContr
 ````
 
 ## Elevator controller (Elevator controller.go)
-The elevator controller contains one global function, the LocalElevatorController(). This is the finite state machine loop for the local elevator. The controller is built from the functions in the three sub modules, and ensures that the local elevator behaves correctly, and that the order assigner and synchronization module have the necessary information to serve their purpose. The controller mainly does this by detecting events and reacting accordingly by calling the correct handler. The controller has nine possible events that can occur, whereas some are local to the module and some are external and stemming from other modules:
+The elevator controller contains one global function, the LocalElevatorController(). This is the finite state machine loop for the local elevator. The controller is built from the functions in the three sub modules, and ensures that the local elevator behaves correctly, and that the order assigner and synchronization module have the necessary information to serve their purpose. The controller mainly does this by detecting events and reacting accordingly by calling the correct handler. The controller has ten possible events that can occur, whereas some are local to the module and some are external and stemming from other modules:
 -	Arrive at floor (local)
 -	Receive order from button press (local)
 -	Assigned order (external from order module)
@@ -17,6 +17,7 @@ The elevator controller contains one global function, the LocalElevatorControlle
 -	Obstruction event (local)
 -	Timeout of open door timer(local)
 -	Timeout for detect motor failure timer (local)
+-	Timeout for send elevator update ticker (local)
 
 The output and state changes are taken care of by the the handler function described below. The finite state machine in the controller has three possible states (called Behaviors): Idle, moving and open door.
 

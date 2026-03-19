@@ -19,10 +19,10 @@ assigner, ensuring correct light setting behavior and updating the order assigne
 serviced.Most of the handlers are written on the finite state machine format, ensuring conditional response 
 based on the elevator behavior at the time the vent occurred. The exceptions are events that should be 
 handled the same regardless of previous state, like initializations or restarts.
-There are nine different events who will trigger actions and outputs in the state machine. 
+There are ten different events who will trigger actions and outputs in the state machine. 
 Six of the events are local, stemming from hardware inputs or from the two timers. This includes 
 arriving at a floor, detecting a button press (order, stop or obstruction) or timeouts of the 
-door timer or the motor failure timer. Three events are external, coming from other order assigner. 
+door timer or, motor failure timer or the eleavtor update ticker. Three events are external, coming from other order assigner. 
 This includes a new order being assigned to this elevator, a new order assigned to a different peer 
 and a new order serviced by a different peer. Information about peer orders is necessary for the local 
 elevator to set and clear the correct order lights. The local panel should light up all orders being 
